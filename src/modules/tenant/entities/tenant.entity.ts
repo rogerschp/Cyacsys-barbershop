@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Index,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('tenants')
@@ -34,6 +35,13 @@ export class TenantEntity {
     description: 'The date and time the tenant was created',
   })
   createdAt: Date;
+
+  @UpdateDateColumn()
+  @ApiProperty({
+    example: '2021-01-01T00:00:00.000Z',
+    description: 'The date and time the tenant was updated',
+  })
+  updatedAt: Date;
 
   @DeleteDateColumn()
   @ApiProperty({
