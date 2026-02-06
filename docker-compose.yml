@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: barber-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: barber
+      POSTGRES_USER: barber
+      POSTGRES_PASSWORD: barber
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
