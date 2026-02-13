@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Role } from 'src/common/enums/role.enum';
-import { ROLES_KEY } from '../decorators/roles.decorators';
-import { DecodedIdToken } from 'firebase-admin/auth';
 import { RoleNotAuthorizedException } from 'src/common/utils/auth-exceptions';
+import { ROLES_KEY } from '../decorators/roles.decorators';
+import { IDecodedToken } from '../ports/decoded-token.interface';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -22,6 +22,11 @@ export class RolesGuard implements CanActivate {
     if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
+
+    const user = this.getAuthenticatedUser(context, requiredRoles);
+    const userRole = await this.resolveUserRole(context, user);
+    this.validateUserRole(userRole, requiredRoles);
+    return true;
   }
 
   private getRequiredRoles(context: ExecutionContext): Role[] | undefined {
@@ -30,13 +35,14 @@ export class RolesGuard implements CanActivate {
       context.getClass(),
     ]);
   }
+
   private getAuthenticatedUser(
     context: ExecutionContext,
     requiredRoles: Role[],
-  ): DecodedIdToken {
-    const request = context.switchToHttp().getRequest<{
-      user: DecodedIdToken;
-    }>();
+  ): IDecodedToken {
+    const request = context
+      .switchToHttp()
+      .getRequest<{ user: IDecodedToken }>();
 
     if (!request.user) {
       throw new RoleNotAuthorizedException(
@@ -46,6 +52,20 @@ export class RolesGuard implements CanActivate {
     }
 
     return request.user;
+  }
+
+  private async resolveUserRole(
+    context: ExecutionContext,
+    user: IDecodedToken,
+  ): Promise<Role> {
+    const roleFromToken = (user as IDecodedToken & { role?: Role }).role;
+    if (roleFromToken && Object.values(Role).includes(roleFromToken)) {
+      return roleFromToken;
+    }
+    throw new RoleNotAuthorizedException(
+      this.getRequiredRoles(context) ?? [],
+      'User has no role (token or DB)',
+    );
   }
 
   private validateUserRole(userRole: Role, requiredRoles: Role[]): void {
