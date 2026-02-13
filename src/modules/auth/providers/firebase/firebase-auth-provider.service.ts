@@ -10,7 +10,7 @@ import { FirebaseSignInResponse } from 'src/common/interfaces/firebaseSignInResp
 import axios from 'axios';
 import * as admin from 'firebase-admin';
 import { AuthLoginDto } from '../../dto/auth-login.dto';
-import { AuthLoginResponseDto } from '../../dto/auth-login-reponse.dto';
+import { AuthLoginResponseDto } from '../../dto/auth-login-response.dto';
 import { AuthRefreshDto } from '../../dto/auth-refresh.dto';
 import { AuthRefreshResponseDto } from '../../dto/auth-refresh-response.dto';
 import { IAuthProvider } from '../../ports/auth-provider.interface';

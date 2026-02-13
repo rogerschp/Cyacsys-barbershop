@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AuthLoginDto } from './dto/auth-login.dto';
-import { AuthLoginResponseDto } from './dto/auth-login-reponse.dto';
+import { AuthLoginResponseDto } from './dto/auth-login-response.dto';
 import { AuthRefreshDto } from './dto/auth-refresh.dto';
 import { AuthRefreshResponseDto } from './dto/auth-refresh-response.dto';
 import { AUTH_PROVIDER, IAuthProvider } from './ports/auth-provider.interface';

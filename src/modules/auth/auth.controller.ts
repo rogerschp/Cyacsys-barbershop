@@ -2,7 +2,7 @@ import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthLoginDto } from './dto/auth-login.dto';
-import { AuthLoginResponseDto } from './dto/auth-login-reponse.dto';
+import { AuthLoginResponseDto } from './dto/auth-login-response.dto';
 import { AuthLogoutResponseDto } from './dto/auth-logout-response.dto';
 import { AuthRefreshDto } from './dto/auth-refresh.dto';
 import { AuthRefreshResponseDto } from './dto/auth-refresh-response.dto';
