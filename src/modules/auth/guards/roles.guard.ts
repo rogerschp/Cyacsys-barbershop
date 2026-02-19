@@ -6,7 +6,10 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Role } from 'src/common/enums/role.enum';
-import { RoleNotAuthorizedException } from 'src/common/utils/auth-exceptions';
+import {
+  AuthenticationError,
+  RoleNotAuthorizedException,
+} from 'src/common/utils/auth-exceptions';
 import { ROLES_KEY } from '../decorators/roles.decorators';
 import { IDecodedToken } from '../ports/decoded-token.interface';
 
@@ -23,7 +26,7 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    const user = this.getAuthenticatedUser(context, requiredRoles);
+    const user = this.getAuthenticatedUser(context);
     const userRole = await this.resolveUserRole(context, user);
     this.validateUserRole(userRole, requiredRoles);
     return true;
@@ -36,19 +39,13 @@ export class RolesGuard implements CanActivate {
     ]);
   }
 
-  private getAuthenticatedUser(
-    context: ExecutionContext,
-    requiredRoles: Role[],
-  ): IDecodedToken {
+  private getAuthenticatedUser(context: ExecutionContext): IDecodedToken {
     const request = context
       .switchToHttp()
       .getRequest<{ user: IDecodedToken }>();
 
     if (!request.user) {
-      throw new RoleNotAuthorizedException(
-        requiredRoles,
-        'User not authenticated',
-      );
+      throw new AuthenticationError('User not authenticated');
     }
 
     return request.user;
