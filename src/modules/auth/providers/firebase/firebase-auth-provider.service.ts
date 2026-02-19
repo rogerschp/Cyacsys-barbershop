@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { FirebaseErrorResponse } from 'src/common/interfaces/firebaseErrorResponse.interface';
 import { FirebaseRefreshTokenResponse } from 'src/common/interfaces/fireabaseRefreshTokenResponse.interface';
 import { FirebaseSignInResponse } from 'src/common/interfaces/firebaseSignInResponse.interface';
@@ -87,10 +82,6 @@ export class FirebaseAuthProvider implements IAuthProvider {
   ): Promise<AuthRefreshResponseDto> {
     const apiKey = this.getApiKey();
 
-    if (!refreshTokenDto.refreshToken) {
-      throw new BadRequestException('Refresh token is required');
-    }
-
     try {
       const params = new URLSearchParams({
         grant_type: 'refresh_token',
@@ -117,6 +108,9 @@ export class FirebaseAuthProvider implements IAuthProvider {
 
       return { idToken, refreshToken, expiresIn };
     } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
       const errorMsg = this.getFirebaseErrorMessage(error);
       this.logger.warn(`Refresh failed: ${errorMsg}`);
       throw new UnauthorizedException(errorMsg);
