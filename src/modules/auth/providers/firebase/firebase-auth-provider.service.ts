@@ -95,7 +95,7 @@ export class FirebaseAuthProvider implements IAuthProvider {
       );
       const data = response.data;
 
-      const idToken = data.id_token ?? data.access_token;
+      const idToken = data.id_token;
       if (!idToken) {
         throw new UnauthorizedException('Invalid refresh token response');
       }
