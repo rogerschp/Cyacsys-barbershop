@@ -25,6 +25,9 @@ import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor'
 import { BearerAuthGuard } from '../auth/guards/bearer-auth.guard';
 import { RequestUser } from '../auth/strategies/bearer-token.strategy';
 import { TenantMembershipGuard } from '../tenant-user/guards/tenant-membership.guard';
+import { TenantRolesGuard } from '../tenant-user/guards/tenant-roles.guard';
+import { TenantRoles } from '../tenant-user/decorators/tenant-roles.decorator';
+import { TenantUserRole } from '../tenant-user/entities/tenant-user-role.enum';
 import { CreateTenantWithOwnerUseCase } from './use-cases/create-tenant-with-owner.use-case';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
@@ -118,11 +121,12 @@ export class TenantController {
   @Patch(':id')
   @UseGuards(BearerAuthGuard)
   @UseInterceptors(TenantInterceptor)
-  @UseGuards(TenantMembershipGuard)
+  @UseGuards(TenantMembershipGuard, TenantRolesGuard)
+  @TenantRoles(TenantUserRole.OWNER, TenantUserRole.ADMIN)
   @ApiBearerAuth('bearer')
   @ApiOperation({
     summary: 'Atualiza tenant',
-    description: 'Requer ser membro ativo do tenant (Bearer + membership).',
+    description: 'Requer ser membro ativo com papel OWNER ou ADMIN.',
   })
   @ApiParam({ name: 'id', description: 'UUID do tenant' })
   @ApiBody({ type: UpdateTenantDto })
@@ -144,11 +148,12 @@ export class TenantController {
   @Delete(':id')
   @UseGuards(BearerAuthGuard)
   @UseInterceptors(TenantInterceptor)
-  @UseGuards(TenantMembershipGuard)
+  @UseGuards(TenantMembershipGuard, TenantRolesGuard)
+  @TenantRoles(TenantUserRole.OWNER, TenantUserRole.ADMIN)
   @ApiBearerAuth('bearer')
   @ApiOperation({
     summary: 'Remove tenant (soft delete)',
-    description: 'Requer ser membro ativo do tenant (Bearer + membership).',
+    description: 'Requer ser membro ativo com papel OWNER ou ADMIN.',
   })
   @ApiParam({ name: 'id', description: 'UUID do tenant' })
   @ApiResponse({ status: 200, description: 'Tenant removido' })
