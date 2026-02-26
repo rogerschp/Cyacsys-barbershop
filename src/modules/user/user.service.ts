@@ -16,9 +16,11 @@ import { UserStatus } from './entities/user-status.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from './entities/user.entity';
-import { IUserRepository, USER_REPOSITORY } from './interfaces/user-repository.interface';
+import {
+  IUserRepository,
+  USER_REPOSITORY,
+} from './interfaces/user-repository.interface';
 
-/** Casos de uso de usuário (camada de aplicação – arquitetura hexagonal). Depende apenas das portas. */
 @Injectable()
 export class UserService {
   constructor(
@@ -27,15 +29,10 @@ export class UserService {
     private readonly userSyncService: UserSyncService,
   ) {}
 
-  /** Usado pelo auth: resolve usuário após login Firebase (banco = fonte da verdade). */
   async findByFirebaseUid(firebaseUid: string) {
     return this.repo.findByFirebaseUid(firebaseUid);
   }
 
-  /**
-   * Database is source of truth: valida que o usuário existe no banco e está ACTIVE.
-   * Usado antes de aceitar login (email/senha ou Google).
-   */
   async validateUserExists(firebaseUid: string): Promise<UserEntity> {
     const user = await this.repo.findByFirebaseUid(firebaseUid);
     if (!user) {
@@ -49,10 +46,6 @@ export class UserService {
     return user;
   }
 
-  /**
-   * Sincroniza dados básicos do Firebase para o banco (email, name); preserva role/status.
-   * Chamado após login válido para manter o banco alinhado com o Firebase.
-   */
   async syncUserWithFirebase(firebaseUid: string): Promise<UserEntity | null> {
     return this.userSyncService.syncFromFirebase(firebaseUid);
   }
@@ -67,10 +60,6 @@ export class UserService {
     return user;
   }
 
-  /**
-   * Cria usuário: primeiro no banco (com senha em hash bcrypt), depois sincroniza com o Firebase.
-   * Banco = fonte da verdade; senha obrigatória e criptografada.
-   */
   async create(dto: CreateUserDto) {
     const existing = await this.repo.findByEmail(dto.email);
     if (existing) {
@@ -91,21 +80,23 @@ export class UserService {
       });
       await this.repo.setFirebaseUid(user.id, uid);
       const created = await this.repo.findById(user.id);
-    return created ?? user;
+      return created ?? user;
     } catch (err) {
       await this.repo.softDelete(user.id);
       throw err;
     }
   }
 
-  /**
-   * Atualiza usuário no banco; alterações são sincronizadas com o Firebase (status, nome, senha).
-   */
   async update(id: string, dto: UpdateUserDto) {
     const user = await this.repo.findById(id);
     if (!user) throw new NotFoundException('User not found');
 
-    const data: { name?: string; status?: UserStatus; role?: Role; passwordHash?: string } = {};
+    const data: {
+      name?: string;
+      status?: UserStatus;
+      role?: Role;
+      passwordHash?: string;
+    } = {};
     if (dto.name !== undefined) data.name = dto.name;
     if (dto.status !== undefined) data.status = dto.status;
     if (dto.role !== undefined) data.role = dto.role;
@@ -126,7 +117,10 @@ export class UserService {
       if (dto.name !== undefined) firebaseUpdate.displayName = dto.name;
       if (dto.password) firebaseUpdate.password = dto.password;
       if (Object.keys(firebaseUpdate).length > 0) {
-        await this.userSyncService.syncToFirebase(user.firebaseUid, firebaseUpdate);
+        await this.userSyncService.syncToFirebase(
+          user.firebaseUid,
+          firebaseUpdate,
+        );
       }
     }
     const updated = await this.repo.findById(id);

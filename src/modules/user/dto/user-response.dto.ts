@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Role } from '../../../common/enums/role.enum';
 import { UserStatus } from '../entities/user-status.enum';
 
-/** Resposta de usuário (sem passwordHash) para API e Swagger. */
 export class UserResponseDto {
   @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
   id: string;

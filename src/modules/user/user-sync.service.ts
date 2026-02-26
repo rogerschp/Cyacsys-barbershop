@@ -11,10 +11,6 @@ import {
 } from './interfaces/user-repository.interface';
 import { UserEntity } from './entities/user.entity';
 
-/**
- * Orquestra sync entre banco (fonte da verdade de negócio) e Firebase Auth (identidade).
- * Depende das portas (hexagonal); adapters injetados pelo módulo.
- */
 @Injectable()
 export class UserSyncService {
   constructor(
@@ -23,10 +19,6 @@ export class UserSyncService {
     private readonly firebaseUserSync: IFirebaseUserSync,
   ) {}
 
-  /**
-   * Busca usuário no Firebase e atualiza no banco apenas dados básicos (email, name).
-   * Preserva role e status do banco. Não cria usuário no banco se não existir.
-   */
   async syncFromFirebase(firebaseUid: string): Promise<UserEntity | null> {
     const dbUser = await this.repo.findByFirebaseUid(firebaseUid);
     if (!dbUser) return null;
@@ -55,9 +47,6 @@ export class UserSyncService {
     }
   }
 
-  /**
-   * Reflete alterações do banco no Firebase (disabled, displayName, email, password).
-   */
   async syncToFirebase(
     firebaseUid: string,
     payload: UpdateFirebaseUserInput,
@@ -66,18 +55,12 @@ export class UserSyncService {
     await this.firebaseUserSync.updateUser(firebaseUid, payload);
   }
 
-  /**
-   * Cria usuário no Firebase Auth (usado ao criar usuário no sistema: DB primeiro, depois este método).
-   */
   async createInFirebase(
     input: CreateFirebaseUserInput,
   ): Promise<{ uid: string }> {
     return this.firebaseUserSync.createUser(input);
   }
 
-  /**
-   * Desabilita o usuário no Firebase (sync ao desativar ou deletar no banco).
-   */
   async disableInFirebase(firebaseUid: string): Promise<void> {
     await this.firebaseUserSync.disableInFirebase(firebaseUid);
   }

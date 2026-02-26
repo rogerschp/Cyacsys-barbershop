@@ -21,17 +21,12 @@ export class AuthService {
     private readonly userService: UserService,
   ) {}
 
-  /**
-   * Autentica com Firebase; só aceita se o usuário existir no banco (criado pelo sistema)
-   * e estiver ACTIVE. Em seguida sincroniza dados básicos Firebase → banco (email, name).
-   */
   async authenticateWithUserCredentials(
     authLoginDto: AuthLoginDto,
   ): Promise<AuthLoginResponseDto> {
     const tokens =
       await this.authProvider.authenticateWithCredentials(authLoginDto);
     const decoded = await this.tokenVerifier.verifyIdToken(tokens.idToken);
-    // Database is source of truth: validate user exists before allowing login
     await this.userService.validateUserExists(decoded.uid);
     await this.userService.syncUserWithFirebase(decoded.uid);
     return tokens;

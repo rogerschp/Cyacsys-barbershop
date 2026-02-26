@@ -19,7 +19,6 @@ export class UpdateUserDto {
   @IsEnum(Role)
   role?: Role;
 
-  /** Nova senha; ao alterar, é hasheada no banco e sincronizada no Firebase. */
   @ApiProperty({ required: false, minLength: 6 })
   @IsOptional()
   @IsString()

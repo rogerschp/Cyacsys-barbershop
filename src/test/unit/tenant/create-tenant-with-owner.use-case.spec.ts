@@ -5,7 +5,6 @@ import { TenantRepository } from 'src/repository/tenant/tenant.repository';
 import { TenantEntity } from 'src/modules/tenant/entities/tenant.entity';
 import { TenantStatus } from 'src/modules/tenant/entities/tenant-status.enum';
 import { getDataSourceToken } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
 
 describe('CreateTenantWithOwnerUseCase', () => {
   let useCase: CreateTenantWithOwnerUseCase;

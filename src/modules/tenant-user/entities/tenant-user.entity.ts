@@ -13,10 +13,6 @@ import { UserEntity } from '../../user/entities/user.entity';
 import { TenantUserRole } from './tenant-user-role.enum';
 import { TenantUserStatus } from './tenant-user-status.enum';
 
-/**
- * Tabela pivot: vínculo usuário ↔ tenant com papel e status no tenant.
- * Índice único (tenantId, userId) evita duplicidade de vínculo.
- */
 @Entity('tenant_users')
 @Index('UQ_tenant_users_tenant_id_user_id', ['tenantId', 'userId'], {
   unique: true,

@@ -6,15 +6,10 @@ import {
   UpdateFirebaseUserInput,
 } from './interfaces/firebase-user-sync.interface';
 
-/** Adapter Firebase Admin para IFirebaseUserSync (porta de identidade – arquitetura hexagonal). */
 @Injectable()
 export class FirebaseUserSyncService implements IFirebaseUserSync {
   private readonly logger = new Logger(FirebaseUserSyncService.name);
 
-  /**
-   * Cria o usuário no Firebase e retorna o uid para gravar no banco.
-   * @throws ConflictException se o email já existir no Firebase (usuário não foi criado pelo sistema)
-   */
   async createUser(input: CreateFirebaseUserInput): Promise<{ uid: string }> {
     try {
       const userRecord = await admin.auth().createUser({
@@ -44,9 +39,6 @@ export class FirebaseUserSyncService implements IFirebaseUserSync {
     }
   }
 
-  /**
-   * Busca o usuário no Firebase Auth (para sync com o banco). Retorna DTO da porta (sem dependência de Firebase no domínio).
-   */
   async getUser(
     uid: string,
   ): Promise<{ uid: string; email?: string; displayName?: string }> {
@@ -58,9 +50,6 @@ export class FirebaseUserSyncService implements IFirebaseUserSync {
     };
   }
 
-  /**
-   * Atualiza o usuário no Firebase (sync com o banco: status → disabled, nome, senha).
-   */
   async updateUser(uid: string, input: UpdateFirebaseUserInput): Promise<void> {
     const updates: admin.auth.UpdateRequest = {};
     if (input.disabled !== undefined) updates.disabled = input.disabled;
@@ -78,9 +67,6 @@ export class FirebaseUserSyncService implements IFirebaseUserSync {
     }
   }
 
-  /**
-   * Desabilita o usuário no Firebase Auth (sync ao desativar/deletar no banco).
-   */
   async disableInFirebase(uid: string): Promise<void> {
     await this.updateUser(uid, { disabled: true });
   }

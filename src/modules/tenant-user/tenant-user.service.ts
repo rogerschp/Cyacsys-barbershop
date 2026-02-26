@@ -15,10 +15,6 @@ import {
   TENANT_USER_REPOSITORY,
 } from './interfaces/tenant-user-repository.interface';
 
-/**
- * Serviço do vínculo tenant–usuário. Base da autorização por tenant
- * (quem pode fazer o quê em qual tenant).
- */
 @Injectable()
 export class TenantUserService {
   constructor(
@@ -28,10 +24,6 @@ export class TenantUserService {
     private readonly userService: UserService,
   ) {}
 
-  /**
-   * Vincula um usuário a um tenant com o papel indicado.
-   * Garante que tenant e usuário existem; evita duplicidade (unique na tabela).
-   */
   async addUserToTenant(
     userId: string,
     tenantId: string,

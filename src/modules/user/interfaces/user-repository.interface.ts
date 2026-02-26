@@ -2,11 +2,6 @@ import { UserEntity } from '../entities/user.entity';
 import { Role } from '../../../common/enums/role.enum';
 import { UserStatus } from '../entities/user-status.enum';
 
-/**
- * Interface de persistência de usuário (porta driven – arquitetura hexagonal).
- * O caso de uso (UserService) depende desta interface; o adapter (TypeORM) implementa.
- */
-
 export interface CreateUserPortInput {
   email: string;
   name: string;

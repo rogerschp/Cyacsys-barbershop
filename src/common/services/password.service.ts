@@ -4,7 +4,6 @@ import { IPasswordHasher } from '../interfaces/password-hasher.interface';
 
 const SALT_ROUNDS = 10;
 
-/** Adapter bcryptjs para IPasswordHasher (porta de hash – arquitetura hexagonal). JavaScript puro, sem deps nativas (evita erro no Docker). */
 @Injectable()
 export class PasswordService implements IPasswordHasher {
   async hash(plainPassword: string): Promise<string> {

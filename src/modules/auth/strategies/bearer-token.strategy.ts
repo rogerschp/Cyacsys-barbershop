@@ -13,7 +13,6 @@ import {
 
 const BEARER_PREFIX = 'Bearer ';
 
-/** Payload anexado ao request: token Firebase + usuário do banco (fonte da verdade). */
 export type RequestUser = IDecodedToken & { dbUser: UserEntity };
 
 @Injectable()

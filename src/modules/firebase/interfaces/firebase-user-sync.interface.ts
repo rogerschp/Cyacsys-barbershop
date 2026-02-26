@@ -1,8 +1,3 @@
-/**
- * Interface para operações de usuário no Firebase Auth (porta driven – arquitetura hexagonal).
- * O caso de uso (UserSync / UserService) depende desta interface; o adapter (Firebase Admin) implementa.
- */
-
 export interface CreateFirebaseUserInput {
   email: string;
   password: string;

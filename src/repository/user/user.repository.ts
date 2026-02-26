@@ -10,7 +10,6 @@ import {
   UpdateUserPortInput,
 } from '../../modules/user/interfaces/user-repository.interface';
 
-/** Adapter TypeORM para IUserRepository (porta de persistência – arquitetura hexagonal). */
 @Injectable()
 export class UserRepository implements IUserRepository {
   constructor(

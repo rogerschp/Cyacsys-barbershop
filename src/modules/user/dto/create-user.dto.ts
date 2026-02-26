@@ -20,7 +20,6 @@ export class CreateUserDto {
   @IsNotEmpty()
   name: string;
 
-  /** Senha para criar o usuário no Firebase (sync após criar no banco). */
   @ApiProperty({ example: 'senhaSegura123', minLength: 6 })
   @IsString()
   @MinLength(6, { message: 'Password must be at least 6 characters' })

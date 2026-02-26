@@ -49,7 +49,6 @@ export class RolesGuard implements CanActivate {
     return request.user;
   }
 
-  /** Papel vem sempre do banco (fonte da verdade), não do token. */
   private resolveUserRole(
     context: ExecutionContext,
     requestUser: RequestUser,
