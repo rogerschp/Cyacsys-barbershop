@@ -1,9 +1,14 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { TenantRepository } from '../../repository/tenant/tenant.repository';
+import {
+  normalizeSlug,
+  isValidSlugFormat,
+} from '../../common/utils/slug.utils';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { ValidateSlugDto } from './dto/validate-slug.dto';
@@ -13,16 +18,34 @@ export class TenantService {
   constructor(private readonly repo: TenantRepository) {}
 
   async create(dto: CreateTenantDto) {
-    const exists = await this.repo.findBySlug(dto.slug);
-    if (exists) {
-      throw new BadRequestException('Slug already in use');
+    const rawSlug = dto.slug ?? dto.name;
+    const slug = normalizeSlug(rawSlug);
+
+    if (!slug) {
+      throw new BadRequestException(
+        'Could not generate a valid slug from name',
+      );
+    }
+    if (!isValidSlugFormat(slug)) {
+      throw new BadRequestException(
+        'Slug must be 3-100 chars, lowercase letters, numbers and single hyphens',
+      );
     }
 
-    return this.repo.create(dto);
+    const exists = await this.repo.existsBySlug(slug);
+    if (exists) {
+      throw new ConflictException('Slug already in use');
+    }
+
+    return this.repo.create({ ...dto, slug });
   }
 
   async validateSlug(dto: ValidateSlugDto) {
-    const exists = await this.repo.findBySlug(dto.slug);
+    const slug = normalizeSlug(dto.slug);
+    if (!slug || !isValidSlugFormat(slug)) {
+      return { available: false, reason: 'invalid_format' };
+    }
+    const exists = await this.repo.existsBySlug(slug);
     return { available: !exists };
   }
 
@@ -35,19 +58,12 @@ export class TenantService {
   async update(id: string, dto: UpdateTenantDto) {
     const tenant = await this.repo.findById(id);
     if (!tenant) throw new NotFoundException('Tenant not found');
-
-    if (dto.slug && dto.slug !== tenant.slug) {
-      const slugExists = await this.repo.findBySlug(dto.slug);
-      if (slugExists) throw new BadRequestException('Slug already in use');
-    }
-
     return this.repo.update(id, dto);
   }
 
   async remove(id: string) {
     const tenant = await this.repo.findById(id);
     if (!tenant) throw new NotFoundException('Tenant not found');
-
     return this.repo.softDelete(id);
   }
 

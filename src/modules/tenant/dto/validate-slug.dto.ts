@@ -1,8 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class ValidateSlugDto {
-  @ApiProperty({ example: 'barbearia-do-vitinho' })
+  @ApiProperty({
+    example: 'barbearia-do-vitinho',
+    description: 'Slug a validar (será normalizado no servidor)',
+  })
   @IsString()
   @IsNotEmpty()
   slug: string;
