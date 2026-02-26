@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { AuthLoginResponseDto } from './dto/auth-login-response.dto';
@@ -17,6 +17,18 @@ export class AuthController {
 
   @Post('login')
   @ApiOperation({ summary: 'Login com email e senha' })
+  @ApiBody({ type: AuthLoginDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Login realizado com sucesso',
+    type: AuthLoginResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Dados inválidos' })
+  @ApiResponse({ status: 401, description: 'Credenciais inválidas' })
+  @ApiResponse({
+    status: 403,
+    description: 'Usuário não encontrado no banco ou inativo',
+  })
   async login(
     @Body() authLoginDto: AuthLoginDto,
   ): Promise<AuthLoginResponseDto> {
@@ -25,6 +37,20 @@ export class AuthController {
 
   @Post('refresh')
   @ApiOperation({ summary: 'Renovar idToken usando refresh token' })
+  @ApiBody({ type: AuthRefreshDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Token renovado com sucesso',
+    type: AuthRefreshResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Refresh token ausente ou inválido',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Refresh token expirado ou inválido',
+  })
   async refresh(
     @Body() authRefreshDto: AuthRefreshDto,
   ): Promise<AuthRefreshResponseDto> {
@@ -34,6 +60,12 @@ export class AuthController {
   @Post('logout')
   @UseGuards(BearerAuthGuard)
   @ApiOperation({ summary: 'Logout (revoga refresh tokens do usuário)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Logout realizado com sucesso',
+    type: AuthLogoutResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Token ausente ou inválido' })
   async logout(
     @Req() req: Request & { user: RequestUser },
   ): Promise<AuthLogoutResponseDto> {

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
 import {
   Entity,
   Column,
@@ -37,6 +38,22 @@ export class UserEntity {
   @Column()
   @ApiProperty({ example: 'João Silva', description: 'Nome do usuário' })
   name: string;
+
+  /**
+   * Hash bcrypt da senha (nunca armazenamos senha em texto claro).
+   * Por que persistir o hash no banco (arquitetura hexagonal + fonte da verdade):
+   * - O banco é a fonte da verdade: o usuário foi criado pelo sistema com senha obrigatória;
+   *   guardar o hash garante que a “credencial” existe no nosso domínio e permite
+   *   re-sincronizar ou trocar senha no Firebase sem depender só de estado externo.
+   * - Segurança: em caso de vazamento do DB, apenas hashes são expostos (bcrypt é
+   *   one-way); o login continua sendo feito via Firebase (que usa a senha em texto só no fluxo).
+   * - Uso futuro: confirmação de ações sensíveis ou “verificar senha” sem chamar Firebase
+   *   (ex.: trocar email) pode usar compare(plain, passwordHash) no caso de negócio.
+   * Nullable para compatibilidade com migrações; novos usuários sempre têm hash.
+   */
+  @Column({ name: 'password_hash', nullable: true })
+  @Exclude()
+  passwordHash: string | null;
 
   @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE })
   @ApiProperty({

@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  MinLength,
 } from 'class-validator';
 import { Role } from '../../../common/enums/role.enum';
 
@@ -19,13 +20,11 @@ export class CreateUserDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({
-    description: 'UID do Firebase Auth; preenchido ao vincular login',
-    required: false,
-  })
-  @IsOptional()
+  /** Senha para criar o usuário no Firebase (sync após criar no banco). */
+  @ApiProperty({ example: 'senhaSegura123', minLength: 6 })
   @IsString()
-  firebaseUid?: string | null;
+  @MinLength(6, { message: 'Password must be at least 6 characters' })
+  password: string;
 
   @ApiProperty({ enum: Role, required: false })
   @IsOptional()

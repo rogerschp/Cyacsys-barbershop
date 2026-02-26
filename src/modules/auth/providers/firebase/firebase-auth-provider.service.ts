@@ -8,7 +8,7 @@ import { AuthLoginDto } from '../../dto/auth-login.dto';
 import { AuthLoginResponseDto } from '../../dto/auth-login-response.dto';
 import { AuthRefreshDto } from '../../dto/auth-refresh.dto';
 import { AuthRefreshResponseDto } from '../../dto/auth-refresh-response.dto';
-import { IAuthProvider } from '../../ports/auth-provider.interface';
+import { IAuthProvider } from '../../interfaces/auth-provider.interface';
 
 const FIREBASE_SIGN_IN_URL =
   'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword';

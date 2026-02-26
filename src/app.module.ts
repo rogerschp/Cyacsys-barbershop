@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { getTypeOrmConfig } from './config/typeorm.config';
 import { AuthModule } from './modules/auth/auth.module';
+import { FirebaseModule } from './modules/firebase/firebase.module';
 import { TenantModule } from './modules/tenant/tenant.module';
 import { UserModule } from './modules/user/user.module';
 
@@ -17,6 +18,7 @@ import { UserModule } from './modules/user/user.module';
         getTypeOrmConfig(configService),
       inject: [ConfigService],
     }),
+    FirebaseModule,
     AuthModule,
     TenantModule,
     UserModule,

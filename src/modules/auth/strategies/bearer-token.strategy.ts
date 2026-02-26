@@ -5,11 +5,11 @@ import { Strategy } from 'passport-custom';
 import { UserEntity } from '../../user/entities/user.entity';
 import { UserStatus } from '../../user/entities/user-status.enum';
 import { UserService } from '../../user/user.service';
-import { IDecodedToken } from '../ports/decoded-token.interface';
+import { IDecodedToken } from '../interfaces/decoded-token.interface';
 import {
   ITokenVerifier,
   TOKEN_VERIFIER,
-} from '../ports/token-verifier.interface';
+} from '../interfaces/token-verifier.interface';
 
 const BEARER_PREFIX = 'Bearer ';
 

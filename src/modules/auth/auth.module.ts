@@ -5,9 +5,8 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { BearerAuthGuard } from './guards/bearer-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
-import { AUTH_PROVIDER } from './ports/auth-provider.interface';
-import { TOKEN_VERIFIER } from './ports/token-verifier.interface';
-import { FirebaseAppInitializer } from './providers/firebase/firebase-app.initializer';
+import { AUTH_PROVIDER } from './interfaces/auth-provider.interface';
+import { TOKEN_VERIFIER } from './interfaces/token-verifier.interface';
 import { FirebaseAuthProvider } from './providers/firebase/firebase-auth-provider.service';
 import { FirebaseTokenVerifier } from './providers/firebase/firebase-token-verifier.service';
 import { BearerTokenStrategy } from './strategies/bearer-token.strategy';
@@ -16,7 +15,6 @@ import { BearerTokenStrategy } from './strategies/bearer-token.strategy';
   imports: [PassportModule, UserModule],
   controllers: [AuthController],
   providers: [
-    FirebaseAppInitializer,
     { provide: TOKEN_VERIFIER, useClass: FirebaseTokenVerifier },
     { provide: AUTH_PROVIDER, useClass: FirebaseAuthProvider },
     AuthService,

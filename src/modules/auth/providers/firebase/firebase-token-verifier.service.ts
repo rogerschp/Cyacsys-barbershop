@@ -1,7 +1,7 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import * as admin from 'firebase-admin';
-import { IDecodedToken } from '../../ports/decoded-token.interface';
-import { ITokenVerifier } from '../../ports/token-verifier.interface';
+import { IDecodedToken } from '../../interfaces/decoded-token.interface';
+import { ITokenVerifier } from '../../interfaces/token-verifier.interface';
 
 @Injectable()
 export class FirebaseTokenVerifier implements ITokenVerifier {

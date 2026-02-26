@@ -1,20 +1,17 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
-import { UserStatus } from '../user/entities/user-status.enum';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { AuthLoginResponseDto } from './dto/auth-login-response.dto';
 import { AuthRefreshDto } from './dto/auth-refresh.dto';
 import { AuthRefreshResponseDto } from './dto/auth-refresh-response.dto';
-import { AUTH_PROVIDER, IAuthProvider } from './ports/auth-provider.interface';
+import {
+  AUTH_PROVIDER,
+  IAuthProvider,
+} from './interfaces/auth-provider.interface';
 import {
   TOKEN_VERIFIER,
   ITokenVerifier,
-} from './ports/token-verifier.interface';
+} from './interfaces/token-verifier.interface';
 
 @Injectable()
 export class AuthService {
@@ -25,8 +22,8 @@ export class AuthService {
   ) {}
 
   /**
-   * Autentica com Firebase; em seguida garante que o usuário existe no banco (fonte da verdade)
-   * e que está ACTIVE. Se inativo/suspenso, nega o login.
+   * Autentica com Firebase; só aceita se o usuário existir no banco (criado pelo sistema)
+   * e estiver ACTIVE. Em seguida sincroniza dados básicos Firebase → banco (email, name).
    */
   async authenticateWithUserCredentials(
     authLoginDto: AuthLoginDto,
@@ -34,15 +31,9 @@ export class AuthService {
     const tokens =
       await this.authProvider.authenticateWithCredentials(authLoginDto);
     const decoded = await this.tokenVerifier.verifyIdToken(tokens.idToken);
-    const email = decoded.email ?? authLoginDto.email ?? '';
-    const user = await this.userService.findOrCreateFromFirebase(
-      decoded.uid,
-      email,
-      (decoded as { name?: string }).name,
-    );
-    if (user.status !== UserStatus.ACTIVE) {
-      throw new ForbiddenException('User is not active. Access denied.');
-    }
+    // Database is source of truth: validate user exists before allowing login
+    await this.userService.validateUserExists(decoded.uid);
+    await this.userService.syncUserWithFirebase(decoded.uid);
     return tokens;
   }
 

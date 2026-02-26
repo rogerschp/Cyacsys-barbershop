@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 import { Role } from '../../../common/enums/role.enum';
 import { UserStatus } from '../entities/user-status.enum';
 
@@ -18,4 +18,11 @@ export class UpdateUserDto {
   @IsOptional()
   @IsEnum(Role)
   role?: Role;
+
+  /** Nova senha; ao alterar, é hasheada no banco e sincronizada no Firebase. */
+  @ApiProperty({ required: false, minLength: 6 })
+  @IsOptional()
+  @IsString()
+  @MinLength(6, { message: 'Password must be at least 6 characters' })
+  password?: string;
 }
