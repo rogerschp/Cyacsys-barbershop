@@ -1,13 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  INestApplication,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { INestApplication, NotFoundException } from '@nestjs/common';
 import * as request from 'supertest';
 import { TenantController } from 'src/modules/tenant/tenant.controller';
 import { TenantService } from 'src/modules/tenant/tenant.service';
 import { TenantEntity } from 'src/modules/tenant/entities/tenant.entity';
+import { TenantStatus } from 'src/modules/tenant/entities/tenant-status.enum';
+import { ConflictException } from '@nestjs/common';
 
 describe('TenantController (HTTP)', () => {
   let app: INestApplication;
@@ -17,6 +15,7 @@ describe('TenantController (HTTP)', () => {
     id: 'uuid-123',
     slug: 'barbearia-do-vitinho',
     name: 'Barbearia do Vitinho',
+    status: TenantStatus.ACTIVE,
     createdAt: new Date('2021-01-01'),
     updatedAt: new Date('2021-01-01'),
     deletedAt: undefined,
@@ -68,7 +67,9 @@ describe('TenantController (HTTP)', () => {
         .expect(200)
         .expect((res) => {
           expect(res.body).toEqual({ available: false });
-          expect(tenantService.validateSlug).toHaveBeenCalled();
+          expect(tenantService.validateSlug).toHaveBeenCalledWith({
+            slug: 'barbearia-do-vitinho',
+          });
         });
     });
 
@@ -85,12 +86,27 @@ describe('TenantController (HTTP)', () => {
     });
   });
 
-  describe('GET /tenants/:slug', () => {
+  describe('GET /tenants/by-id/:id', () => {
+    it('deve retornar 200 e o tenant quando o id existe', () => {
+      tenantService.findById.mockResolvedValue(mockTenant);
+
+      return request(app.getHttpServer())
+        .get('/tenants/by-id/uuid-123')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('id', 'uuid-123');
+          expect(res.body).toHaveProperty('slug', 'barbearia-do-vitinho');
+          expect(tenantService.findById).toHaveBeenCalledWith('uuid-123');
+        });
+    });
+  });
+
+  describe('GET /tenants/by-slug/:slug', () => {
     it('deve retornar 200 e o tenant quando o slug existe', () => {
       tenantService.findBySlug.mockResolvedValue(mockTenant);
 
       return request(app.getHttpServer())
-        .get('/tenants/barbearia-do-vitinho')
+        .get('/tenants/by-slug/barbearia-do-vitinho')
         .expect(200)
         .expect((res) => {
           expect(res.body).toHaveProperty('slug', 'barbearia-do-vitinho');
@@ -106,7 +122,7 @@ describe('TenantController (HTTP)', () => {
       tenantService.findBySlug.mockResolvedValue(null);
 
       return request(app.getHttpServer())
-        .get('/tenants/slug-inexistente')
+        .get('/tenants/by-slug/slug-inexistente')
         .expect(200)
         .expect((res) => {
           expect(res.body).toEqual({});
@@ -133,15 +149,15 @@ describe('TenantController (HTTP)', () => {
         });
     });
 
-    it('deve retornar 400 quando o slug já está em uso', () => {
+    it('deve retornar 409 quando o slug já está em uso', () => {
       tenantService.create.mockRejectedValue(
-        new BadRequestException('Slug already in use'),
+        new ConflictException('Slug already in use'),
       );
 
       return request(app.getHttpServer())
         .post('/tenants')
         .send({ name: 'Outra', slug: 'barbearia-do-vitinho' })
-        .expect(400);
+        .expect(409);
     });
   });
 

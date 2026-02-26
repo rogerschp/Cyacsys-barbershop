@@ -18,11 +18,16 @@ export class TenantController {
   constructor(private readonly tenantService: TenantService) {}
 
   @Get('validate-slug')
-  validateSlug(@Query('slug') slug: ValidateSlugDto) {
-    return this.tenantService.validateSlug(slug);
+  validateSlug(@Query() query: ValidateSlugDto) {
+    return this.tenantService.validateSlug(query);
   }
 
-  @Get(':slug')
+  @Get('by-id/:id')
+  findOne(@Param('id') id: string) {
+    return this.tenantService.findById(id);
+  }
+
+  @Get('by-slug/:slug')
   findBySlug(@Param('slug') slug: string) {
     return this.tenantService.findBySlug(slug);
   }
@@ -30,11 +35,6 @@ export class TenantController {
   @Post()
   create(@Body() dto: CreateTenantDto) {
     return this.tenantService.create(dto);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tenantService.findById(id);
   }
 
   @Patch(':id')

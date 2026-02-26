@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TenantEntity } from '../../modules/tenant/entities/tenant.entity';
+import { TenantStatus } from '../../modules/tenant/entities/tenant-status.enum';
 import { CreateTenantDto } from 'src/modules/tenant/dto/create-tenant.dto';
 import { UpdateTenantDto } from 'src/modules/tenant/dto/update-tenant.dto';
 
@@ -12,13 +13,26 @@ export class TenantRepository {
     private readonly repo: Repository<TenantEntity>,
   ) {}
 
-  create(dto: CreateTenantDto) {
-    const entity = this.repo.create(dto);
+  create(dto: CreateTenantDto & { status?: TenantStatus }) {
+    const entity = this.repo.create({
+      ...dto,
+      status: dto.status ?? TenantStatus.ACTIVE,
+    });
     return this.repo.save(entity);
   }
 
+  /** Busca tenant por slug (apenas não deletados). Para roteamento/uso público. */
   findBySlug(slug: string) {
     return this.repo.findOne({ where: { slug } });
+  }
+
+  /** Verifica se slug já existe em qualquer tenant (incluindo soft-deleted). Regra: nunca reutilizar slug. */
+  existsBySlug(slug: string) {
+    return this.repo
+      .createQueryBuilder('t')
+      .withDeleted()
+      .where('t.slug = :slug', { slug })
+      .getExists();
   }
 
   findById(id: string) {

@@ -1,6 +1,22 @@
-version: "3.9"
-
 services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: cyacsys-barbershop-api
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+  #   networks:
+  #     - cyacsys-barbershop-network
+
   postgres:
     image: postgres:16-alpine
     container_name: barber-db
@@ -12,6 +28,12 @@ services:
       POSTGRES_PASSWORD: barber
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U barber -d barber"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
 volumes:
   pgdata:

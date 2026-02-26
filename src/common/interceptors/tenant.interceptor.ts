@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Injectable,
   NestInterceptor,
   ExecutionContext,
@@ -7,6 +8,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { TenantService } from 'src/modules/tenant/tenant.service';
+import { TenantStatus } from 'src/modules/tenant/entities/tenant-status.enum';
 
 @Injectable()
 export class TenantInterceptor implements NestInterceptor {
@@ -30,6 +32,10 @@ export class TenantInterceptor implements NestInterceptor {
 
     if (!tenant) {
       throw new NotFoundException('Tenant not found');
+    }
+
+    if (tenant.status !== TenantStatus.ACTIVE) {
+      throw new ForbiddenException('Tenant is not active');
     }
 
     req.tenant = tenant;

@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TenantRepository } from 'src/repository/tenant/tenant.repository';
 import { TenantEntity } from 'src/modules/tenant/entities/tenant.entity';
+import { TenantStatus } from 'src/modules/tenant/entities/tenant-status.enum';
 
 describe('TenantRepository', () => {
   let repository: TenantRepository;
@@ -12,9 +13,16 @@ describe('TenantRepository', () => {
     id: 'uuid-123',
     slug: 'barbearia-do-vitinho',
     name: 'Barbearia do Vitinho',
+    status: TenantStatus.ACTIVE,
     createdAt: new Date('2021-01-01'),
     updatedAt: new Date('2021-01-01'),
     deletedAt: undefined,
+  };
+
+  const mockQueryBuilder = {
+    withDeleted: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    getExists: jest.fn().mockResolvedValue(false),
   };
 
   beforeEach(async () => {
@@ -23,6 +31,7 @@ describe('TenantRepository', () => {
       create: jest.fn(),
       save: jest.fn(),
       softDelete: jest.fn(),
+      createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -94,7 +103,7 @@ describe('TenantRepository', () => {
   });
 
   describe('create', () => {
-    it('deve criar e salvar o tenant', async () => {
+    it('deve criar e salvar o tenant com status ACTIVE por padrão', async () => {
       const dto = {
         name: 'Barbearia do Vitinho',
         slug: 'barbearia-do-vitinho',
@@ -104,9 +113,35 @@ describe('TenantRepository', () => {
 
       const result = await repository.create(dto);
 
-      expect(typeOrmRepo.create).toHaveBeenCalledWith(dto);
+      expect(typeOrmRepo.create).toHaveBeenCalledWith({
+        ...dto,
+        status: TenantStatus.ACTIVE,
+      });
       expect(typeOrmRepo.save).toHaveBeenCalledWith(mockTenant);
       expect(result).toEqual(mockTenant);
+    });
+  });
+
+  describe('existsBySlug', () => {
+    it('deve usar withDeleted e retornar true quando slug existe', async () => {
+      mockQueryBuilder.getExists.mockResolvedValueOnce(true);
+
+      const result = await repository.existsBySlug('barbearia-do-vitinho');
+
+      expect(typeOrmRepo.createQueryBuilder).toHaveBeenCalledWith('t');
+      expect(mockQueryBuilder.withDeleted).toHaveBeenCalled();
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('t.slug = :slug', {
+        slug: 'barbearia-do-vitinho',
+      });
+      expect(result).toBe(true);
+    });
+
+    it('deve retornar false quando slug não existe', async () => {
+      mockQueryBuilder.getExists.mockResolvedValueOnce(false);
+
+      const result = await repository.existsBySlug('slug-novo');
+
+      expect(result).toBe(false);
     });
   });
 

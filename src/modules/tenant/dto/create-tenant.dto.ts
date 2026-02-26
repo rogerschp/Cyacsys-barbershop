@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateTenantDto {
   @ApiProperty({ example: 'Barbearia do Vitinho' })
@@ -7,12 +7,13 @@ export class CreateTenantDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ example: 'barbearia-do-vitinho' })
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(3)
-  @Matches(/^[a-z0-9-]+$/, {
-    message: 'Slug must contain only lowercase letters, numbers and hyphens',
+  @ApiProperty({
+    example: 'barbearia-do-vitinho',
+    required: false,
+    description:
+      'Opcional. Se omitido, é gerado a partir do nome (normalizado). Se informado, será normalizado no servidor. Imutável após criação.',
   })
-  slug: string;
+  @IsOptional()
+  @IsString()
+  slug?: string;
 }
