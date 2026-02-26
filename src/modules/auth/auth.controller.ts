@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -42,6 +50,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Renovar idToken usando refresh token' })
   @ApiBody({ type: AuthRefreshDto })
   @ApiResponse({
@@ -65,6 +74,7 @@ export class AuthController {
 
   @Post('logout')
   @UseGuards(BearerAuthGuard)
+  @HttpCode(HttpStatus.OK)
   @ApiBearerAuth('bearer')
   @ApiOperation({ summary: 'Logout (revoga refresh tokens do usuário)' })
   @ApiResponse({
