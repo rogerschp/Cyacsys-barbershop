@@ -1,26 +1,28 @@
 import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { TenantForbiddenException } from 'src/common/exceptions/tenant-forbidden.exception';
+import {
+  RequestWithTenantRole,
+  TenantRolesGuard,
+} from 'src/common/guards/tenant-roles.guard';
 import { TenantUserRole } from 'src/modules/tenant-user/entities/tenant-user-role.enum';
-import { TenantRolesGuard } from 'src/modules/tenant-user/guards/tenant-roles.guard';
-import { RequestWithTenant } from 'src/modules/tenant-user/guards/tenant-membership.guard';
 
 describe('TenantRolesGuard', () => {
   let guard: TenantRolesGuard;
   let reflector: Reflector;
 
   const createMockContext = (
-    overrides: Partial<RequestWithTenant> = {},
+    overrides: Partial<RequestWithTenantRole> = {},
   ): ExecutionContext => {
-    const request = {
-      user: { dbUser: { id: 'user-uuid' } as any, uid: 'firebase-uid' },
-      tenant: { id: 'tenant-uuid' } as any,
-      tenantMembership: { role: TenantUserRole.ADMIN } as any,
+    const request: RequestWithTenantRole = {
+      user: { dbUser: { id: 'user-uuid' } },
+      tenant: { id: 'tenant-uuid' },
+      tenantMembership: { role: TenantUserRole.ADMIN },
       url: '/tenants/tenant-uuid/members',
       path: '/tenants/tenant-uuid/members',
       method: 'POST',
       ...overrides,
-    } as RequestWithTenant;
+    };
     return {
       switchToHttp: () => ({ getRequest: () => request }),
       getHandler: () => ({}),
@@ -52,7 +54,7 @@ describe('TenantRolesGuard', () => {
       .spyOn(reflector, 'getAllAndOverride')
       .mockReturnValue([TenantUserRole.OWNER]);
     const ctx = createMockContext({
-      tenantMembership: { role: TenantUserRole.STAFF } as any,
+      tenantMembership: { role: TenantUserRole.STAFF },
     });
     let thrown: any;
     try {

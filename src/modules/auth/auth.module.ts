@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
+import { UserRolesGuard } from '../../common/guards/user-roles.guard';
 import { UserModule } from '../user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { BearerAuthGuard } from './guards/bearer-auth.guard';
-import { RolesGuard } from './guards/roles.guard';
 import { AUTH_PROVIDER } from './interfaces/auth-provider.interface';
 import { TOKEN_VERIFIER } from './interfaces/token-verifier.interface';
 import { FirebaseAuthProvider } from './providers/firebase/firebase-auth-provider.service';
@@ -20,8 +20,8 @@ import { BearerTokenStrategy } from './strategies/bearer-token.strategy';
     AuthService,
     BearerTokenStrategy,
     BearerAuthGuard,
-    RolesGuard,
+    UserRolesGuard,
   ],
-  exports: [AuthService, RolesGuard, BearerAuthGuard],
+  exports: [AuthService, UserRolesGuard, BearerAuthGuard],
 })
 export class AuthModule {}

@@ -5,10 +5,22 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { TenantForbiddenException } from '../../../common/exceptions/tenant-forbidden.exception';
-import { TenantUserRole } from '../entities/tenant-user-role.enum';
+import { TenantForbiddenException } from '../exceptions/tenant-forbidden.exception';
 import { TENANT_ROLES_KEY } from '../decorators/tenant-roles.decorator';
-import { RequestWithTenant } from './tenant-membership.guard';
+
+/**
+ * Contrato mínimo do request para o guard.
+ * O preenchimento de tenant e tenantMembership é responsabilidade do TenantInterceptor e TenantMembershipGuard.
+ */
+export interface RequestWithTenantRole {
+  user?: { dbUser?: { id: string } };
+  tenant?: { id: string };
+  tenantMembership?: { role: string };
+  url?: string;
+  path?: string;
+  originalUrl?: string;
+  method?: string;
+}
 
 @Injectable()
 export class TenantRolesGuard implements CanActivate {
@@ -22,7 +34,7 @@ export class TenantRolesGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<RequestWithTenant>();
+    const request = context.switchToHttp().getRequest<RequestWithTenantRole>();
     const user = request.user?.dbUser;
     const tenant = request.tenant;
     const membership = request.tenantMembership;
@@ -51,7 +63,7 @@ export class TenantRolesGuard implements CanActivate {
         userId: user.id,
         tenantId: tenant.id,
         role: undefined,
-        requiredRoles: requiredRoles as string[],
+        requiredRoles,
         path,
         method,
         reason: 'no_membership',
@@ -70,7 +82,7 @@ export class TenantRolesGuard implements CanActivate {
         userId: user.id,
         tenantId: tenant.id,
         role: membership.role,
-        requiredRoles: requiredRoles as string[],
+        requiredRoles,
         path,
         method,
       });
@@ -84,13 +96,11 @@ export class TenantRolesGuard implements CanActivate {
     return true;
   }
 
-  private getRequiredRoles(
-    context: ExecutionContext,
-  ): TenantUserRole[] | undefined {
-    return this.reflector.getAllAndOverride<TenantUserRole[]>(
-      TENANT_ROLES_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+  private getRequiredRoles(context: ExecutionContext): string[] | undefined {
+    return this.reflector.getAllAndOverride<string[]>(TENANT_ROLES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
   }
 
   private logStructuredWarn(payload: {

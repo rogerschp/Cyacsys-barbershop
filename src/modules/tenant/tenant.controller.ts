@@ -22,11 +22,11 @@ import {
 } from '@nestjs/swagger';
 import { Request } from 'express';
 import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor';
+import { TenantRoles } from '../../common/decorators/tenant-roles.decorator';
+import { TenantMembershipGuard } from '../../common/guards/tenant-membership.guard';
+import { TenantRolesGuard } from '../../common/guards/tenant-roles.guard';
 import { BearerAuthGuard } from '../auth/guards/bearer-auth.guard';
 import { RequestUser } from '../auth/strategies/bearer-token.strategy';
-import { TenantMembershipGuard } from '../tenant-user/guards/tenant-membership.guard';
-import { TenantRolesGuard } from '../tenant-user/guards/tenant-roles.guard';
-import { TenantRoles } from '../tenant-user/decorators/tenant-roles.decorator';
 import { TenantUserRole } from '../tenant-user/entities/tenant-user-role.enum';
 import { CreateTenantWithOwnerUseCase } from './use-cases/create-tenant-with-owner.use-case';
 import { CreateTenantDto } from './dto/create-tenant.dto';
