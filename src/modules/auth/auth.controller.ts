@@ -1,5 +1,11 @@
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { AuthLoginResponseDto } from './dto/auth-login-response.dto';
@@ -59,6 +65,7 @@ export class AuthController {
 
   @Post('logout')
   @UseGuards(BearerAuthGuard)
+  @ApiBearerAuth('bearer')
   @ApiOperation({ summary: 'Logout (revoga refresh tokens do usuário)' })
   @ApiResponse({
     status: 200,

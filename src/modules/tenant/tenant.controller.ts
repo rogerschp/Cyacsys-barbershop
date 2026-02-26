@@ -7,8 +7,12 @@ import {
   Patch,
   Post,
   Query,
+  Req,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiParam,
@@ -16,16 +20,25 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { TenantService } from './tenant.service';
+import { Request } from 'express';
+import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor';
+import { BearerAuthGuard } from '../auth/guards/bearer-auth.guard';
+import { RequestUser } from '../auth/strategies/bearer-token.strategy';
+import { TenantMembershipGuard } from '../tenant-user/guards/tenant-membership.guard';
+import { CreateTenantWithOwnerUseCase } from './use-cases/create-tenant-with-owner.use-case';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { ValidateSlugDto } from './dto/validate-slug.dto';
 import { TenantEntity } from './entities/tenant.entity';
+import { TenantService } from './tenant.service';
 
 @ApiTags('tenants')
 @Controller('tenants')
 export class TenantController {
-  constructor(private readonly tenantService: TenantService) {}
+  constructor(
+    private readonly tenantService: TenantService,
+    private readonly createTenantWithOwnerUseCase: CreateTenantWithOwnerUseCase,
+  ) {}
 
   @Get('validate-slug')
   @ApiOperation({ summary: 'Valida disponibilidade de slug' })
@@ -78,8 +91,39 @@ export class TenantController {
     return this.tenantService.create(dto);
   }
 
+  @Post('with-owner')
+  @UseGuards(BearerAuthGuard)
+  @ApiBearerAuth('bearer')
+  @ApiOperation({
+    summary: 'Cria tenant e vincula o usuário autenticado como OWNER',
+    description:
+      'Requer autenticação. Cria o tenant e o vínculo em tenant_users (role=OWNER) em uma única transação. Não altera UserEntity.',
+  })
+  @ApiBody({ type: CreateTenantDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Tenant criado com o usuário como OWNER',
+    type: TenantEntity,
+  })
+  @ApiResponse({ status: 400, description: 'Dados inválidos ou slug inválido' })
+  @ApiResponse({ status: 401, description: 'Não autenticado' })
+  @ApiResponse({ status: 409, description: 'Slug já em uso' })
+  async createWithOwner(
+    @Req() req: Request & { user: RequestUser },
+    @Body() dto: CreateTenantDto,
+  ) {
+    return this.createTenantWithOwnerUseCase.run(req.user.dbUser.id, dto);
+  }
+
   @Patch(':id')
-  @ApiOperation({ summary: 'Atualiza tenant' })
+  @UseGuards(BearerAuthGuard)
+  @UseInterceptors(TenantInterceptor)
+  @UseGuards(TenantMembershipGuard)
+  @ApiBearerAuth('bearer')
+  @ApiOperation({
+    summary: 'Atualiza tenant',
+    description: 'Requer ser membro ativo do tenant (Bearer + membership).',
+  })
   @ApiParam({ name: 'id', description: 'UUID do tenant' })
   @ApiBody({ type: UpdateTenantDto })
   @ApiResponse({
@@ -88,15 +132,32 @@ export class TenantController {
     type: TenantEntity,
   })
   @ApiResponse({ status: 404, description: 'Tenant não encontrado' })
+  @ApiResponse({ status: 401, description: 'Não autenticado' })
+  @ApiResponse({
+    status: 403,
+    description: 'Usuário não é membro ativo do tenant',
+  })
   update(@Param('id') id: string, @Body() dto: UpdateTenantDto) {
     return this.tenantService.update(id, dto);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Remove tenant (soft delete)' })
+  @UseGuards(BearerAuthGuard)
+  @UseInterceptors(TenantInterceptor)
+  @UseGuards(TenantMembershipGuard)
+  @ApiBearerAuth('bearer')
+  @ApiOperation({
+    summary: 'Remove tenant (soft delete)',
+    description: 'Requer ser membro ativo do tenant (Bearer + membership).',
+  })
   @ApiParam({ name: 'id', description: 'UUID do tenant' })
   @ApiResponse({ status: 200, description: 'Tenant removido' })
   @ApiResponse({ status: 404, description: 'Tenant não encontrado' })
+  @ApiResponse({ status: 401, description: 'Não autenticado' })
+  @ApiResponse({
+    status: 403,
+    description: 'Usuário não é membro ativo do tenant',
+  })
   remove(@Param('id') id: string) {
     return this.tenantService.remove(id);
   }

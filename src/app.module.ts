@@ -5,6 +5,7 @@ import { getTypeOrmConfig } from './config/typeorm.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { FirebaseModule } from './modules/firebase/firebase.module';
 import { TenantModule } from './modules/tenant/tenant.module';
+import { TenantUserModule } from './modules/tenant-user/tenant-user.module';
 import { UserModule } from './modules/user/user.module';
 
 @Module({
@@ -21,6 +22,7 @@ import { UserModule } from './modules/user/user.module';
     FirebaseModule,
     AuthModule,
     TenantModule,
+    TenantUserModule,
     UserModule,
   ],
   controllers: [],

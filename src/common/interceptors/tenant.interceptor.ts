@@ -1,14 +1,17 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-  BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { TenantService } from 'src/modules/tenant/tenant.service';
-import { TenantStatus } from 'src/modules/tenant/entities/tenant-status.enum';
+import { TenantService } from '../../modules/tenant/tenant.service';
+import { TenantStatus } from '../../modules/tenant/entities/tenant-status.enum';
+
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 @Injectable()
 export class TenantInterceptor implements NestInterceptor {
@@ -17,18 +20,26 @@ export class TenantInterceptor implements NestInterceptor {
   async intercept(context: ExecutionContext, next: CallHandler) {
     const req = context.switchToHttp().getRequest<any>();
 
+    const tenantId = req.params?.tenantId || req.params?.id;
     const slug =
       req.params?.slug ||
       req.headers?.['x-tenant'] ||
       req.headers?.['X-Tenant'];
 
-    if (!slug) {
-      throw new BadRequestException('Tenant not informed');
+    const identifier = tenantId ?? slug;
+
+    if (!identifier) {
+      throw new BadRequestException(
+        'Tenant not informed (use :tenantId, :slug, or header x-tenant)',
+      );
     }
 
-    const normalizedSlug = String(slug).toLowerCase().trim();
-
-    const tenant = await this.tenantService.findBySlug(normalizedSlug);
+    const isUuid = UUID_REGEX.test(String(identifier).trim());
+    const tenant = isUuid
+      ? await this.tenantService.findById(String(identifier).trim())
+      : await this.tenantService.findBySlug(
+          String(identifier).toLowerCase().trim(),
+        );
 
     if (!tenant) {
       throw new NotFoundException('Tenant not found');

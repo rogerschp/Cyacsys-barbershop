@@ -22,6 +22,6 @@ import { BearerTokenStrategy } from './strategies/bearer-token.strategy';
     BearerAuthGuard,
     RolesGuard,
   ],
-  exports: [AuthService, RolesGuard],
+  exports: [AuthService, RolesGuard, BearerAuthGuard],
 })
 export class AuthModule {}

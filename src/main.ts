@@ -19,6 +19,10 @@ async function bootstrap() {
     .setDescription('API for Cyacsys Barbershop')
     .setVersion('1.0')
     .addTag('barbershop')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      'bearer',
+    )
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
