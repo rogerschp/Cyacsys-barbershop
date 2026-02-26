@@ -11,7 +11,7 @@ import {
   RoleNotAuthorizedException,
 } from 'src/common/utils/auth-exceptions';
 import { ROLES_KEY } from '../decorators/roles.decorators';
-import { IDecodedToken } from '../ports/decoded-token.interface';
+import { RequestUser } from '../strategies/bearer-token.strategy';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -26,8 +26,8 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    const user = this.getAuthenticatedUser(context);
-    const userRole = await this.resolveUserRole(context, user);
+    const requestUser = this.getAuthenticatedUser(context);
+    const userRole = this.resolveUserRole(context, requestUser);
     this.validateUserRole(userRole, requiredRoles);
     return true;
   }
@@ -39,10 +39,8 @@ export class RolesGuard implements CanActivate {
     ]);
   }
 
-  private getAuthenticatedUser(context: ExecutionContext): IDecodedToken {
-    const request = context
-      .switchToHttp()
-      .getRequest<{ user: IDecodedToken }>();
+  private getAuthenticatedUser(context: ExecutionContext): RequestUser {
+    const request = context.switchToHttp().getRequest<{ user: RequestUser }>();
 
     if (!request.user) {
       throw new AuthenticationError('User not authenticated');
@@ -51,17 +49,18 @@ export class RolesGuard implements CanActivate {
     return request.user;
   }
 
-  private async resolveUserRole(
+  /** Papel vem sempre do banco (fonte da verdade), não do token. */
+  private resolveUserRole(
     context: ExecutionContext,
-    user: IDecodedToken,
-  ): Promise<Role> {
-    const roleFromToken = (user as IDecodedToken & { role?: Role }).role;
-    if (roleFromToken && Object.values(Role).includes(roleFromToken)) {
-      return roleFromToken;
+    requestUser: RequestUser,
+  ): Role {
+    const roleFromDb = requestUser.dbUser?.role;
+    if (roleFromDb && Object.values(Role).includes(roleFromDb)) {
+      return roleFromDb;
     }
     throw new RoleNotAuthorizedException(
       this.getRequiredRoles(context) ?? [],
-      'User has no role (token or DB)',
+      'User has no role in database',
     );
   }
 

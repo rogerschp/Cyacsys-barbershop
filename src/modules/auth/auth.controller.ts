@@ -7,8 +7,8 @@ import { AuthLogoutResponseDto } from './dto/auth-logout-response.dto';
 import { AuthRefreshDto } from './dto/auth-refresh.dto';
 import { AuthRefreshResponseDto } from './dto/auth-refresh-response.dto';
 import { BearerAuthGuard } from './guards/bearer-auth.guard';
-import { IDecodedToken } from './ports/decoded-token.interface';
 import { AuthService } from './auth.service';
+import { RequestUser } from './strategies/bearer-token.strategy';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -35,7 +35,7 @@ export class AuthController {
   @UseGuards(BearerAuthGuard)
   @ApiOperation({ summary: 'Logout (revoga refresh tokens do usuário)' })
   async logout(
-    @Req() req: Request & { user: IDecodedToken },
+    @Req() req: Request & { user: RequestUser },
   ): Promise<AuthLogoutResponseDto> {
     await this.authService.logout(req.user.uid);
     return { message: 'Logged out successfully' };

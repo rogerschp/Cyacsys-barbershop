@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
+import { UserModule } from '../user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { BearerAuthGuard } from './guards/bearer-auth.guard';
@@ -12,7 +13,7 @@ import { FirebaseTokenVerifier } from './providers/firebase/firebase-token-verif
 import { BearerTokenStrategy } from './strategies/bearer-token.strategy';
 
 @Module({
-  imports: [PassportModule],
+  imports: [PassportModule, UserModule],
   controllers: [AuthController],
   providers: [
     FirebaseAppInitializer,
