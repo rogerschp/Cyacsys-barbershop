@@ -5,61 +5,64 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Role } from 'src/common/enums/role.enum';
+import { Role } from '../enums/role.enum';
 import {
   AuthenticationError,
   RoleNotAuthorizedException,
-} from 'src/common/utils/auth-exceptions';
-import { ROLES_KEY } from '../decorators/roles.decorators';
-import { RequestUser } from '../strategies/bearer-token.strategy';
+} from '../utils/auth-exceptions';
+import { USER_ROLES_KEY } from '../decorators/user-roles.decorator';
+
+/**
+ * Contrato mínimo do request: user preenchido por BearerAuthGuard (ex.: BearerTokenStrategy).
+ */
+interface RequestWithUserRole {
+  user?: { dbUser?: { role: Role } };
+}
 
 @Injectable()
-export class RolesGuard implements CanActivate {
-  private readonly logger = new Logger(RolesGuard.name);
+export class UserRolesGuard implements CanActivate {
+  private readonly logger = new Logger(UserRolesGuard.name);
 
   constructor(private readonly reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredRoles = this.getRequiredRoles(context);
 
-    if (!requiredRoles || requiredRoles.length === 0) {
+    if (!requiredRoles?.length) {
       return true;
     }
 
-    const requestUser = this.getAuthenticatedUser(context);
-    const userRole = this.resolveUserRole(context, requestUser);
+    const request = context.switchToHttp().getRequest<RequestWithUserRole>();
+    const requestUser = request.user;
+
+    if (!requestUser) {
+      throw new AuthenticationError('User not authenticated');
+    }
+
+    const userRole = this.resolveUserRole(context, requestUser, requiredRoles);
     this.validateUserRole(userRole, requiredRoles);
     return true;
   }
 
   private getRequiredRoles(context: ExecutionContext): Role[] | undefined {
-    return this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+    return this.reflector.getAllAndOverride<Role[]>(USER_ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
   }
 
-  private getAuthenticatedUser(context: ExecutionContext): RequestUser {
-    const request = context.switchToHttp().getRequest<{ user: RequestUser }>();
-
-    if (!request.user) {
-      throw new AuthenticationError('User not authenticated');
-    }
-
-    return request.user;
-  }
-
   private resolveUserRole(
     context: ExecutionContext,
-    requestUser: RequestUser,
+    requestUser: RequestWithUserRole['user'],
+    requiredRoles: Role[],
   ): Role {
-    const roleFromDb = requestUser.dbUser?.role;
+    const roleFromDb = requestUser?.dbUser?.role;
     if (roleFromDb && Object.values(Role).includes(roleFromDb)) {
       return roleFromDb;
     }
     throw new RoleNotAuthorizedException(
-      this.getRequiredRoles(context) ?? [],
-      'User has no role in database',
+      requiredRoles,
+      requestUser?.dbUser?.role ?? 'none',
     );
   }
 

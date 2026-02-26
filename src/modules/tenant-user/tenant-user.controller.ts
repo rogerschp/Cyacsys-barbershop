@@ -16,23 +16,27 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { TenantRoles } from '../../common/decorators/tenant-roles.decorator';
+import { TenantMembershipGuard } from '../../common/guards/tenant-membership.guard';
+import { TenantRolesGuard } from '../../common/guards/tenant-roles.guard';
 import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor';
 import { BearerAuthGuard } from '../auth/guards/bearer-auth.guard';
 import { AddMemberToTenantDto } from './dto/add-member-to-tenant.dto';
 import { MemberResponseDto } from './dto/member-response.dto';
-import { TenantMembershipGuard } from './guards/tenant-membership.guard';
+import { TenantUserRole } from './entities/tenant-user-role.enum';
 import { TenantUserService } from './tenant-user.service';
 
 @ApiTags('tenant-members')
 @Controller('tenants/:tenantId/members')
 @UseGuards(BearerAuthGuard)
 @UseInterceptors(TenantInterceptor)
-@UseGuards(TenantMembershipGuard)
+@UseGuards(TenantMembershipGuard, TenantRolesGuard)
 @ApiBearerAuth('bearer')
 export class TenantUserController {
   constructor(private readonly tenantUserService: TenantUserService) {}
 
   @Post()
+  @TenantRoles(TenantUserRole.OWNER, TenantUserRole.ADMIN)
   @ApiOperation({
     summary: 'Vincula um usuário ao tenant',
     description:
@@ -92,6 +96,7 @@ export class TenantUserController {
   }
 
   @Delete(':userId')
+  @TenantRoles(TenantUserRole.OWNER, TenantUserRole.ADMIN)
   @ApiOperation({
     summary: 'Remove usuário do tenant',
     description: 'Desvincula o usuário do tenant (remove o registro na pivot).',

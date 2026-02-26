@@ -9,7 +9,8 @@ import { TenantStatus } from 'src/modules/tenant/entities/tenant-status.enum';
 import { ConflictException } from '@nestjs/common';
 import { BearerAuthGuard } from 'src/modules/auth/guards/bearer-auth.guard';
 import { TenantInterceptor } from 'src/common/interceptors/tenant.interceptor';
-import { TenantMembershipGuard } from 'src/modules/tenant-user/guards/tenant-membership.guard';
+import { TenantMembershipGuard } from 'src/common/guards/tenant-membership.guard';
+import { TenantRolesGuard } from 'src/common/guards/tenant-roles.guard';
 
 describe('TenantController (HTTP)', () => {
   let app: INestApplication;
@@ -61,6 +62,8 @@ describe('TenantController (HTTP)', () => {
       .overrideInterceptor(TenantInterceptor)
       .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
       .overrideGuard(TenantMembershipGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(TenantRolesGuard)
       .useValue({ canActivate: () => true })
       .compile();
 
