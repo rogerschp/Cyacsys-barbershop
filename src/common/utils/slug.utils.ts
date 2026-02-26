@@ -1,14 +1,3 @@
-/**
- * Utilidade compartilhada: normalização de string para formato slug (URL-friendly).
- * Entrada: "Barbearia do Vitinho!!!"
- * Saída: "barbearia-do-vitinho"
- *
- * - lowercase
- * - remover acentos
- * - remover caracteres especiais
- * - substituir espaços por "-"
- * - remover múltiplos "-"
- */
 const ACCENT_MAP: Record<string, string> = {
   à: 'a',
   á: 'a',
@@ -44,16 +33,10 @@ function removeAccents(str: string): string {
     .replace(/[^\x00-\x7F]/g, (c) => ACCENT_MAP[c] ?? c);
 }
 
-/** Slug válido: apenas a-z, 0-9 e hífen; não começa/termina com hífen. */
 export const SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
 export const SLUG_MIN_LENGTH = 3;
 export const SLUG_MAX_LENGTH = 100;
 
-/**
- * Normaliza uma string para formato de slug.
- * @param input Nome ou texto (ex.: "Barbearia do Vitinho!!!")
- * @returns Slug normalizado (ex.: "barbearia-do-vitinho") ou string vazia se inválido
- */
 export function normalizeSlug(input: string): string {
   if (!input || typeof input !== 'string') return '';
 
@@ -66,9 +49,6 @@ export function normalizeSlug(input: string): string {
   return s;
 }
 
-/**
- * Valida se uma string já está em formato de slug válido (após normalização).
- */
 export function isValidSlugFormat(slug: string): boolean {
   if (!slug || slug.length < SLUG_MIN_LENGTH || slug.length > SLUG_MAX_LENGTH)
     return false;

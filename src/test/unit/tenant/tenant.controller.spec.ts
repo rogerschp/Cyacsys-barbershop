@@ -3,13 +3,18 @@ import { INestApplication, NotFoundException } from '@nestjs/common';
 import * as request from 'supertest';
 import { TenantController } from 'src/modules/tenant/tenant.controller';
 import { TenantService } from 'src/modules/tenant/tenant.service';
+import { CreateTenantWithOwnerUseCase } from 'src/modules/tenant/use-cases/create-tenant-with-owner.use-case';
 import { TenantEntity } from 'src/modules/tenant/entities/tenant.entity';
 import { TenantStatus } from 'src/modules/tenant/entities/tenant-status.enum';
 import { ConflictException } from '@nestjs/common';
+import { BearerAuthGuard } from 'src/modules/auth/guards/bearer-auth.guard';
+import { TenantInterceptor } from 'src/common/interceptors/tenant.interceptor';
+import { TenantMembershipGuard } from 'src/modules/tenant-user/guards/tenant-membership.guard';
 
 describe('TenantController (HTTP)', () => {
   let app: INestApplication;
   let tenantService: jest.Mocked<TenantService>;
+  let createTenantWithOwnerUseCase: jest.Mocked<CreateTenantWithOwnerUseCase>;
 
   const mockTenant: TenantEntity = {
     id: 'uuid-123',
@@ -31,15 +36,33 @@ describe('TenantController (HTTP)', () => {
       validateSlug: jest.fn(),
     };
 
+    const mockCreateWithOwner = {
+      run: jest.fn(),
+    };
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [TenantController],
       providers: [
+        { provide: TenantService, useValue: mockService },
         {
-          provide: TenantService,
-          useValue: mockService,
+          provide: CreateTenantWithOwnerUseCase,
+          useValue: mockCreateWithOwner,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(BearerAuthGuard)
+      .useValue({
+        canActivate: (context: any) => {
+          const req = context.switchToHttp().getRequest();
+          req.user = { dbUser: { id: 'user-uuid-123' }, uid: 'firebase-uid' };
+          return true;
+        },
+      })
+      .overrideInterceptor(TenantInterceptor)
+      .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
+      .overrideGuard(TenantMembershipGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
@@ -47,6 +70,9 @@ describe('TenantController (HTTP)', () => {
     tenantService = moduleFixture.get(
       TenantService,
     ) as jest.Mocked<TenantService>;
+    createTenantWithOwnerUseCase = moduleFixture.get(
+      CreateTenantWithOwnerUseCase,
+    ) as jest.Mocked<CreateTenantWithOwnerUseCase>;
   });
 
   afterAll(async () => {
@@ -158,6 +184,26 @@ describe('TenantController (HTTP)', () => {
         .post('/tenants')
         .send({ name: 'Outra', slug: 'barbearia-do-vitinho' })
         .expect(409);
+    });
+  });
+
+  describe('POST /tenants/with-owner', () => {
+    it('deve retornar 201 e o tenant criado com usuario como OWNER', () => {
+      createTenantWithOwnerUseCase.run.mockResolvedValue(mockTenant);
+
+      return request(app.getHttpServer())
+        .post('/tenants/with-owner')
+        .set('Authorization', 'Bearer fake-token')
+        .send({ name: 'Barbearia Nova', slug: 'barbearia-nova' })
+        .expect(201)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('id', 'uuid-123');
+          expect(res.body).toHaveProperty('slug', 'barbearia-do-vitinho');
+          expect(createTenantWithOwnerUseCase.run).toHaveBeenCalledWith(
+            'user-uuid-123',
+            { name: 'Barbearia Nova', slug: 'barbearia-nova' },
+          );
+        });
     });
   });
 

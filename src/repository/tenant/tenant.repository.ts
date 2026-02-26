@@ -21,12 +21,10 @@ export class TenantRepository {
     return this.repo.save(entity);
   }
 
-  /** Busca tenant por slug (apenas não deletados). Para roteamento/uso público. */
   findBySlug(slug: string) {
     return this.repo.findOne({ where: { slug } });
   }
 
-  /** Verifica se slug já existe em qualquer tenant (incluindo soft-deleted). Regra: nunca reutilizar slug. */
   existsBySlug(slug: string) {
     return this.repo
       .createQueryBuilder('t')
