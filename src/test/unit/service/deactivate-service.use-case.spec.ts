@@ -27,9 +27,7 @@ describe('DeactivateServiceUseCase', () => {
   beforeEach(async () => {
     serviceRepository = {
       findById: jest.fn().mockResolvedValue(mockService),
-      update: jest
-        .fn()
-        .mockResolvedValue({ ...mockService, isActive: false }),
+      update: jest.fn().mockResolvedValue({ ...mockService, isActive: false }),
     };
 
     const module: TestingModule = await Test.createTestingModule({

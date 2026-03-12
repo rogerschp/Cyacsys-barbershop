@@ -184,6 +184,7 @@ describe('ServiceController (e2e)', () => {
             tenantId,
             serviceId,
             { name: 'Corte premium' },
+            'user-e2e-123',
           );
         });
     });

@@ -34,7 +34,7 @@ export class ServiceRepository implements IServiceRepository {
     });
   }
 
-  async findActiveByName(
+  async findNonDeletedByName(
     tenantId: string,
     name: string,
     excludeId?: string,

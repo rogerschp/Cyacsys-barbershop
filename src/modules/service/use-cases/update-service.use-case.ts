@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { NotFoundException } from '@nestjs/common';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
 import { UpdateServiceDto } from '../dto/update-service.dto';
@@ -13,6 +13,8 @@ const MIN_PRICE = 0;
 
 @Injectable()
 export class UpdateServiceUseCase {
+  private readonly logger = new Logger(UpdateServiceUseCase.name);
+
   constructor(
     @Inject(SERVICE_REPOSITORY)
     private readonly serviceRepository: IServiceRepository,
@@ -22,6 +24,7 @@ export class UpdateServiceUseCase {
     tenantId: string,
     serviceId: string,
     dto: UpdateServiceDto,
+    performedBy?: string,
   ): Promise<ServiceEntity> {
     const existing = await this.serviceRepository.findById(serviceId, tenantId);
     if (!existing) {
@@ -38,7 +41,7 @@ export class UpdateServiceUseCase {
 
     if (dto.name !== undefined) {
       const normalizedName = dto.name.trim();
-      const duplicate = await this.serviceRepository.findActiveByName(
+      const duplicate = await this.serviceRepository.findNonDeletedByName(
         tenantId,
         normalizedName,
         serviceId,
@@ -85,6 +88,21 @@ export class UpdateServiceUseCase {
       return existing;
     }
 
-    return this.serviceRepository.update(serviceId, tenantId, updates);
+    const updated = await this.serviceRepository.update(
+      serviceId,
+      tenantId,
+      updates,
+    );
+
+    this.logger.log({
+      event: 'service_updated',
+      tenantId,
+      serviceId,
+      updatedFields: Object.keys(updates),
+      performedBy: performedBy ?? undefined,
+      timestamp: new Date().toISOString(),
+    });
+
+    return updated;
   }
 }

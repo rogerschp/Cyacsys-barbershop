@@ -109,7 +109,7 @@ describe('ServiceRepository', () => {
     it('deve retornar serviço quando nome existe no tenant', async () => {
       mockQueryBuilder.getOne.mockResolvedValueOnce(mockService);
 
-      const result = await repository.findActiveByName(
+      const result = await repository.findNonDeletedByName(
         tenantId,
         'Corte masculino',
       );
@@ -129,7 +129,7 @@ describe('ServiceRepository', () => {
     it('deve excluir id do filtro quando excludeId informado', async () => {
       mockQueryBuilder.getOne.mockResolvedValueOnce(null);
 
-      await repository.findActiveByName(tenantId, 'Corte', serviceId);
+      await repository.findNonDeletedByName(tenantId, 'Corte', serviceId);
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         's.id != :excludeId',
@@ -155,7 +155,10 @@ describe('ServiceRepository', () => {
 
   describe('update', () => {
     it('deve atualizar e retornar entidade', async () => {
-      typeOrmRepo.findOne.mockResolvedValue({ ...mockService, name: 'Corte novo' });
+      typeOrmRepo.findOne.mockResolvedValue({
+        ...mockService,
+        name: 'Corte novo',
+      });
 
       const result = await repository.update(serviceId, tenantId, {
         name: 'Corte novo',
@@ -193,9 +196,9 @@ describe('ServiceRepository', () => {
     it('deve lançar quando serviço não existe', async () => {
       typeOrmRepo.findOne.mockResolvedValue(null);
 
-      await expect(
-        repository.softDelete(serviceId, tenantId),
-      ).rejects.toThrow('Service not found');
+      await expect(repository.softDelete(serviceId, tenantId)).rejects.toThrow(
+        'Service not found',
+      );
     });
   });
 });

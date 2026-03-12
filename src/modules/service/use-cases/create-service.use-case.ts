@@ -27,6 +27,10 @@ export class CreateServiceUseCase {
     dto: CreateServiceDto,
     createdBy: string,
   ): Promise<ServiceEntity> {
+    const tenant = await this.tenantService.findById(tenantId);
+    if (!tenant) {
+      throw new NotFoundException('Tenant not found');
+    }
     if (dto.price < MIN_PRICE) {
       throw new BusinessRuleException(
         'SERVICE_INVALID_PRICE',
@@ -40,13 +44,8 @@ export class CreateServiceUseCase {
       );
     }
 
-    const tenant = await this.tenantService.findById(tenantId);
-    if (!tenant) {
-      throw new NotFoundException('Tenant not found');
-    }
-
     const normalizedName = dto.name.trim();
-    const existing = await this.serviceRepository.findActiveByName(
+    const existing = await this.serviceRepository.findNonDeletedByName(
       tenantId,
       normalizedName,
     );

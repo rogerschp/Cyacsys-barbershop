@@ -21,7 +21,7 @@ export interface IServiceRepository {
 
   findById(id: string, tenantId: string): Promise<ServiceEntity | null>;
 
-  findActiveByName(
+  findNonDeletedByName(
     tenantId: string,
     name: string,
     excludeId?: string,

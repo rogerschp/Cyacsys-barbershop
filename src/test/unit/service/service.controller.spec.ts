@@ -73,11 +73,21 @@ describe('ServiceController (HTTP)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
 
-    createServiceUseCase = moduleFixture.get(CreateServiceUseCase) as jest.Mocked<CreateServiceUseCase>;
-    updateServiceUseCase = moduleFixture.get(UpdateServiceUseCase) as jest.Mocked<UpdateServiceUseCase>;
-    deactivateServiceUseCase = moduleFixture.get(DeactivateServiceUseCase) as jest.Mocked<DeactivateServiceUseCase>;
-    listServicesByTenantUseCase = moduleFixture.get(ListServicesByTenantUseCase) as jest.Mocked<ListServicesByTenantUseCase>;
-    getServiceUseCase = moduleFixture.get(GetServiceUseCase) as jest.Mocked<GetServiceUseCase>;
+    createServiceUseCase = moduleFixture.get(
+      CreateServiceUseCase,
+    ) as jest.Mocked<CreateServiceUseCase>;
+    updateServiceUseCase = moduleFixture.get(
+      UpdateServiceUseCase,
+    ) as jest.Mocked<UpdateServiceUseCase>;
+    deactivateServiceUseCase = moduleFixture.get(
+      DeactivateServiceUseCase,
+    ) as jest.Mocked<DeactivateServiceUseCase>;
+    listServicesByTenantUseCase = moduleFixture.get(
+      ListServicesByTenantUseCase,
+    ) as jest.Mocked<ListServicesByTenantUseCase>;
+    getServiceUseCase = moduleFixture.get(
+      GetServiceUseCase,
+    ) as jest.Mocked<GetServiceUseCase>;
   });
 
   afterAll(async () => {
@@ -119,7 +129,10 @@ describe('ServiceController (HTTP)', () => {
 
     it('deve retornar 400 quando regra de negócio violada', () => {
       createServiceUseCase.run.mockRejectedValue(
-        new BusinessRuleException('SERVICE_NAME_ALREADY_EXISTS', 'Nome já existe'),
+        new BusinessRuleException(
+          'SERVICE_NAME_ALREADY_EXISTS',
+          'Nome já existe',
+        ),
       );
 
       return request(app.getHttpServer())
@@ -158,7 +171,9 @@ describe('ServiceController (HTTP)', () => {
         .expect((res) => {
           expect(Array.isArray(res.body)).toBe(true);
           expect(res.body[0]).toHaveProperty('id', serviceId);
-          expect(listServicesByTenantUseCase.run).toHaveBeenCalledWith(tenantId);
+          expect(listServicesByTenantUseCase.run).toHaveBeenCalledWith(
+            tenantId,
+          );
         });
     });
   });
@@ -206,6 +221,7 @@ describe('ServiceController (HTTP)', () => {
             tenantId,
             serviceId,
             { name: 'Corte premium' },
+            'user-uuid-123',
           );
         });
     });

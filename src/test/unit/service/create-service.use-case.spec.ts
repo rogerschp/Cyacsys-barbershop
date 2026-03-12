@@ -80,9 +80,9 @@ describe('CreateServiceUseCase', () => {
     it('deve lançar NotFoundException quando tenant não existe', async () => {
       tenantService.findById.mockResolvedValue(null);
 
-      await expect(
-        useCase.run(tenantId, validDto, createdBy),
-      ).rejects.toThrow(NotFoundException);
+      await expect(useCase.run(tenantId, validDto, createdBy)).rejects.toThrow(
+        NotFoundException,
+      );
 
       expect(serviceRepository.create).not.toHaveBeenCalled();
     });
@@ -90,9 +90,9 @@ describe('CreateServiceUseCase', () => {
     it('deve lançar BusinessRuleException quando nome já existe no tenant', async () => {
       serviceRepository.findActiveByName.mockResolvedValue(mockService);
 
-      await expect(
-        useCase.run(tenantId, validDto, createdBy),
-      ).rejects.toThrow(BusinessRuleException);
+      await expect(useCase.run(tenantId, validDto, createdBy)).rejects.toThrow(
+        BusinessRuleException,
+      );
 
       expect(serviceRepository.create).not.toHaveBeenCalled();
     });

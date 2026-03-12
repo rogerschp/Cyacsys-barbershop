@@ -157,8 +157,10 @@ export class ServiceController {
     @Param('tenantId') tenantId: string,
     @Param('id') id: string,
     @Body() dto: UpdateServiceDto,
+    @Req() req: RequestWithUser,
   ) {
-    return this.updateServiceUseCase.run(tenantId, id, dto);
+    const performedBy = req.user?.dbUser?.id ?? '';
+    return this.updateServiceUseCase.run(tenantId, id, dto, performedBy);
   }
 
   @Patch(':id/deactivate')

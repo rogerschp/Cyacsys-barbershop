@@ -33,7 +33,9 @@ describe('UpdateServiceUseCase', () => {
     serviceRepository = {
       findById: jest.fn().mockResolvedValue(mockService),
       findActiveByName: jest.fn().mockResolvedValue(null),
-      update: jest.fn().mockResolvedValue({ ...mockService, name: 'Corte novo' }),
+      update: jest
+        .fn()
+        .mockResolvedValue({ ...mockService, name: 'Corte novo' }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
