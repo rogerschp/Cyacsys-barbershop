@@ -10,7 +10,7 @@ describe('UpdateServiceUseCase', () => {
   let useCase: UpdateServiceUseCase;
   let serviceRepository: {
     findById: jest.Mock;
-    findActiveByName: jest.Mock;
+    findNonDeletedByName: jest.Mock;
     update: jest.Mock;
   };
 
@@ -32,7 +32,7 @@ describe('UpdateServiceUseCase', () => {
   beforeEach(async () => {
     serviceRepository = {
       findById: jest.fn().mockResolvedValue(mockService),
-      findActiveByName: jest.fn().mockResolvedValue(null),
+      findNonDeletedByName: jest.fn().mockResolvedValue(null),
       update: jest
         .fn()
         .mockResolvedValue({ ...mockService, name: 'Corte novo' }),
@@ -64,7 +64,7 @@ describe('UpdateServiceUseCase', () => {
         serviceId,
         tenantId,
       );
-      expect(serviceRepository.findActiveByName).toHaveBeenCalledWith(
+      expect(serviceRepository.findNonDeletedByName).toHaveBeenCalledWith(
         tenantId,
         'Corte novo',
         serviceId,
@@ -88,7 +88,7 @@ describe('UpdateServiceUseCase', () => {
     });
 
     it('deve lançar BusinessRuleException quando novo nome já existe', async () => {
-      serviceRepository.findActiveByName.mockResolvedValue({
+      serviceRepository.findNonDeletedByName.mockResolvedValue({
         ...mockService,
         id: 'outro-id',
       });

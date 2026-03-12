@@ -9,7 +9,7 @@ import { CreateServiceDto } from 'src/modules/service/dto/create-service.dto';
 
 describe('CreateServiceUseCase', () => {
   let useCase: CreateServiceUseCase;
-  let serviceRepository: { create: jest.Mock; findActiveByName: jest.Mock };
+  let serviceRepository: { create: jest.Mock; findNonDeletedByName: jest.Mock };
   let tenantService: { findById: jest.Mock };
 
   const tenantId = 'tenant-uuid';
@@ -37,7 +37,7 @@ describe('CreateServiceUseCase', () => {
   beforeEach(async () => {
     serviceRepository = {
       create: jest.fn().mockResolvedValue(mockService),
-      findActiveByName: jest.fn().mockResolvedValue(null),
+      findNonDeletedByName: jest.fn().mockResolvedValue(null),
     };
     tenantService = {
       findById: jest.fn().mockResolvedValue({ id: tenantId }),
@@ -63,7 +63,7 @@ describe('CreateServiceUseCase', () => {
       const result = await useCase.run(tenantId, validDto, createdBy);
 
       expect(tenantService.findById).toHaveBeenCalledWith(tenantId);
-      expect(serviceRepository.findActiveByName).toHaveBeenCalledWith(
+      expect(serviceRepository.findNonDeletedByName).toHaveBeenCalledWith(
         tenantId,
         'Corte masculino',
       );
@@ -88,7 +88,7 @@ describe('CreateServiceUseCase', () => {
     });
 
     it('deve lançar BusinessRuleException quando nome já existe no tenant', async () => {
-      serviceRepository.findActiveByName.mockResolvedValue(mockService);
+      serviceRepository.findNonDeletedByName.mockResolvedValue(mockService);
 
       await expect(useCase.run(tenantId, validDto, createdBy)).rejects.toThrow(
         BusinessRuleException,
@@ -120,7 +120,7 @@ describe('CreateServiceUseCase', () => {
         createdBy,
       );
 
-      expect(serviceRepository.findActiveByName).toHaveBeenCalledWith(
+      expect(serviceRepository.findNonDeletedByName).toHaveBeenCalledWith(
         tenantId,
         'Corte masculino',
       );
