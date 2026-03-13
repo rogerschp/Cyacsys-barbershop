@@ -10,6 +10,11 @@ export interface ITenantUserRepository {
     status?: TenantUserStatus;
   }): Promise<TenantUserEntity>;
 
+  findByIdAndTenant(
+    id: string,
+    tenantId: string,
+  ): Promise<TenantUserEntity | null>;
+
   findByTenantAndUser(
     tenantId: string,
     userId: string,

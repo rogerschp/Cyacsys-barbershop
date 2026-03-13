@@ -28,6 +28,13 @@ export class TenantUserRepository implements ITenantUserRepository {
     return this.repo.save(entity);
   }
 
+  async findByIdAndTenant(
+    id: string,
+    tenantId: string,
+  ): Promise<TenantUserEntity | null> {
+    return this.repo.findOne({ where: { id, tenantId } });
+  }
+
   async findByTenantAndUser(
     tenantId: string,
     userId: string,
