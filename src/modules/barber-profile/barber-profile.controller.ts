@@ -32,8 +32,9 @@ import { GetBarberProfileUseCase } from './use-cases/get-barber-profile.use-case
 import { ListBarberProfilesUseCase } from './use-cases/list-barber-profiles.use-case';
 import { UpdateBarberProfileUseCase } from './use-cases/update-barber-profile.use-case';
 
-interface RequestWithUser {
+interface RequestWithUserAndMembership {
   user?: { dbUser?: { id: string } };
+  tenantMembership?: { role: string };
 }
 
 @ApiTags('barber-profiles')
@@ -79,7 +80,7 @@ export class BarberProfileController {
   async create(
     @Param('tenantId') tenantId: string,
     @Body() dto: CreateBarberProfileDto,
-    @Req() req: RequestWithUser,
+    @Req() req: RequestWithUserAndMembership,
   ) {
     const createdBy = req.user?.dbUser?.id ?? '';
     return this.createBarberProfileUseCase.run(tenantId, dto, createdBy);
@@ -137,11 +138,16 @@ export class BarberProfileController {
   }
 
   @Patch(':id')
-  @TenantRoles(TenantUserRole.OWNER, TenantUserRole.ADMIN, TenantUserRole.STAFF)
+  @TenantRoles(
+    TenantUserRole.OWNER,
+    TenantUserRole.ADMIN,
+    TenantUserRole.STAFF,
+    TenantUserRole.BARBER,
+  )
   @ApiOperation({
     summary: 'Atualiza um perfil de barbeiro',
     description:
-      'Não permite alterar tenantId nem tenantUserId. Para desativar use PATCH :id/deactivate.',
+      'OWNER, ADMIN ou STAFF podem alterar qualquer campo. BARBER só pode alterar o próprio perfil (avatar e bio). Para desativar use PATCH :id/deactivate.',
   })
   @ApiParam({ name: 'tenantId', description: 'UUID do tenant' })
   @ApiParam({ name: 'id', description: 'UUID do perfil de barbeiro' })
@@ -159,16 +165,24 @@ export class BarberProfileController {
   @ApiResponse({ status: 401, description: 'Não autenticado' })
   @ApiResponse({
     status: 403,
-    description: 'Usuário não é OWNER, ADMIN ou STAFF',
+    description:
+      'Usuário não autorizado ou BARBER tentando alterar perfil de outro barbeiro',
   })
   async update(
     @Param('tenantId') tenantId: string,
     @Param('id') id: string,
     @Body() dto: UpdateBarberProfileDto,
-    @Req() req: RequestWithUser,
+    @Req() req: RequestWithUserAndMembership,
   ) {
     const performedBy = req.user?.dbUser?.id ?? '';
-    return this.updateBarberProfileUseCase.run(tenantId, id, dto, performedBy);
+    const callerRole = req.tenantMembership?.role;
+    return this.updateBarberProfileUseCase.run(
+      tenantId,
+      id,
+      dto,
+      performedBy,
+      callerRole,
+    );
   }
 
   @Patch(':id/deactivate')
@@ -194,7 +208,7 @@ export class BarberProfileController {
   async deactivate(
     @Param('tenantId') tenantId: string,
     @Param('id') id: string,
-    @Req() req: RequestWithUser,
+    @Req() req: RequestWithUserAndMembership,
   ) {
     const performedBy = req.user?.dbUser?.id ?? '';
     return this.deactivateBarberProfileUseCase.run(tenantId, id, performedBy);
