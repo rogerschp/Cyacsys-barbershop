@@ -2,6 +2,12 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { getTypeOrmConfig } from './config/typeorm.config';
+import { AuthModule } from './modules/auth/auth.module';
+import { FirebaseModule } from './modules/firebase/firebase.module';
+import { ServiceModule } from './modules/service/service.module';
+import { TenantModule } from './modules/tenant/tenant.module';
+import { TenantUserModule } from './modules/tenant-user/tenant-user.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -14,6 +20,12 @@ import { getTypeOrmConfig } from './config/typeorm.config';
         getTypeOrmConfig(configService),
       inject: [ConfigService],
     }),
+    FirebaseModule,
+    AuthModule,
+    TenantModule,
+    TenantUserModule,
+    ServiceModule,
+    UserModule,
   ],
   controllers: [],
   providers: [],

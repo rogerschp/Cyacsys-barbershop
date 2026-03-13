@@ -23,14 +23,11 @@ export const getTypeOrmConfig = (
   subscribers: [join(__dirname, '..', '**', '*.subscriber.{ts,js}')],
   migrationsRun: false,
   logging: true,
-  // Enable loading entities in events for subscribers
-  // This allows databaseEntity to be available in UpdateEvent
   extra: {
     max: 20,
   },
 });
 
-// For CLI migrations
 const configService = new ConfigService();
 const AppDataSource = new DataSource(getTypeOrmConfig(configService));
 export default AppDataSource;
