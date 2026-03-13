@@ -64,11 +64,9 @@ API REST para o sistema de gestão da Cyacsys Barbershop, construída com [NestJ
 ## Instalação
 
 ```bash
-# Clone o repositório (se ainda não tiver)
 git clone <url-do-repositorio>
 cd cyacsys-barbershop
 
-# Instale as dependências
 yarn install
 ```
 
@@ -120,10 +118,8 @@ yarn start:prod
 ### Migrations
 
 ```bash
-# Gerar nova migration
 yarn migration:generate src/database/migrations/NomeDaMigration
 
-# Executar migrations
 yarn migration:run
 ```
 
@@ -142,16 +138,12 @@ A API suporta autenticação Bearer (JWT). Use o botão **Authorize** no Swagger
 ## Testes
 
 ```bash
-# Testes unitários
 yarn test
 
-# Testes unitários em modo watch
 yarn test:watch
 
-# Cobertura de testes
 yarn test:cov
 
-# Testes e2e
 yarn test:e2e
 ```
 
