@@ -42,6 +42,17 @@ export class TenantUserService {
     return this.repo.create({ tenantId, userId, role });
   }
 
+  async getByIdAndTenant(
+    id: string,
+    tenantId: string,
+  ): Promise<TenantUserEntity> {
+    const link = await this.repo.findByIdAndTenant(id, tenantId);
+    if (!link) {
+      throw new NotFoundException('TENANT_USER_NOT_FOUND');
+    }
+    return link;
+  }
+
   async getMembership(
     tenantId: string,
     userId: string,

@@ -52,3 +52,6 @@ docker-compose.override.yml
 # temp directory
 .temp
 .tmp
+
+# docs (local/generated)
+/docs
