@@ -30,6 +30,7 @@ API REST para o sistema de gestão da Cyacsys Barbershop, construída com [NestJ
 - **Autenticação** — JWT com suporte a Firebase
 - **Multi-tenant** — Gestão de estabelecimentos (tenants) e usuários por tenant
 - **Serviços** — Cadastro e gestão de serviços da barbearia
+- **Disponibilidade** — Jornada (dias/períodos), folgas (time off), bloqueios, vínculo barbeiro–serviço e slots disponíveis (fusos via `Tenant.timezone`)
 - **Usuários** — CRUD de usuários com validação e transformação de dados
 - **Documentação** — Swagger/OpenAPI em `/api`
 - **Validação** — DTOs com `class-validator` e `class-transformer`
@@ -55,7 +56,7 @@ API REST para o sistema de gestão da Cyacsys Barbershop, construída com [NestJ
 ## Pré-requisitos
 
 - [Node.js](https://nodejs.org/) 20+
-- [Yarn](https://yarnpkg.com/) ou npm
+- [Yarn](https://yarnpkg.com/) (recomendado para instalar dependências; npm como alternativa)
 - [PostgreSQL](https://www.postgresql.org/) 15+
 - Conta e projeto [Firebase](https://firebase.google.com/) (para autenticação)
 
