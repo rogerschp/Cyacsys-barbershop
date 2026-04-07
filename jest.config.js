@@ -28,4 +28,3 @@ const config = {
     testEnvironment: 'node',
 };
 exports.default = config;
-//# sourceMappingURL=jest.config.js.map

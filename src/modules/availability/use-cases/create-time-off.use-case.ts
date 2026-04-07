@@ -12,7 +12,6 @@ import {
 } from '../interfaces/availability-repository.interface';
 import { assertBarberAgendaAccess } from '../utils/assert-barber-agenda-access';
 import { normalizeTimeOffTimes } from '../utils/validate-time-off-range';
-
 @Injectable()
 export class CreateTimeOffUseCase {
   constructor(
@@ -22,7 +21,6 @@ export class CreateTimeOffUseCase {
     private readonly barberProfileRepository: IBarberProfileRepository,
     private readonly tenantUserService: TenantUserService,
   ) {}
-
   async run(
     tenantId: string,
     barberProfileId: string,
@@ -38,16 +36,13 @@ export class CreateTimeOffUseCase {
       barberProfileRepository: this.barberProfileRepository,
       tenantUserService: this.tenantUserService,
     });
-
     if (!DateTime.fromISO(dto.date).isValid) {
       throw new BusinessRuleException(
         'INVALID_DATE',
         'Data inválida. Use yyyy-MM-dd.',
       );
     }
-
     const norm = normalizeTimeOffTimes(dto.startTime, dto.endTime);
-
     return this.availabilityRepository.createTimeOff({
       tenantId,
       barberProfileId,

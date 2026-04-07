@@ -7,7 +7,6 @@ import { BusinessRuleException } from 'src/common/exceptions/business-rule.excep
 import { DayOfWeek } from 'src/modules/availability/entities/day-of-week.enum';
 import { WorkingHoursEntity } from 'src/modules/availability/entities/working-hours.entity';
 import { TenantUserRole } from 'src/modules/tenant-user/entities/tenant-user-role.enum';
-
 describe('CreateWorkingHoursUseCase', () => {
   let useCase: CreateWorkingHoursUseCase;
   let availabilityRepository: {
@@ -16,14 +15,16 @@ describe('CreateWorkingHoursUseCase', () => {
     createWorkingHoursPeriod: jest.Mock;
     findWorkingHoursById: jest.Mock;
   };
-  let barberProfileRepository: { findById: jest.Mock };
-  let tenantUserService: { getByIdAndTenant: jest.Mock };
-
+  let barberProfileRepository: {
+    findById: jest.Mock;
+  };
+  let tenantUserService: {
+    getByIdAndTenant: jest.Mock;
+  };
   const tenantId = 'tenant-uuid';
   const barberProfileId = 'bp-uuid';
   const userId = 'user-uuid';
   const whId = 'wh-uuid';
-
   const mockWh: WorkingHoursEntity = {
     id: whId,
     tenantId,
@@ -34,7 +35,6 @@ describe('CreateWorkingHoursUseCase', () => {
     updatedAt: new Date(),
     deletedAt: undefined,
   } as WorkingHoursEntity;
-
   beforeEach(async () => {
     availabilityRepository = {
       existsOtherWorkingHoursForDay: jest.fn().mockResolvedValue(false),
@@ -57,7 +57,6 @@ describe('CreateWorkingHoursUseCase', () => {
     tenantUserService = {
       getByIdAndTenant: jest.fn(),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateWorkingHoursUseCase,
@@ -69,10 +68,8 @@ describe('CreateWorkingHoursUseCase', () => {
         { provide: TenantUserService, useValue: tenantUserService },
       ],
     }).compile();
-
     useCase = module.get(CreateWorkingHoursUseCase);
   });
-
   it('cria jornada ativa com períodos', async () => {
     const result = await useCase.run(
       tenantId,
@@ -85,7 +82,6 @@ describe('CreateWorkingHoursUseCase', () => {
       userId,
       TenantUserRole.ADMIN,
     );
-
     expect(availabilityRepository.createWorkingHours).toHaveBeenCalled();
     expect(
       availabilityRepository.createWorkingHoursPeriod,
@@ -96,12 +92,10 @@ describe('CreateWorkingHoursUseCase', () => {
     });
     expect(result.id).toBe(whId);
   });
-
   it('lança WORKING_HOURS_ALREADY_EXISTS quando já existe dia', async () => {
     availabilityRepository.existsOtherWorkingHoursForDay.mockResolvedValue(
       true,
     );
-
     await expect(
       useCase.run(
         tenantId,
@@ -116,7 +110,6 @@ describe('CreateWorkingHoursUseCase', () => {
       ),
     ).rejects.toThrow(BusinessRuleException);
   });
-
   it('lança WORKING_HOURS_ACTIVE_REQUIRES_PERIOD quando ativo sem períodos', async () => {
     await expect(
       useCase.run(
@@ -128,7 +121,6 @@ describe('CreateWorkingHoursUseCase', () => {
       ),
     ).rejects.toThrow(BusinessRuleException);
   });
-
   it('permite jornada inativa sem períodos', async () => {
     await useCase.run(
       tenantId,
@@ -137,7 +129,6 @@ describe('CreateWorkingHoursUseCase', () => {
       userId,
       TenantUserRole.ADMIN,
     );
-
     expect(
       availabilityRepository.createWorkingHoursPeriod,
     ).not.toHaveBeenCalled();
