@@ -69,6 +69,21 @@ describe('ServiceRepository', () => {
             expect(typeOrmRepo.save).toHaveBeenCalled();
             expect(result).toEqual(mockService);
         });
+
+        it('usa description null quando omitida', async () => {
+            const data = {
+                tenantId,
+                name: 'Barba',
+                price: '10',
+                durationInMinutes: 15,
+            } as any;
+            typeOrmRepo.create.mockReturnValue(mockService as any);
+            typeOrmRepo.save.mockResolvedValue(mockService);
+            await repository.create(data);
+            expect(typeOrmRepo.create).toHaveBeenCalledWith(
+                expect.objectContaining({ description: null, isActive: true }),
+            );
+        });
     });
     describe('findById', () => {
         it('deve retornar serviço quando existe', async () => {
@@ -128,6 +143,34 @@ describe('ServiceRepository', () => {
                 withDeleted: false,
             });
             expect(result).toHaveProperty('name', 'Corte novo');
+        });
+
+        it('monta payload com todos os campos opcionais', async () => {
+            typeOrmRepo.findOne.mockResolvedValue(mockService);
+            await repository.update(serviceId, tenantId, {
+                name: 'N',
+                description: 'd',
+                price: '99',
+                durationInMinutes: 60,
+                isActive: false,
+            });
+            expect(typeOrmRepo.update).toHaveBeenCalledWith(
+                { id: serviceId, tenantId },
+                {
+                    name: 'N',
+                    description: 'd',
+                    price: '99',
+                    durationInMinutes: 60,
+                    isActive: false,
+                },
+            );
+        });
+
+        it('lança quando serviço não existe após update', async () => {
+            typeOrmRepo.findOne.mockResolvedValue(null);
+            await expect(repository.update(serviceId, tenantId, { name: 'X' })).rejects.toThrow(
+                'Service not found after update',
+            );
         });
     });
     describe('softDelete', () => {

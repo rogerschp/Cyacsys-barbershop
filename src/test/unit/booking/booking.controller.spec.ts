@@ -183,3 +183,124 @@ describe('BookingController (HTTP)', () => {
     });
   });
 });
+
+describe('BookingController (HTTP) — user/tenant opcionais', () => {
+  let app: INestApplication;
+  let createBookingDraftUseCase: jest.Mocked<CreateBookingDraftUseCase>;
+  let confirmBookingUseCase: jest.Mocked<ConfirmBookingUseCase>;
+  let cancelBookingDraftUseCase: jest.Mocked<CancelBookingDraftUseCase>;
+
+  const tenantId = 'tenant-uuid';
+  const barberProfileId = 'bp-uuid';
+  const bookingId = 'booking-uuid';
+  const serviceId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const basePath = `/tenants/${tenantId}/barber-profiles/${barberProfileId}/bookings`;
+
+  beforeAll(async () => {
+    const mockCreate = { run: jest.fn() };
+    const mockConfirm = { run: jest.fn() };
+    const mockCancel = { run: jest.fn() };
+
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      controllers: [BookingController],
+      providers: [
+        { provide: CreateBookingDraftUseCase, useValue: mockCreate },
+        { provide: ConfirmBookingUseCase, useValue: mockConfirm },
+        { provide: CancelBookingDraftUseCase, useValue: mockCancel },
+      ],
+    })
+      .overrideGuard(BearerAuthGuard)
+      .useValue({
+        canActivate: (context: any) => {
+          const req = context.switchToHttp().getRequest();
+          req.user = {};
+          req.tenantMembership = undefined;
+          return true;
+        },
+      })
+      .overrideInterceptor(TenantInterceptor)
+      .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
+      .overrideGuard(TenantMembershipGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(TenantRolesGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
+
+    app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        transform: true,
+      }),
+    );
+    await app.init();
+    createBookingDraftUseCase = moduleFixture.get(CreateBookingDraftUseCase);
+    confirmBookingUseCase = moduleFixture.get(ConfirmBookingUseCase);
+    cancelBookingDraftUseCase = moduleFixture.get(CancelBookingDraftUseCase);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    createBookingDraftUseCase.run.mockResolvedValue({ id: 'b1' } as any);
+    confirmBookingUseCase.run.mockResolvedValue({ id: bookingId } as any);
+    cancelBookingDraftUseCase.run.mockResolvedValue({ id: bookingId } as any);
+  });
+
+  it('POST draft usa userId vazio e role undefined nos optional chains', () => {
+    return request(app.getHttpServer())
+      .post(`${basePath}/draft`)
+      .send({
+        serviceId,
+        date: '2099-06-15',
+        startTime: '10:00',
+      })
+      .expect(201)
+      .expect(() => {
+        expect(createBookingDraftUseCase.run).toHaveBeenCalledWith(
+          tenantId,
+          barberProfileId,
+          expect.objectContaining({
+            serviceId,
+            date: '2099-06-15',
+            startTime: '10:00',
+          }),
+          '',
+          undefined,
+        );
+      });
+  });
+
+  it('PATCH confirm passa userId vazio e role undefined', () => {
+    return request(app.getHttpServer())
+      .patch(`${basePath}/${bookingId}/confirm`)
+      .expect(200)
+      .expect(() => {
+        expect(confirmBookingUseCase.run).toHaveBeenCalledWith(
+          tenantId,
+          barberProfileId,
+          bookingId,
+          '',
+          undefined,
+        );
+      });
+  });
+
+  it('PATCH cancel passa userId vazio e role undefined', () => {
+    return request(app.getHttpServer())
+      .patch(`${basePath}/${bookingId}/cancel`)
+      .expect(200)
+      .expect(() => {
+        expect(cancelBookingDraftUseCase.run).toHaveBeenCalledWith(
+          tenantId,
+          barberProfileId,
+          bookingId,
+          '',
+          undefined,
+        );
+      });
+  });
+});

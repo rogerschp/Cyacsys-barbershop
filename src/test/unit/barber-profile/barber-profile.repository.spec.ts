@@ -71,6 +71,22 @@ describe('BarberProfileRepository', () => {
             expect(typeOrmRepo.save).toHaveBeenCalledWith(mockProfile);
             expect(result).toEqual(mockProfile);
         });
+
+        it('usa bio null quando description omitida (?? null)', async () => {
+            const data = {
+                tenantId,
+                tenantUserId: 'tenant-user-uuid',
+                displayName: 'X',
+                avatarUrl: 'https://a.com/x.jpg',
+                experienceYears: 1,
+            } as any;
+            typeOrmRepo.create.mockReturnValue(mockProfile as any);
+            typeOrmRepo.save.mockResolvedValue(mockProfile);
+            await repository.create(data);
+            expect(typeOrmRepo.create).toHaveBeenCalledWith(
+                expect.objectContaining({ bio: null, isActive: true }),
+            );
+        });
     });
     describe('findById', () => {
         it('deve retornar perfil quando existe', async () => {
@@ -127,6 +143,34 @@ describe('BarberProfileRepository', () => {
             });
             expect(result.displayName).toBe('Nome Novo');
         });
+
+        it('inclui todos os campos opcionais no payload quando informados', async () => {
+            typeOrmRepo.findOne.mockResolvedValue(mockProfile);
+            await repository.update(profileId, tenantId, {
+                displayName: 'D',
+                bio: 'b',
+                avatarUrl: 'u',
+                experienceYears: 3,
+                isActive: false,
+            });
+            expect(typeOrmRepo.update).toHaveBeenCalledWith(
+                { id: profileId, tenantId },
+                {
+                    displayName: 'D',
+                    bio: 'b',
+                    avatarUrl: 'u',
+                    experienceYears: 3,
+                    isActive: false,
+                },
+            );
+        });
+
+        it('lança quando perfil não existe após update', async () => {
+            typeOrmRepo.findOne.mockResolvedValue(null);
+            await expect(
+                repository.update(profileId, tenantId, { displayName: 'X' }),
+            ).rejects.toThrow('Barber profile not found after update');
+        });
     });
     describe('softDelete', () => {
         it('deve soft delete e retornar entidade', async () => {
@@ -141,6 +185,13 @@ describe('BarberProfileRepository', () => {
                 tenantId,
             });
             expect(result).toEqual(mockProfile);
+        });
+
+        it('lança quando perfil não existe', async () => {
+            typeOrmRepo.findOne.mockResolvedValue(null);
+            await expect(repository.softDelete(profileId, tenantId)).rejects.toThrow(
+                'Barber profile not found',
+            );
         });
     });
 });

@@ -13,6 +13,8 @@ describe('AvailabilityRepository', () => {
     let barberServiceRepo: jest.Mocked<Repository<BarberServiceLinkEntity>>;
     let workingHoursRepo: jest.Mocked<Repository<WorkingHoursEntity>>;
     let periodRepo: jest.Mocked<Repository<WorkingHoursPeriodEntity>>;
+    let timeOffRepo: jest.Mocked<Repository<TimeOffEntity>>;
+    let blockRepo: jest.Mocked<Repository<BarberAvailabilityBlockEntity>>;
     let mockQb: {
         where: jest.Mock;
         andWhere: jest.Mock;
@@ -47,6 +49,7 @@ describe('AvailabilityRepository', () => {
         };
         const mockBarberService = {
             findOne: jest.fn(),
+            find: jest.fn(),
             create: jest.fn(),
             save: jest.fn(),
             update: jest.fn(),
@@ -86,6 +89,8 @@ describe('AvailabilityRepository', () => {
         barberServiceRepo = module.get(getRepositoryToken(BarberServiceLinkEntity));
         workingHoursRepo = module.get(getRepositoryToken(WorkingHoursEntity));
         periodRepo = module.get(getRepositoryToken(WorkingHoursPeriodEntity));
+        timeOffRepo = module.get(getRepositoryToken(TimeOffEntity));
+        blockRepo = module.get(getRepositoryToken(BarberAvailabilityBlockEntity));
         mockQb.getExists.mockResolvedValue(false);
         mockQb.getOne.mockResolvedValue(null);
         mockQb.getMany.mockResolvedValue([]);
@@ -140,6 +145,303 @@ describe('AvailabilityRepository', () => {
             const result = await repository.findWorkingHoursById(whId, tenantId, true);
             expect(periodRepo.find).toHaveBeenCalled();
             expect(result?.periods).toEqual(periods);
+        });
+
+        it('retorna null quando jornada não existe', async () => {
+            workingHoursRepo.findOne.mockResolvedValue(null);
+            await expect(repository.findWorkingHoursById(whId, tenantId, true)).resolves.toBeNull();
+        });
+    });
+
+    describe('barber service link', () => {
+        const link = { id: 'l1', tenantId, barberProfileId } as BarberServiceLinkEntity;
+
+        it('findBarberServiceLinkById', async () => {
+            barberServiceRepo.findOne.mockResolvedValue(link);
+            await expect(repository.findBarberServiceLinkById('l1', tenantId)).resolves.toBe(link);
+        });
+
+        it('findBarberServiceLinkByBarberAndService', async () => {
+            barberServiceRepo.findOne.mockResolvedValue(link);
+            await expect(
+                repository.findBarberServiceLinkByBarberAndService(barberProfileId, tenantId, 's1'),
+            ).resolves.toBe(link);
+        });
+
+        it('listBarberServiceLinksByBarber', async () => {
+            barberServiceRepo.find.mockResolvedValue([link]);
+            await expect(repository.listBarberServiceLinksByBarber(barberProfileId, tenantId)).resolves.toEqual([
+                link,
+            ]);
+        });
+
+        it('updateBarberServiceLink', async () => {
+            barberServiceRepo.update.mockResolvedValue({ affected: 1 } as any);
+            barberServiceRepo.findOne.mockResolvedValue(link);
+            const res = await repository.updateBarberServiceLink('l1', tenantId, { isActive: false });
+            expect(res).toBe(link);
+        });
+
+        it('updateBarberServiceLink lança se não encontrar após update', async () => {
+            barberServiceRepo.update.mockResolvedValue({ affected: 1 } as any);
+            barberServiceRepo.findOne.mockResolvedValue(null);
+            await expect(repository.updateBarberServiceLink('l1', tenantId, {})).rejects.toThrow(
+                'Barber service link not found after update',
+            );
+        });
+
+        it('softDeleteBarberServiceLink', async () => {
+            barberServiceRepo.findOne.mockResolvedValue(link);
+            barberServiceRepo.softDelete.mockResolvedValue({ affected: 1 } as any);
+            await expect(repository.softDeleteBarberServiceLink('l1', tenantId)).resolves.toBe(link);
+        });
+
+        it('softDeleteBarberServiceLink lança se não existe', async () => {
+            barberServiceRepo.findOne.mockResolvedValue(null);
+            await expect(repository.softDeleteBarberServiceLink('l1', tenantId)).rejects.toThrow(
+                'Barber service link not found',
+            );
+        });
+    });
+
+    describe('working hours CRUD', () => {
+        it('createWorkingHours', async () => {
+            const created = { ...mockWh } as WorkingHoursEntity;
+            workingHoursRepo.create.mockReturnValue(created as any);
+            workingHoursRepo.save.mockResolvedValue(created);
+            const res = await repository.createWorkingHours({
+                tenantId,
+                barberProfileId,
+                dayOfWeek: DayOfWeek.FRIDAY,
+                isActive: true,
+            });
+            expect(res).toBe(created);
+        });
+
+        it('findWorkingHoursByBarberAndDay com períodos', async () => {
+            workingHoursRepo.findOne.mockResolvedValue(mockWh);
+            periodRepo.find.mockResolvedValue([] as any);
+            const res = await repository.findWorkingHoursByBarberAndDay(
+                barberProfileId,
+                tenantId,
+                DayOfWeek.MONDAY,
+                true,
+            );
+            expect(res?.periods).toEqual([]);
+        });
+
+        it('listWorkingHoursByBarber preenche períodos', async () => {
+            workingHoursRepo.find.mockResolvedValue([mockWh]);
+            periodRepo.find.mockResolvedValue([] as any);
+            const list = await repository.listWorkingHoursByBarber(barberProfileId, tenantId);
+            expect(list).toHaveLength(1);
+            expect(periodRepo.find).toHaveBeenCalled();
+        });
+
+        it('existsOtherWorkingHoursForDay com excludeWorkingHoursId', async () => {
+            mockQb.getExists.mockResolvedValue(false);
+            await repository.existsOtherWorkingHoursForDay(
+                barberProfileId,
+                tenantId,
+                DayOfWeek.MONDAY,
+                'other-wh',
+            );
+            expect(mockQb.andWhere).toHaveBeenCalled();
+        });
+
+        it('updateWorkingHours', async () => {
+            workingHoursRepo.update.mockResolvedValue({ affected: 1 } as any);
+            workingHoursRepo.findOne.mockResolvedValue(mockWh);
+            const res = await repository.updateWorkingHours(whId, tenantId, { isActive: false });
+            expect(res).toBe(mockWh);
+        });
+
+        it('updateWorkingHours lança quando não encontrado', async () => {
+            workingHoursRepo.update.mockResolvedValue({ affected: 1 } as any);
+            workingHoursRepo.findOne.mockResolvedValue(null);
+            await expect(repository.updateWorkingHours(whId, tenantId, {})).rejects.toThrow(
+                'Working hours not found after update',
+            );
+        });
+
+        it('softDeleteWorkingHours lança quando não encontrado', async () => {
+            workingHoursRepo.findOne.mockResolvedValue(null);
+            await expect(repository.softDeleteWorkingHours(whId, tenantId)).rejects.toThrow(
+                'Working hours not found',
+            );
+        });
+    });
+
+    describe('periods', () => {
+        const period = {
+            id: 'p1',
+            workingHoursId: whId,
+            startTime: '09:00',
+            endTime: '12:00',
+        } as WorkingHoursPeriodEntity;
+
+        it('createWorkingHoursPeriod', async () => {
+            periodRepo.create.mockReturnValue(period as any);
+            periodRepo.save.mockResolvedValue(period);
+            const res = await repository.createWorkingHoursPeriod({
+                workingHoursId: whId,
+                startTime: '09:00',
+                endTime: '12:00',
+            });
+            expect(res).toBe(period);
+        });
+
+        it('findWorkingHoursPeriodById', async () => {
+            mockQb.getOne.mockResolvedValue(period);
+            await expect(repository.findWorkingHoursPeriodById('p1', tenantId)).resolves.toBe(period);
+            expect(periodRepo.createQueryBuilder).toHaveBeenCalledWith('p');
+        });
+
+        it('listPeriodsByWorkingHoursId', async () => {
+            mockQb.getMany.mockResolvedValue([period]);
+            const list = await repository.listPeriodsByWorkingHoursId(whId, tenantId);
+            expect(list).toEqual([period]);
+        });
+
+        it('countActivePeriodsByWorkingHoursId', async () => {
+            periodRepo.count.mockResolvedValue(2);
+            await expect(repository.countActivePeriodsByWorkingHoursId(whId)).resolves.toBe(2);
+        });
+
+        it('updateWorkingHoursPeriod', async () => {
+            mockQb.getOne.mockResolvedValueOnce(period).mockResolvedValueOnce({
+                ...period,
+                endTime: '13:00',
+            } as WorkingHoursPeriodEntity);
+            periodRepo.update.mockResolvedValue({ affected: 1 } as any);
+            const res = await repository.updateWorkingHoursPeriod('p1', tenantId, { endTime: '13:00' });
+            expect(res.endTime).toBe('13:00');
+        });
+
+        it('updateWorkingHoursPeriod lança se período não existe', async () => {
+            mockQb.getOne.mockResolvedValue(null);
+            await expect(repository.updateWorkingHoursPeriod('p1', tenantId, {})).rejects.toThrow(
+                'Period not found',
+            );
+        });
+
+        it('softDeleteWorkingHoursPeriod', async () => {
+            mockQb.getOne.mockResolvedValue(period);
+            periodRepo.softDelete.mockResolvedValue({ affected: 1 } as any);
+            await repository.softDeleteWorkingHoursPeriod('p1', tenantId);
+            expect(periodRepo.softDelete).toHaveBeenCalledWith({ id: 'p1' });
+        });
+    });
+
+    describe('time off', () => {
+        const to = {
+            id: 't1',
+            tenantId,
+            barberProfileId,
+            date: '2026-01-01',
+        } as TimeOffEntity;
+
+        it('createTimeOff', async () => {
+            timeOffRepo.create.mockReturnValue(to as any);
+            timeOffRepo.save.mockResolvedValue(to);
+            const res = await repository.createTimeOff({
+                tenantId,
+                barberProfileId,
+                date: '2026-01-01',
+                startTime: '09:00',
+                endTime: '12:00',
+                reason: 'HOLIDAY' as any,
+            });
+            expect(res).toBe(to);
+        });
+
+        it('findTimeOffById e listas', async () => {
+            timeOffRepo.findOne.mockResolvedValue(to);
+            await expect(repository.findTimeOffById('t1', tenantId)).resolves.toBe(to);
+            timeOffRepo.find.mockResolvedValue([to]);
+            await expect(
+                repository.listTimeOffsOnDate(barberProfileId, tenantId, '2026-01-01'),
+            ).resolves.toEqual([to]);
+            await expect(repository.listTimeOffsByBarber(barberProfileId, tenantId)).resolves.toEqual([to]);
+        });
+
+        it('updateTimeOff', async () => {
+            timeOffRepo.update.mockResolvedValue({ affected: 1 } as any);
+            timeOffRepo.findOne.mockResolvedValue(to);
+            await expect(repository.updateTimeOff('t1', tenantId, { reason: 'SICK' as any })).resolves.toBe(
+                to,
+            );
+        });
+
+        it('softDeleteTimeOff', async () => {
+            timeOffRepo.findOne.mockResolvedValue(to);
+            timeOffRepo.softDelete.mockResolvedValue({ affected: 1 } as any);
+            await expect(repository.softDeleteTimeOff('t1', tenantId)).resolves.toBe(to);
+        });
+    });
+
+    describe('blocks', () => {
+        const blk = {
+            id: 'b1',
+            tenantId,
+            barberProfileId,
+            date: '2026-01-02',
+        } as BarberAvailabilityBlockEntity;
+
+        it('createBlock', async () => {
+            blockRepo.create.mockReturnValue(blk as any);
+            blockRepo.save.mockResolvedValue(blk);
+            const res = await repository.createBlock({
+                tenantId,
+                barberProfileId,
+                date: '2026-01-02',
+                startTime: '12:00',
+                endTime: '13:00',
+                reason: 'LUNCH' as any,
+            });
+            expect(res).toBe(blk);
+            expect(blockRepo.create).toHaveBeenCalledWith(
+                expect.objectContaining({ bookingId: null }),
+            );
+        });
+
+        it('createBlock com bookingId definido', async () => {
+            blockRepo.create.mockReturnValue(blk as any);
+            blockRepo.save.mockResolvedValue(blk);
+            await repository.createBlock({
+                tenantId,
+                barberProfileId,
+                date: '2026-01-02',
+                startTime: '12:00',
+                endTime: '13:00',
+                reason: 'LUNCH' as any,
+                bookingId: 'book-1',
+            });
+            expect(blockRepo.create).toHaveBeenCalledWith(
+                expect.objectContaining({ bookingId: 'book-1' }),
+            );
+        });
+
+        it('findBlockById e listas', async () => {
+            blockRepo.findOne.mockResolvedValue(blk);
+            await expect(repository.findBlockById('b1', tenantId)).resolves.toBe(blk);
+            blockRepo.find.mockResolvedValue([blk]);
+            await expect(
+                repository.listBlocksOnDate(barberProfileId, tenantId, '2026-01-02'),
+            ).resolves.toEqual([blk]);
+            await expect(repository.listBlocksByBarber(barberProfileId, tenantId)).resolves.toEqual([blk]);
+        });
+
+        it('updateBlock', async () => {
+            blockRepo.update.mockResolvedValue({ affected: 1 } as any);
+            blockRepo.findOne.mockResolvedValue(blk);
+            await expect(repository.updateBlock('b1', tenantId, { startTime: '12:30' })).resolves.toBe(blk);
+        });
+
+        it('softDeleteBlock', async () => {
+            blockRepo.findOne.mockResolvedValue(blk);
+            blockRepo.softDelete.mockResolvedValue({ affected: 1 } as any);
+            await expect(repository.softDeleteBlock('b1', tenantId)).resolves.toBe(blk);
         });
     });
 });
