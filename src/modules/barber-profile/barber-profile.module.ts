@@ -12,24 +12,24 @@ import { DeactivateBarberProfileUseCase } from './use-cases/deactivate-barber-pr
 import { GetBarberProfileUseCase } from './use-cases/get-barber-profile.use-case';
 import { ListBarberProfilesUseCase } from './use-cases/list-barber-profiles.use-case';
 import { UpdateBarberProfileUseCase } from './use-cases/update-barber-profile.use-case';
-
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([BarberProfileEntity]),
-    AuthModule,
-    TenantModule,
-    TenantUserModule,
-  ],
-  controllers: [BarberProfileController],
-  providers: [
-    BarberProfileRepository,
-    { provide: BARBER_PROFILE_REPOSITORY, useClass: BarberProfileRepository },
-    CreateBarberProfileUseCase,
-    UpdateBarberProfileUseCase,
-    DeactivateBarberProfileUseCase,
-    ListBarberProfilesUseCase,
-    GetBarberProfileUseCase,
-  ],
-  exports: [BARBER_PROFILE_REPOSITORY],
+    imports: [
+        TypeOrmModule.forFeature([BarberProfileEntity]),
+        AuthModule,
+        TenantModule,
+        TenantUserModule,
+    ],
+    controllers: [BarberProfileController],
+    providers: [
+        BarberProfileRepository,
+        { provide: BARBER_PROFILE_REPOSITORY, useClass: BarberProfileRepository },
+        CreateBarberProfileUseCase,
+        UpdateBarberProfileUseCase,
+        DeactivateBarberProfileUseCase,
+        ListBarberProfilesUseCase,
+        GetBarberProfileUseCase,
+    ],
+    exports: [BARBER_PROFILE_REPOSITORY],
 })
-export class BarberProfileModule {}
+export class BarberProfileModule {
+}

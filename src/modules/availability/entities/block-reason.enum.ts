@@ -1,5 +1,5 @@
 export enum BlockReason {
-  LUNCH = 'LUNCH',
-  PERSONAL = 'PERSONAL',
-  BOOKING = 'BOOKING',
+    LUNCH = 'LUNCH',
+    PERSONAL = 'PERSONAL',
+    BOOKING = 'BOOKING'
 }

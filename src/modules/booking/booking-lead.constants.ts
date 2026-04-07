@@ -1,0 +1,1 @@
+export const BOOKING_MIN_LEAD_MINUTES = 15;

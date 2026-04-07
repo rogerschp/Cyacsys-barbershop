@@ -8,20 +8,20 @@ import { TenantController } from './tenant.controller';
 import { TenantEntity } from './entities/tenant.entity';
 import { TenantService } from './tenant.service';
 import { CreateTenantWithOwnerUseCase } from './use-cases/create-tenant-with-owner.use-case';
-
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([TenantEntity]),
-    AuthModule,
-    forwardRef(() => TenantUserModule),
-  ],
-  controllers: [TenantController],
-  providers: [
-    TenantRepository,
-    TenantService,
-    CreateTenantWithOwnerUseCase,
-    TenantInterceptor,
-  ],
-  exports: [TenantService, TenantInterceptor],
+    imports: [
+        TypeOrmModule.forFeature([TenantEntity]),
+        AuthModule,
+        forwardRef(() => TenantUserModule),
+    ],
+    controllers: [TenantController],
+    providers: [
+        TenantRepository,
+        TenantService,
+        CreateTenantWithOwnerUseCase,
+        TenantInterceptor,
+    ],
+    exports: [TenantService, TenantInterceptor],
 })
-export class TenantModule {}
+export class TenantModule {
+}
