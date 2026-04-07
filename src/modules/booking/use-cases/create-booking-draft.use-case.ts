@@ -18,7 +18,7 @@ import {
   IBookingRepository,
 } from '../interfaces/booking-repository.interface';
 import { assertBarberAgendaAccess } from '../../availability/utils/assert-barber-agenda-access';
-
+import { BOOKING_MIN_LEAD_MINUTES } from '../booking-lead.constants';
 @Injectable()
 export class CreateBookingDraftUseCase {
   constructor(
@@ -32,7 +32,6 @@ export class CreateBookingDraftUseCase {
     private readonly tenantService: TenantService,
     private readonly getAvailableSlotsUseCase: GetAvailableSlotsUseCase,
   ) {}
-
   async run(
     tenantId: string,
     barberProfileId: string,
@@ -48,10 +47,8 @@ export class CreateBookingDraftUseCase {
       barberProfileRepository: this.barberProfileRepository,
       tenantUserService: this.tenantUserService,
     });
-
     const tenant = await this.tenantService.findById(tenantId);
     const timezone = tenant.timezone || 'America/Sao_Paulo';
-
     const barber = await this.barberProfileRepository.findById(
       barberProfileId,
       tenantId,
@@ -65,7 +62,6 @@ export class CreateBookingDraftUseCase {
         'Barbeiro inativo não recebe agendamentos.',
       );
     }
-
     const service = await this.serviceRepository.findById(
       dto.serviceId,
       tenantId,
@@ -79,7 +75,6 @@ export class CreateBookingDraftUseCase {
         'Serviço inativo não pode ser agendado.',
       );
     }
-
     const available = await this.getAvailableSlotsUseCase.run(
       tenantId,
       barberProfileId,
@@ -88,43 +83,45 @@ export class CreateBookingDraftUseCase {
       userId,
       callerRole,
     );
-
     if (!available.slots.includes(dto.startTime)) {
       throw new BusinessRuleException(
         'SLOT_NOT_AVAILABLE',
         'Este horário não está disponível para o serviço escolhido.',
       );
     }
-
     const slotStartUtc = DateTime.fromFormat(
       `${dto.date} ${dto.startTime}`,
       'yyyy-MM-dd HH:mm',
       { zone: timezone },
     ).toUTC();
-
     if (!slotStartUtc.isValid) {
       throw new BusinessRuleException(
         'INVALID_SLOT',
         'Data ou horário de início inválidos para o fuso do tenant.',
       );
     }
-
     const nowUtc = DateTime.now().toUTC();
-    if (slotStartUtc < nowUtc) {
+    if (slotStartUtc <= nowUtc) {
       throw new BusinessRuleException(
         'BOOKING_IN_THE_PAST',
-        'Não é possível agendar um horário que já passou.',
+        'O horário de início precisa ser no futuro (não pode ser agora ou no passado).',
       );
     }
-
+    const earliestBookableUtc = nowUtc.plus({
+      minutes: BOOKING_MIN_LEAD_MINUTES,
+    });
+    if (slotStartUtc < earliestBookableUtc) {
+      throw new BusinessRuleException(
+        'BOOKING_MIN_LEAD_NOT_MET',
+        `É necessário agendar com pelo menos ${BOOKING_MIN_LEAD_MINUTES} minutos de antecedência.`,
+      );
+    }
     const endsAtUtc = slotStartUtc.plus({ minutes: service.durationInMinutes });
-
     const membership = await this.tenantUserService.validateMembership(
       userId,
       tenantId,
     );
     const createdByTenantUserId = membership.id;
-
     try {
       return await this.bookingRepository.createDraft({
         tenantId,
@@ -143,7 +140,11 @@ export class CreateBookingDraftUseCase {
       }
       if (e instanceof QueryFailedError) {
         const code = (
-          e as QueryFailedError & { driverError?: { code?: string } }
+          e as QueryFailedError & {
+            driverError?: {
+              code?: string;
+            };
+          }
         ).driverError?.code;
         if (code === '23505') {
           throw new BusinessRuleException(

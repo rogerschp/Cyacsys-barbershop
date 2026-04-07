@@ -1,102 +1,57 @@
-import {
-  ConflictException,
-  ForbiddenException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, } from '@nestjs/common';
 import { TenantService } from '../tenant/tenant.service';
 import { UserService } from '../user/user.service';
 import { TenantUserEntity } from './entities/tenant-user.entity';
 import { TenantUserRole } from './entities/tenant-user-role.enum';
 import { TenantUserStatus } from './entities/tenant-user-status.enum';
-import {
-  ITenantUserRepository,
-  TENANT_USER_REPOSITORY,
-} from './interfaces/tenant-user-repository.interface';
-
+import { ITenantUserRepository, TENANT_USER_REPOSITORY, } from './interfaces/tenant-user-repository.interface';
 @Injectable()
 export class TenantUserService {
-  constructor(
+    constructor(
     @Inject(TENANT_USER_REPOSITORY)
-    private readonly repo: ITenantUserRepository,
-    private readonly tenantService: TenantService,
-    private readonly userService: UserService,
-  ) {}
-
-  async addUserToTenant(
-    userId: string,
-    tenantId: string,
-    role: TenantUserRole,
-  ): Promise<TenantUserEntity> {
-    await this.tenantService.findById(tenantId);
-    await this.userService.findById(userId);
-
-    const existing = await this.repo.findByTenantAndUser(tenantId, userId);
-    if (existing) {
-      throw new ConflictException(
-        'User is already linked to this tenant. Use update to change role.',
-      );
+    private readonly repo: ITenantUserRepository, private readonly tenantService: TenantService, private readonly userService: UserService) { }
+    async addUserToTenant(userId: string, tenantId: string, role: TenantUserRole): Promise<TenantUserEntity> {
+        await this.tenantService.findById(tenantId);
+        await this.userService.findById(userId);
+        const existing = await this.repo.findByTenantAndUser(tenantId, userId);
+        if (existing) {
+            throw new ConflictException('User is already linked to this tenant. Use update to change role.');
+        }
+        return this.repo.create({ tenantId, userId, role });
     }
-
-    return this.repo.create({ tenantId, userId, role });
-  }
-
-  async getByIdAndTenant(
-    id: string,
-    tenantId: string,
-  ): Promise<TenantUserEntity> {
-    const link = await this.repo.findByIdAndTenant(id, tenantId);
-    if (!link) {
-      throw new NotFoundException('TENANT_USER_NOT_FOUND');
+    async getByIdAndTenant(id: string, tenantId: string): Promise<TenantUserEntity> {
+        const link = await this.repo.findByIdAndTenant(id, tenantId);
+        if (!link) {
+            throw new NotFoundException('TENANT_USER_NOT_FOUND');
+        }
+        return link;
     }
-    return link;
-  }
-
-  async getMembership(
-    tenantId: string,
-    userId: string,
-  ): Promise<TenantUserEntity> {
-    const link = await this.repo.findByTenantAndUser(tenantId, userId);
-    if (!link) {
-      throw new NotFoundException(
-        'No membership found for this user in this tenant.',
-      );
+    async getMembership(tenantId: string, userId: string): Promise<TenantUserEntity> {
+        const link = await this.repo.findByTenantAndUser(tenantId, userId);
+        if (!link) {
+            throw new NotFoundException('No membership found for this user in this tenant.');
+        }
+        return link;
     }
-    return link;
-  }
-
-  async getUserRole(
-    userId: string,
-    tenantId: string,
-  ): Promise<TenantUserRole | null> {
-    const link = await this.repo.findByTenantAndUser(tenantId, userId);
-    return link?.role ?? null;
-  }
-
-  async validateMembership(
-    userId: string,
-    tenantId: string,
-  ): Promise<TenantUserEntity> {
-    const link = await this.repo.findByTenantAndUser(tenantId, userId);
-    if (!link) {
-      throw new ForbiddenException('User is not a member of this tenant.');
+    async getUserRole(userId: string, tenantId: string): Promise<TenantUserRole | null> {
+        const link = await this.repo.findByTenantAndUser(tenantId, userId);
+        return link?.role ?? null;
     }
-    if (link.status !== TenantUserStatus.ACTIVE) {
-      throw new ForbiddenException(
-        'Membership is inactive. Access to this tenant is denied.',
-      );
+    async validateMembership(userId: string, tenantId: string): Promise<TenantUserEntity> {
+        const link = await this.repo.findByTenantAndUser(tenantId, userId);
+        if (!link) {
+            throw new ForbiddenException('User is not a member of this tenant.');
+        }
+        if (link.status !== TenantUserStatus.ACTIVE) {
+            throw new ForbiddenException('Membership is inactive. Access to this tenant is denied.');
+        }
+        return link;
     }
-    return link;
-  }
-
-  async removeUserFromTenant(userId: string, tenantId: string): Promise<void> {
-    const link = await this.repo.findByTenantAndUser(tenantId, userId);
-    if (!link) {
-      throw new NotFoundException(
-        'No membership found for this user in this tenant.',
-      );
+    async removeUserFromTenant(userId: string, tenantId: string): Promise<void> {
+        const link = await this.repo.findByTenantAndUser(tenantId, userId);
+        if (!link) {
+            throw new NotFoundException('No membership found for this user in this tenant.');
+        }
+        await this.repo.deleteByTenantAndUser(tenantId, userId);
     }
-    await this.repo.deleteByTenantAndUser(tenantId, userId);
-  }
 }

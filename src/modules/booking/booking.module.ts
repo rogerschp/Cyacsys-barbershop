@@ -13,25 +13,25 @@ import { BookingController } from './booking.controller';
 import { CancelBookingDraftUseCase } from './use-cases/cancel-booking-draft.use-case';
 import { ConfirmBookingUseCase } from './use-cases/confirm-booking.use-case';
 import { CreateBookingDraftUseCase } from './use-cases/create-booking-draft.use-case';
-
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([BookingEntity]),
-    AuthModule,
-    TenantModule,
-    TenantUserModule,
-    BarberProfileModule,
-    ServiceModule,
-    AvailabilityModule,
-  ],
-  controllers: [BookingController],
-  providers: [
-    BookingRepository,
-    { provide: BOOKING_REPOSITORY, useClass: BookingRepository },
-    CreateBookingDraftUseCase,
-    ConfirmBookingUseCase,
-    CancelBookingDraftUseCase,
-  ],
-  exports: [BOOKING_REPOSITORY],
+    imports: [
+        TypeOrmModule.forFeature([BookingEntity]),
+        AuthModule,
+        TenantModule,
+        TenantUserModule,
+        BarberProfileModule,
+        ServiceModule,
+        AvailabilityModule,
+    ],
+    controllers: [BookingController],
+    providers: [
+        BookingRepository,
+        { provide: BOOKING_REPOSITORY, useClass: BookingRepository },
+        CreateBookingDraftUseCase,
+        ConfirmBookingUseCase,
+        CancelBookingDraftUseCase,
+    ],
+    exports: [BOOKING_REPOSITORY],
 })
-export class BookingModule {}
+export class BookingModule {
+}

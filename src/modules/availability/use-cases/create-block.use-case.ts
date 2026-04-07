@@ -4,49 +4,34 @@ import { BARBER_PROFILE_REPOSITORY } from '../../barber-profile/interfaces/barbe
 import type { IBarberProfileRepository } from '../../barber-profile/interfaces/barber-profile-repository.interface';
 import { CreateBlockDto } from '../dto/create-block.dto';
 import { BarberAvailabilityBlockEntity } from '../entities/barber-availability-block.entity';
-import {
-  AVAILABILITY_REPOSITORY,
-  IAvailabilityRepository,
-} from '../interfaces/availability-repository.interface';
+import { AVAILABILITY_REPOSITORY, IAvailabilityRepository, } from '../interfaces/availability-repository.interface';
 import { assertBarberAgendaAccess } from '../utils/assert-barber-agenda-access';
 import { assertValidBlockRange } from '../utils/validate-block-range';
-
 @Injectable()
 export class CreateBlockUseCase {
-  constructor(
+    constructor(
     @Inject(AVAILABILITY_REPOSITORY)
-    private readonly availabilityRepository: IAvailabilityRepository,
+    private readonly availabilityRepository: IAvailabilityRepository, 
     @Inject(BARBER_PROFILE_REPOSITORY)
-    private readonly barberProfileRepository: IBarberProfileRepository,
-    private readonly tenantUserService: TenantUserService,
-  ) {}
-
-  async run(
-    tenantId: string,
-    barberProfileId: string,
-    dto: CreateBlockDto,
-    userId: string,
-    callerRole?: string,
-  ): Promise<BarberAvailabilityBlockEntity> {
-    await assertBarberAgendaAccess({
-      tenantId,
-      barberProfileId,
-      userId,
-      callerRole,
-      barberProfileRepository: this.barberProfileRepository,
-      tenantUserService: this.tenantUserService,
-    });
-
-    assertValidBlockRange(dto.startTime, dto.endTime);
-
-    return this.availabilityRepository.createBlock({
-      tenantId,
-      barberProfileId,
-      date: dto.date,
-      startTime: dto.startTime,
-      endTime: dto.endTime,
-      reason: dto.reason,
-      bookingId: null,
-    });
-  }
+    private readonly barberProfileRepository: IBarberProfileRepository, private readonly tenantUserService: TenantUserService) { }
+    async run(tenantId: string, barberProfileId: string, dto: CreateBlockDto, userId: string, callerRole?: string): Promise<BarberAvailabilityBlockEntity> {
+        await assertBarberAgendaAccess({
+            tenantId,
+            barberProfileId,
+            userId,
+            callerRole,
+            barberProfileRepository: this.barberProfileRepository,
+            tenantUserService: this.tenantUserService,
+        });
+        assertValidBlockRange(dto.startTime, dto.endTime);
+        return this.availabilityRepository.createBlock({
+            tenantId,
+            barberProfileId,
+            date: dto.date,
+            startTime: dto.startTime,
+            endTime: dto.endTime,
+            reason: dto.reason,
+            bookingId: null,
+        });
+    }
 }

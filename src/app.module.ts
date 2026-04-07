@@ -11,29 +11,28 @@ import { ServiceModule } from './modules/service/service.module';
 import { TenantModule } from './modules/tenant/tenant.module';
 import { TenantUserModule } from './modules/tenant-user/tenant-user.module';
 import { UserModule } from './modules/user/user.module';
-
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) =>
-        getTypeOrmConfig(configService),
-      inject: [ConfigService],
-    }),
-    FirebaseModule,
-    AuthModule,
-    TenantModule,
-    TenantUserModule,
-    ServiceModule,
-    BarberProfileModule,
-    AvailabilityModule,
-    BookingModule,
-    UserModule,
-  ],
-  controllers: [],
-  providers: [],
+    imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+        }),
+        TypeOrmModule.forRootAsync({
+            imports: [ConfigModule],
+            useFactory: (configService: ConfigService) => getTypeOrmConfig(configService),
+            inject: [ConfigService],
+        }),
+        FirebaseModule,
+        AuthModule,
+        TenantModule,
+        TenantUserModule,
+        ServiceModule,
+        BarberProfileModule,
+        AvailabilityModule,
+        BookingModule,
+        UserModule,
+    ],
+    controllers: [],
+    providers: [],
 })
-export class AppModule {}
+export class AppModule {
+}
