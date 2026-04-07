@@ -76,6 +76,6 @@ import { UpdateWorkingHoursPeriodUseCase } from './use-cases/update-working-hour
     ListBlocksUseCase,
     GetAvailableSlotsUseCase,
   ],
-  exports: [AVAILABILITY_REPOSITORY],
+  exports: [AVAILABILITY_REPOSITORY, GetAvailableSlotsUseCase],
 })
 export class AvailabilityModule {}

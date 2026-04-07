@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { getTypeOrmConfig } from './config/typeorm.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { AvailabilityModule } from './modules/availability/availability.module';
+import { BookingModule } from './modules/booking/booking.module';
 import { BarberProfileModule } from './modules/barber-profile/barber-profile.module';
 import { FirebaseModule } from './modules/firebase/firebase.module';
 import { ServiceModule } from './modules/service/service.module';
@@ -29,6 +30,7 @@ import { UserModule } from './modules/user/user.module';
     ServiceModule,
     BarberProfileModule,
     AvailabilityModule,
+    BookingModule,
     UserModule,
   ],
   controllers: [],
