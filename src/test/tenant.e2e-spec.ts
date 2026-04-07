@@ -4,6 +4,7 @@ import * as request from 'supertest';
 import { AppModule } from '../app.module';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TenantEntity } from '../modules/tenant/entities/tenant.entity';
+import { TenantStatus } from '../modules/tenant/entities/tenant-status.enum';
 
 describe('TenantController (e2e)', () => {
   let app: INestApplication;
@@ -12,6 +13,8 @@ describe('TenantController (e2e)', () => {
     id: 'uuid-e2e-123',
     slug: 'barbearia-do-vitinho',
     name: 'Barbearia do Vitinho',
+    status: TenantStatus.ACTIVE,
+    timezone: 'America/Sao_Paulo',
     createdAt: new Date('2021-01-01'),
     updatedAt: new Date('2021-01-01'),
     deletedAt: undefined,
