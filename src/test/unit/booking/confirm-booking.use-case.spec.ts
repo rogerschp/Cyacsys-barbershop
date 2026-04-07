@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import { ConfirmBookingUseCase } from 'src/modules/booking/use-cases/confirm-booking.use-case';
 import { BOOKING_REPOSITORY } from 'src/modules/booking/interfaces/booking-repository.interface';
 import { BARBER_PROFILE_REPOSITORY } from 'src/modules/barber-profile/interfaces/barber-profile-repository.interface';
@@ -64,6 +65,9 @@ describe('ConfirmBookingUseCase', () => {
         }).compile();
         useCase = module.get(ConfirmBookingUseCase);
     });
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
     it('confirma rascunho válido', async () => {
         const result = await useCase.run(tenantId, barberProfileId, bookingId, userId, TenantUserRole.ADMIN);
         expect(bookingRepository.updateStatus).toHaveBeenCalledWith(bookingId, tenantId, barberProfileId, BookingStatus.DRAFT, BookingStatus.CONFIRMED);
@@ -78,6 +82,20 @@ describe('ConfirmBookingUseCase', () => {
             ...draftBooking,
             status: BookingStatus.CONFIRMED,
         });
+        await expect(useCase.run(tenantId, barberProfileId, bookingId, userId, TenantUserRole.ADMIN)).rejects.toThrow(BusinessRuleException);
+    });
+    it('lança BOOKING_IN_THE_PAST quando o início já passou', async () => {
+        const pastStart = new Date(Date.now() - 3600000);
+        bookingRepository.findByIdForBarber.mockResolvedValue({
+            ...draftBooking,
+            startsAt: pastStart,
+            endsAt: new Date(pastStart.getTime() + 30 * 60000),
+        });
+        jest.spyOn(DateTime, 'now').mockReturnValue(DateTime.utc() as any);
+        await expect(useCase.run(tenantId, barberProfileId, bookingId, userId, TenantUserRole.ADMIN)).rejects.toThrow(BusinessRuleException);
+    });
+    it('propaga SLOT_NOT_AVAILABLE quando updateStatus sinaliza conflito', async () => {
+        bookingRepository.updateStatus.mockRejectedValue(new Error('BOOKING_SLOT_CONFLICT'));
         await expect(useCase.run(tenantId, barberProfileId, bookingId, userId, TenantUserRole.ADMIN)).rejects.toThrow(BusinessRuleException);
     });
 });
