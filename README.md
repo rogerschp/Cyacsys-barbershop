@@ -71,6 +71,7 @@ API REST multi-tenant para gestão de barbearias: tenants, membros, serviços, p
 ## Instalação
 
 ```bash
+# Clone o repositório (se ainda não tiver)
 git clone <url-do-repositorio>
 cd cyacsys-barbershop
 yarn install

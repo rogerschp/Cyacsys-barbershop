@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEnum, IsOptional } from 'class-validator';
 import { TenantStatus } from '../entities/tenant-status.enum';
 export class UpdateTenantDto {
     @ApiProperty({ example: 'Barbearia do Vitinho', required: false })
