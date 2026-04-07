@@ -16,7 +16,6 @@ describe('CreateTenantWithOwnerUseCase', () => {
     slug: 'barbearia-nova',
     name: 'Barbearia Nova',
     status: TenantStatus.ACTIVE,
-    timezone: 'America/Sao_Paulo',
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: undefined,

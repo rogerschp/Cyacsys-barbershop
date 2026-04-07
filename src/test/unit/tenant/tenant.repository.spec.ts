@@ -14,7 +14,6 @@ describe('TenantRepository', () => {
     slug: 'barbearia-do-vitinho',
     name: 'Barbearia do Vitinho',
     status: TenantStatus.ACTIVE,
-    timezone: 'America/Sao_Paulo',
     createdAt: new Date('2021-01-01'),
     updatedAt: new Date('2021-01-01'),
     deletedAt: undefined,

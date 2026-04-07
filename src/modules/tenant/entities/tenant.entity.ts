@@ -41,13 +41,6 @@ export class TenantEntity {
   })
   status: TenantStatus;
 
-  @Column({ type: 'varchar', length: 64, default: 'America/Sao_Paulo' })
-  @ApiProperty({
-    example: 'America/Sao_Paulo',
-    description: 'IANA timezone para datas/horários de agenda (ex.: slots)',
-  })
-  timezone: string;
-
   @CreateDateColumn()
   @ApiProperty({ example: '2021-01-01T00:00:00.000Z' })
   createdAt: Date;

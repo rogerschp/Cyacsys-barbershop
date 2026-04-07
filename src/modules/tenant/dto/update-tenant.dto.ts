@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEnum, IsOptional } from 'class-validator';
 import { TenantStatus } from '../entities/tenant-status.enum';
 
 export class UpdateTenantDto {
@@ -11,14 +11,4 @@ export class UpdateTenantDto {
   @IsOptional()
   @IsEnum(TenantStatus)
   status?: TenantStatus;
-
-  @ApiProperty({
-    example: 'America/Sao_Paulo',
-    required: false,
-    description: 'IANA timezone (ex.: America/Sao_Paulo)',
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(64)
-  timezone?: string;
 }
