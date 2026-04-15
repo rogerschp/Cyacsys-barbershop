@@ -7,6 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { TenantForbiddenException } from '../exceptions/tenant-forbidden.exception';
 import { TENANT_ROLES_KEY } from '../decorators/tenant-roles.decorator';
+import { hasAnyEffectiveTenantRole } from '../utils/tenant-role.utils';
 export interface RequestWithTenantRole {
   user?: {
     dbUser?: {
@@ -70,7 +71,7 @@ export class TenantRolesGuard implements CanActivate {
         { tenantId: tenant.id, path },
       );
     }
-    const hasRole = requiredRoles.includes(membership.role);
+    const hasRole = hasAnyEffectiveTenantRole(membership.role, requiredRoles);
     if (!hasRole) {
       this.logStructuredWarn({
         event: 'authorization_denied',

@@ -64,7 +64,7 @@ export class BarberProfileController {
   @ApiOperation({
     summary: 'Cria um perfil de barbeiro',
     description:
-      'Apenas OWNER, ADMIN ou STAFF. tenantUserId deve existir no tenant e ter role BARBER. Um tenantUserId só pode ter um perfil por tenant.',
+      'Apenas OWNER, ADMIN ou STAFF. tenantUserId deve existir no tenant e ter role BARBER ou OWNER. Um tenantUserId só pode ter um perfil por tenant.',
   })
   @ApiParam({ name: 'tenantId', description: 'UUID do tenant' })
   @ApiBody({ type: CreateBarberProfileDto })

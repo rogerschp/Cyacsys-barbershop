@@ -27,6 +27,8 @@ import { TenantRolesGuard } from '../../common/guards/tenant-roles.guard';
 import { BearerAuthGuard } from '../auth/guards/bearer-auth.guard';
 import { TenantUserRole } from '../tenant-user/entities/tenant-user-role.enum';
 import { AvailableSlotsResponseDto } from './dto/available-slots-response.dto';
+import { BootstrapWorkingWeekDto } from './dto/bootstrap-working-week.dto';
+import { BootstrapWorkingWeekResponseDto } from './dto/bootstrap-working-week-response.dto';
 import { CreateBarberServiceLinkDto } from './dto/create-barber-service-link.dto';
 import { CreateBlockDto } from './dto/create-block.dto';
 import { CreateTimeOffDto } from './dto/create-time-off.dto';
@@ -39,6 +41,7 @@ import { UpdateTimeOffDto } from './dto/update-time-off.dto';
 import { UpdateWorkingHoursDto } from './dto/update-working-hours.dto';
 import { UpdateWorkingHoursPeriodDto } from './dto/update-working-hours-period.dto';
 import { CreateBarberServiceLinkUseCase } from './use-cases/create-barber-service-link.use-case';
+import { BootstrapWorkingWeekUseCase } from './use-cases/bootstrap-working-week.use-case';
 import { CreateBlockUseCase } from './use-cases/create-block.use-case';
 import { CreateTimeOffUseCase } from './use-cases/create-time-off.use-case';
 import { CreateWorkingHoursUseCase } from './use-cases/create-working-hours.use-case';
@@ -92,6 +95,7 @@ export class AvailabilityController {
     private readonly deleteBarberServiceLinkUseCase: DeleteBarberServiceLinkUseCase,
     private readonly listBarberServiceLinksUseCase: ListBarberServiceLinksUseCase,
     private readonly createWorkingHoursUseCase: CreateWorkingHoursUseCase,
+    private readonly bootstrapWorkingWeekUseCase: BootstrapWorkingWeekUseCase,
     private readonly updateWorkingHoursUseCase: UpdateWorkingHoursUseCase,
     private readonly deleteWorkingHoursUseCase: DeleteWorkingHoursUseCase,
     private readonly listWorkingHoursUseCase: ListWorkingHoursUseCase,
@@ -252,6 +256,33 @@ export class AvailabilityController {
     req: RequestWithUserAndMembership,
   ) {
     return this.createWorkingHoursUseCase.run(
+      tenantId,
+      barberProfileId,
+      dto,
+      req.user?.dbUser?.id ?? '',
+      req.tenantMembership?.role,
+    );
+  }
+  @Post('working-hours/bootstrap-week')
+  @TenantRoles(...AGENDA_ROLES)
+  @ApiOperation({
+    summary: 'Configura semana padrão do barbeiro',
+    description:
+      'Configura automaticamente toda a semana. Informe apenas os dias fechados e os períodos padrão dos dias abertos.',
+  })
+  @ApiBody({ type: BootstrapWorkingWeekDto })
+  @ApiResponse({ status: 201, type: BootstrapWorkingWeekResponseDto })
+  async bootstrapWorkingWeek(
+    @Param('tenantId')
+    tenantId: string,
+    @Param('barberProfileId')
+    barberProfileId: string,
+    @Body()
+    dto: BootstrapWorkingWeekDto,
+    @Req()
+    req: RequestWithUserAndMembership,
+  ) {
+    return this.bootstrapWorkingWeekUseCase.run(
       tenantId,
       barberProfileId,
       dto,

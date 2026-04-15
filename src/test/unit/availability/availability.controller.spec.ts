@@ -10,6 +10,7 @@ import { BlockReason } from 'src/modules/availability/entities/block-reason.enum
 import { DayOfWeek } from 'src/modules/availability/entities/day-of-week.enum';
 import { TimeOffReason } from 'src/modules/availability/entities/time-off-reason.enum';
 import { CreateBarberServiceLinkUseCase } from 'src/modules/availability/use-cases/create-barber-service-link.use-case';
+import { BootstrapWorkingWeekUseCase } from 'src/modules/availability/use-cases/bootstrap-working-week.use-case';
 import { CreateBlockUseCase } from 'src/modules/availability/use-cases/create-block.use-case';
 import { CreateTimeOffUseCase } from 'src/modules/availability/use-cases/create-time-off.use-case';
 import { CreateWorkingHoursPeriodUseCase } from 'src/modules/availability/use-cases/create-working-hours-period.use-case';
@@ -51,6 +52,7 @@ describe('AvailabilityController (HTTP)', () => {
         deleteBarberServiceLink: mockUseCase(),
         listBarberServiceLinks: mockUseCase(),
         createWorkingHours: mockUseCase(),
+        bootstrapWorkingWeek: mockUseCase(),
         updateWorkingHours: mockUseCase(),
         deleteWorkingHours: mockUseCase(),
         listWorkingHours: mockUseCase(),
@@ -78,6 +80,7 @@ describe('AvailabilityController (HTTP)', () => {
                 { provide: DeleteBarberServiceLinkUseCase, useValue: uc.deleteBarberServiceLink },
                 { provide: ListBarberServiceLinksUseCase, useValue: uc.listBarberServiceLinks },
                 { provide: CreateWorkingHoursUseCase, useValue: uc.createWorkingHours },
+                { provide: BootstrapWorkingWeekUseCase, useValue: uc.bootstrapWorkingWeek },
                 { provide: UpdateWorkingHoursUseCase, useValue: uc.updateWorkingHours },
                 { provide: DeleteWorkingHoursUseCase, useValue: uc.deleteWorkingHours },
                 { provide: ListWorkingHoursUseCase, useValue: uc.listWorkingHours },
@@ -236,6 +239,28 @@ describe('AvailabilityController (HTTP)', () => {
             .expect(201)
             .expect(() => {
                 expect(uc.createWorkingHours.run).toHaveBeenCalled();
+            });
+    });
+
+    it('POST working-hours/bootstrap-week', () => {
+        return request(app.getHttpServer())
+            .post(`${base}/working-hours/bootstrap-week`)
+            .send({
+                closedDays: [DayOfWeek.SUNDAY],
+                periods: [{ startTime: '09:00', endTime: '12:00' }],
+            })
+            .expect(201)
+            .expect(() => {
+                expect(uc.bootstrapWorkingWeek.run).toHaveBeenCalledWith(
+                    tenantId,
+                    barberProfileId,
+                    {
+                        closedDays: [DayOfWeek.SUNDAY],
+                        periods: [{ startTime: '09:00', endTime: '12:00' }],
+                    },
+                    userId,
+                    role,
+                );
             });
     });
 
@@ -432,6 +457,7 @@ describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
         deleteBarberServiceLink: mockUseCase(),
         listBarberServiceLinks: mockUseCase(),
         createWorkingHours: mockUseCase(),
+        bootstrapWorkingWeek: mockUseCase(),
         updateWorkingHours: mockUseCase(),
         deleteWorkingHours: mockUseCase(),
         listWorkingHours: mockUseCase(),
@@ -459,6 +485,7 @@ describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
                 { provide: DeleteBarberServiceLinkUseCase, useValue: uc.deleteBarberServiceLink },
                 { provide: ListBarberServiceLinksUseCase, useValue: uc.listBarberServiceLinks },
                 { provide: CreateWorkingHoursUseCase, useValue: uc.createWorkingHours },
+                { provide: BootstrapWorkingWeekUseCase, useValue: uc.bootstrapWorkingWeek },
                 { provide: UpdateWorkingHoursUseCase, useValue: uc.updateWorkingHours },
                 { provide: DeleteWorkingHoursUseCase, useValue: uc.deleteWorkingHours },
                 { provide: ListWorkingHoursUseCase, useValue: uc.listWorkingHours },
