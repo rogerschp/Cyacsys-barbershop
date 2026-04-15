@@ -36,8 +36,8 @@ API REST multi-tenant para gestão de barbearias: tenants, membros, serviços, p
 | **Membros** | Vínculo usuário ↔ tenant com papéis (OWNER, ADMIN, STAFF, BARBER) |
 | **Usuários** | CRUD de usuários globais e busca por e-mail |
 | **Serviços** | Catálogo por tenant (preço, duração, ativo/inativo) |
-| **Barbeiros** | Perfis ligados a `tenant_user` BARBER; desativação bloqueia novos agendamentos |
-| **Disponibilidade** | Jornada semanal, períodos, folgas, bloqueios, serviços oferecidos e **slots disponíveis** |
+| **Barbeiros** | Perfis ligados a `tenant_user` com role efetiva de BARBER (BARBER ou OWNER); desativação bloqueia novos agendamentos |
+| **Disponibilidade** | Jornada semanal, períodos, folgas, bloqueios, serviços oferecidos, **bootstrap semanal** e **slots disponíveis** |
 | **Booking** | Rascunho → confirmação; antecedência mínima; sem sobreposição por barbeiro |
 | **API docs** | Swagger/OpenAPI em `/api` |
 | **Qualidade** | DTOs com `class-validator`; migrations TypeORM; testes unitários e e2e |
@@ -149,6 +149,16 @@ Com a aplicação rodando:
 
 Autenticação: **Authorize** → Bearer JWT. Endpoints escopados por `tenantId` exigem que o usuário seja membro ativo do tenant (e papel adequado quando houver `@TenantRoles`).
 
+### Regras de acesso atuais (resumo)
+
+- Pipeline de segurança em rotas de tenant: `BearerAuthGuard` -> `TenantResolverGuard` -> `TenantMembershipGuard` -> `TenantRolesGuard`.
+- `TenantRolesGuard` usa **roles efetivas**:
+  - `OWNER` satisfaz `OWNER`, `ADMIN`, `STAFF` e `BARBER`;
+  - `ADMIN` satisfaz `ADMIN` e `STAFF`;
+  - `STAFF` satisfaz `STAFF`;
+  - `BARBER` satisfaz `BARBER`.
+- Consequência prática: owner pode operar fluxos de barbeiro sem criar usuário duplicado.
+
 ---
 
 ## Testes
@@ -159,6 +169,8 @@ yarn test:watch
 yarn test:cov
 yarn test:e2e          # e2e (jest-e2e.json)
 ```
+
+Threshold global de coverage: **>= 80%** (statements, branches, functions e lines).
 
 Exemplo de escopo:
 
@@ -193,6 +205,12 @@ src/
 └── main.ts
 docs/                    # Documentação por módulo (Markdown)
 ```
+
+### Novidades recentes
+
+- `POST /tenants/:tenantId/barber-profiles/:barberProfileId/working-hours/bootstrap-week`
+  - Configura a semana inteira do barbeiro informando apenas `closedDays` e `periods`.
+  - `overwriteExisting` (default `true`) decide se sobrescreve agenda já cadastrada.
 
 ---
 
