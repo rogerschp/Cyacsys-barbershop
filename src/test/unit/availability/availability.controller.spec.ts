@@ -2,6 +2,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 import { TenantMembershipGuard } from 'src/common/guards/tenant-membership.guard';
+import { TenantResolverGuard } from 'src/common/guards/tenant-resolver.guard';
 import { TenantRolesGuard } from 'src/common/guards/tenant-roles.guard';
 import { TenantInterceptor } from 'src/common/interceptors/tenant.interceptor';
 import { BearerAuthGuard } from 'src/modules/auth/guards/bearer-auth.guard';
@@ -10,6 +11,7 @@ import { BlockReason } from 'src/modules/availability/entities/block-reason.enum
 import { DayOfWeek } from 'src/modules/availability/entities/day-of-week.enum';
 import { TimeOffReason } from 'src/modules/availability/entities/time-off-reason.enum';
 import { CreateBarberServiceLinkUseCase } from 'src/modules/availability/use-cases/create-barber-service-link.use-case';
+import { BootstrapWorkingWeekUseCase } from 'src/modules/availability/use-cases/bootstrap-working-week.use-case';
 import { CreateBlockUseCase } from 'src/modules/availability/use-cases/create-block.use-case';
 import { CreateTimeOffUseCase } from 'src/modules/availability/use-cases/create-time-off.use-case';
 import { CreateWorkingHoursPeriodUseCase } from 'src/modules/availability/use-cases/create-working-hours-period.use-case';
@@ -51,6 +53,7 @@ describe('AvailabilityController (HTTP)', () => {
         deleteBarberServiceLink: mockUseCase(),
         listBarberServiceLinks: mockUseCase(),
         createWorkingHours: mockUseCase(),
+        bootstrapWorkingWeek: mockUseCase(),
         updateWorkingHours: mockUseCase(),
         deleteWorkingHours: mockUseCase(),
         listWorkingHours: mockUseCase(),
@@ -78,6 +81,7 @@ describe('AvailabilityController (HTTP)', () => {
                 { provide: DeleteBarberServiceLinkUseCase, useValue: uc.deleteBarberServiceLink },
                 { provide: ListBarberServiceLinksUseCase, useValue: uc.listBarberServiceLinks },
                 { provide: CreateWorkingHoursUseCase, useValue: uc.createWorkingHours },
+                { provide: BootstrapWorkingWeekUseCase, useValue: uc.bootstrapWorkingWeek },
                 { provide: UpdateWorkingHoursUseCase, useValue: uc.updateWorkingHours },
                 { provide: DeleteWorkingHoursUseCase, useValue: uc.deleteWorkingHours },
                 { provide: ListWorkingHoursUseCase, useValue: uc.listWorkingHours },
@@ -108,6 +112,8 @@ describe('AvailabilityController (HTTP)', () => {
             .overrideInterceptor(TenantInterceptor)
             .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
             .overrideGuard(TenantMembershipGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(TenantResolverGuard)
             .useValue({ canActivate: () => true })
             .overrideGuard(TenantRolesGuard)
             .useValue({ canActivate: () => true })
@@ -236,6 +242,28 @@ describe('AvailabilityController (HTTP)', () => {
             .expect(201)
             .expect(() => {
                 expect(uc.createWorkingHours.run).toHaveBeenCalled();
+            });
+    });
+
+    it('POST working-hours/bootstrap-week', () => {
+        return request(app.getHttpServer())
+            .post(`${base}/working-hours/bootstrap-week`)
+            .send({
+                closedDays: [DayOfWeek.SUNDAY],
+                periods: [{ startTime: '09:00', endTime: '12:00' }],
+            })
+            .expect(201)
+            .expect(() => {
+                expect(uc.bootstrapWorkingWeek.run).toHaveBeenCalledWith(
+                    tenantId,
+                    barberProfileId,
+                    {
+                        closedDays: [DayOfWeek.SUNDAY],
+                        periods: [{ startTime: '09:00', endTime: '12:00' }],
+                    },
+                    userId,
+                    role,
+                );
             });
     });
 
@@ -432,6 +460,7 @@ describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
         deleteBarberServiceLink: mockUseCase(),
         listBarberServiceLinks: mockUseCase(),
         createWorkingHours: mockUseCase(),
+        bootstrapWorkingWeek: mockUseCase(),
         updateWorkingHours: mockUseCase(),
         deleteWorkingHours: mockUseCase(),
         listWorkingHours: mockUseCase(),
@@ -459,6 +488,7 @@ describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
                 { provide: DeleteBarberServiceLinkUseCase, useValue: uc.deleteBarberServiceLink },
                 { provide: ListBarberServiceLinksUseCase, useValue: uc.listBarberServiceLinks },
                 { provide: CreateWorkingHoursUseCase, useValue: uc.createWorkingHours },
+                { provide: BootstrapWorkingWeekUseCase, useValue: uc.bootstrapWorkingWeek },
                 { provide: UpdateWorkingHoursUseCase, useValue: uc.updateWorkingHours },
                 { provide: DeleteWorkingHoursUseCase, useValue: uc.deleteWorkingHours },
                 { provide: ListWorkingHoursUseCase, useValue: uc.listWorkingHours },
@@ -489,6 +519,8 @@ describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
             .overrideInterceptor(TenantInterceptor)
             .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
             .overrideGuard(TenantMembershipGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(TenantResolverGuard)
             .useValue({ canActivate: () => true })
             .overrideGuard(TenantRolesGuard)
             .useValue({ canActivate: () => true })
@@ -600,6 +632,24 @@ describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
             tenantId,
             barberProfileId,
             't99',
+            '',
+            undefined,
+        );
+
+        await request(app.getHttpServer())
+            .post(`${base}/working-hours/bootstrap-week`)
+            .send({
+                closedDays: [DayOfWeek.SUNDAY],
+                periods: [{ startTime: '09:00', endTime: '12:00' }],
+            })
+            .expect(201);
+        expect(uc.bootstrapWorkingWeek.run).toHaveBeenCalledWith(
+            tenantId,
+            barberProfileId,
+            {
+                closedDays: [DayOfWeek.SUNDAY],
+                periods: [{ startTime: '09:00', endTime: '12:00' }],
+            },
             '',
             undefined,
         );

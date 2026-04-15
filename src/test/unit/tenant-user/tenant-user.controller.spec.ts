@@ -6,6 +6,7 @@ import { TenantUserService } from 'src/modules/tenant-user/tenant-user.service';
 import { BearerAuthGuard } from 'src/modules/auth/guards/bearer-auth.guard';
 import { TenantInterceptor } from 'src/common/interceptors/tenant.interceptor';
 import { TenantMembershipGuard } from 'src/common/guards/tenant-membership.guard';
+import { TenantResolverGuard } from 'src/common/guards/tenant-resolver.guard';
 import { TenantRolesGuard } from 'src/common/guards/tenant-roles.guard';
 import { TenantUserEntity } from 'src/modules/tenant-user/entities/tenant-user.entity';
 import { TenantUserRole } from 'src/modules/tenant-user/entities/tenant-user-role.enum';
@@ -37,6 +38,8 @@ describe('TenantUserController (HTTP)', () => {
             .overrideInterceptor(TenantInterceptor)
             .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
             .overrideGuard(TenantMembershipGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(TenantResolverGuard)
             .useValue({ canActivate: () => true })
             .overrideGuard(TenantRolesGuard)
             .useValue({ canActivate: () => true })

@@ -8,6 +8,7 @@ import { CancelBookingDraftUseCase } from 'src/modules/booking/use-cases/cancel-
 import { BearerAuthGuard } from 'src/modules/auth/guards/bearer-auth.guard';
 import { TenantInterceptor } from 'src/common/interceptors/tenant.interceptor';
 import { TenantMembershipGuard } from 'src/common/guards/tenant-membership.guard';
+import { TenantResolverGuard } from 'src/common/guards/tenant-resolver.guard';
 import { TenantRolesGuard } from 'src/common/guards/tenant-roles.guard';
 import { TenantUserRole } from 'src/modules/tenant-user/entities/tenant-user-role.enum';
 import { BookingStatus } from 'src/modules/booking/entities/booking-status.enum';
@@ -62,6 +63,8 @@ describe('BookingController (HTTP)', () => {
       .overrideInterceptor(TenantInterceptor)
       .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
       .overrideGuard(TenantMembershipGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(TenantResolverGuard)
       .useValue({ canActivate: () => true })
       .overrideGuard(TenantRolesGuard)
       .useValue({ canActivate: () => true })
@@ -221,6 +224,8 @@ describe('BookingController (HTTP) — user/tenant opcionais', () => {
       .overrideInterceptor(TenantInterceptor)
       .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
       .overrideGuard(TenantMembershipGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(TenantResolverGuard)
       .useValue({ canActivate: () => true })
       .overrideGuard(TenantRolesGuard)
       .useValue({ canActivate: () => true })

@@ -13,6 +13,7 @@ import { WorkingHoursEntity } from './entities/working-hours.entity';
 import { WorkingHoursPeriodEntity } from './entities/working-hours-period.entity';
 import { AVAILABILITY_REPOSITORY } from './interfaces/availability-repository.interface';
 import { AvailabilityController } from './availability.controller';
+import { BootstrapWorkingWeekUseCase } from './use-cases/bootstrap-working-week.use-case';
 import { CreateBarberServiceLinkUseCase } from './use-cases/create-barber-service-link.use-case';
 import { CreateBlockUseCase } from './use-cases/create-block.use-case';
 import { CreateTimeOffUseCase } from './use-cases/create-time-off.use-case';
@@ -54,6 +55,7 @@ import { UpdateWorkingHoursPeriodUseCase } from './use-cases/update-working-hour
         AvailabilityRepository,
         { provide: AVAILABILITY_REPOSITORY, useClass: AvailabilityRepository },
         CreateBarberServiceLinkUseCase,
+        BootstrapWorkingWeekUseCase,
         UpdateBarberServiceLinkUseCase,
         DeleteBarberServiceLinkUseCase,
         ListBarberServiceLinksUseCase,
