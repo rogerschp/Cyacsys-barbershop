@@ -10,6 +10,7 @@ import { GetServiceUseCase } from 'src/modules/service/use-cases/get-service.use
 import { BearerAuthGuard } from 'src/modules/auth/guards/bearer-auth.guard';
 import { TenantInterceptor } from 'src/common/interceptors/tenant.interceptor';
 import { TenantMembershipGuard } from 'src/common/guards/tenant-membership.guard';
+import { TenantResolverGuard } from 'src/common/guards/tenant-resolver.guard';
 import { TenantRolesGuard } from 'src/common/guards/tenant-roles.guard';
 import { ServiceEntity } from 'src/modules/service/entities/service.entity';
 import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
@@ -61,6 +62,8 @@ describe('ServiceController (HTTP)', () => {
             .overrideInterceptor(TenantInterceptor)
             .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
             .overrideGuard(TenantMembershipGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(TenantResolverGuard)
             .useValue({ canActivate: () => true })
             .overrideGuard(TenantRolesGuard)
             .useValue({ canActivate: () => true })
