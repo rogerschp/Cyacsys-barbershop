@@ -2,6 +2,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 import { TenantMembershipGuard } from 'src/common/guards/tenant-membership.guard';
+import { TenantResolverGuard } from 'src/common/guards/tenant-resolver.guard';
 import { TenantRolesGuard } from 'src/common/guards/tenant-roles.guard';
 import { TenantInterceptor } from 'src/common/interceptors/tenant.interceptor';
 import { BearerAuthGuard } from 'src/modules/auth/guards/bearer-auth.guard';
@@ -111,6 +112,8 @@ describe('AvailabilityController (HTTP)', () => {
             .overrideInterceptor(TenantInterceptor)
             .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
             .overrideGuard(TenantMembershipGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(TenantResolverGuard)
             .useValue({ canActivate: () => true })
             .overrideGuard(TenantRolesGuard)
             .useValue({ canActivate: () => true })
@@ -517,6 +520,8 @@ describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
             .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
             .overrideGuard(TenantMembershipGuard)
             .useValue({ canActivate: () => true })
+            .overrideGuard(TenantResolverGuard)
+            .useValue({ canActivate: () => true })
             .overrideGuard(TenantRolesGuard)
             .useValue({ canActivate: () => true })
             .compile();
@@ -627,6 +632,24 @@ describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
             tenantId,
             barberProfileId,
             't99',
+            '',
+            undefined,
+        );
+
+        await request(app.getHttpServer())
+            .post(`${base}/working-hours/bootstrap-week`)
+            .send({
+                closedDays: [DayOfWeek.SUNDAY],
+                periods: [{ startTime: '09:00', endTime: '12:00' }],
+            })
+            .expect(201);
+        expect(uc.bootstrapWorkingWeek.run).toHaveBeenCalledWith(
+            tenantId,
+            barberProfileId,
+            {
+                closedDays: [DayOfWeek.SUNDAY],
+                periods: [{ startTime: '09:00', endTime: '12:00' }],
+            },
             '',
             undefined,
         );

@@ -10,6 +10,7 @@ import { GetBarberProfileUseCase } from 'src/modules/barber-profile/use-cases/ge
 import { BearerAuthGuard } from 'src/modules/auth/guards/bearer-auth.guard';
 import { TenantInterceptor } from 'src/common/interceptors/tenant.interceptor';
 import { TenantMembershipGuard } from 'src/common/guards/tenant-membership.guard';
+import { TenantResolverGuard } from 'src/common/guards/tenant-resolver.guard';
 import { TenantRolesGuard } from 'src/common/guards/tenant-roles.guard';
 import { BarberProfileEntity } from 'src/modules/barber-profile/entities/barber-profile.entity';
 import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
@@ -65,6 +66,8 @@ describe('BarberProfileController (HTTP)', () => {
             .overrideInterceptor(TenantInterceptor)
             .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
             .overrideGuard(TenantMembershipGuard)
+            .useValue({ canActivate: () => true })
+            .overrideGuard(TenantResolverGuard)
             .useValue({ canActivate: () => true })
             .overrideGuard(TenantRolesGuard)
             .useValue({ canActivate: () => true })

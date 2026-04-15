@@ -138,4 +138,32 @@ describe('BootstrapWorkingWeekUseCase', () => {
       ),
     ).rejects.toThrow(BusinessRuleException);
   });
+
+  it('não sobrescreve jornadas existentes quando overwriteExisting=false', async () => {
+    availabilityRepository.findWorkingHoursByBarberAndDay.mockImplementation(
+      (...args: any[]) => {
+        const dayOfWeek = args[2];
+        return Promise.resolve({ id: `existing-${dayOfWeek}`, dayOfWeek });
+      },
+    );
+
+    const result = await useCase.run(
+      tenantId,
+      barberProfileId,
+      {
+        closedDays: [DayOfWeek.SUNDAY],
+        periods: [{ startTime: '09:00', endTime: '12:00' }],
+        overwriteExisting: false,
+      },
+      userId,
+      TenantUserRole.ADMIN,
+    );
+
+    expect(availabilityRepository.createWorkingHours).not.toHaveBeenCalled();
+    expect(availabilityRepository.updateWorkingHours).not.toHaveBeenCalled();
+    expect(
+      availabilityRepository.softDeleteWorkingHoursPeriod,
+    ).not.toHaveBeenCalled();
+    expect(result).toEqual({ created: 0, updated: 0, skipped: 7 });
+  });
 });
