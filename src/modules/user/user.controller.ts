@@ -17,14 +17,24 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
+import { CreateUserUseCase } from './use-cases/create-user.use-case';
+import { FindUserByEmailUseCase } from './use-cases/find-user-by-email.use-case';
+import { FindUserByIdUseCase } from './use-cases/find-user-by-id.use-case';
+import { UpdateUserUseCase } from './use-cases/update-user.use-case';
+import { DeleteUserUseCase } from './use-cases/delete-user.use-case';
 @ApiTags('users')
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly createUserUseCase: CreateUserUseCase,
+    private readonly findUserByEmailUseCase: FindUserByEmailUseCase,
+    private readonly findUserByIdUseCase: FindUserByIdUseCase,
+    private readonly updateUserUseCase: UpdateUserUseCase,
+    private readonly deleteUserUseCase: DeleteUserUseCase,
+  ) {}
   @Get('by-email')
   @ApiOperation({ summary: 'Busca usuário por e-mail' })
   @ApiQuery({ name: 'email', required: true, description: 'E-mail do usuário' })
@@ -38,7 +48,7 @@ export class UserController {
     @Query('email')
     email: string,
   ) {
-    const user = await this.userService.findByEmail(email);
+    const user = await this.findUserByEmailUseCase.run(email);
     if (!user) throw new NotFoundException('User not found');
     return user;
   }
@@ -58,7 +68,7 @@ export class UserController {
     @Body()
     dto: CreateUserDto,
   ) {
-    return this.userService.create(dto);
+    return await this.createUserUseCase.run(dto);
   }
   @Get(':id')
   @ApiOperation({ summary: 'Busca usuário por ID' })
@@ -73,7 +83,7 @@ export class UserController {
     @Param('id')
     id: string,
   ) {
-    return this.userService.findById(id);
+    return await this.findUserByIdUseCase.run(id);
   }
   @Patch(':id')
   @ApiOperation({
@@ -93,7 +103,7 @@ export class UserController {
     @Body()
     dto: UpdateUserDto,
   ) {
-    return this.userService.update(id, dto);
+    return await this.updateUserUseCase.run(id, dto);
   }
   @Delete(':id')
   @ApiOperation({
@@ -106,6 +116,6 @@ export class UserController {
     @Param('id')
     id: string,
   ) {
-    await this.userService.delete(id);
+    await this.deleteUserUseCase.run(id);
   }
 }
