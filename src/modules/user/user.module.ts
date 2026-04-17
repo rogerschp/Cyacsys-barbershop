@@ -7,19 +7,18 @@ import { UserController } from './user.controller';
 import { UserEntity } from './entities/user.entity';
 import { USER_REPOSITORY } from './interfaces/user-repository.interface';
 import { UserService } from './user.service';
-import { UserSyncService } from './user-sync.service';
+import { UserSyncService } from './infrastructure/user-sync.service';
 @Module({
-    imports: [TypeOrmModule.forFeature([UserEntity])],
-    controllers: [UserController],
-    providers: [
-        PasswordService,
-        { provide: PASSWORD_HASHER, useClass: PasswordService },
-        UserRepository,
-        { provide: USER_REPOSITORY, useClass: UserRepository },
-        UserSyncService,
-        UserService,
-    ],
-    exports: [UserService],
+  imports: [TypeOrmModule.forFeature([UserEntity])],
+  controllers: [UserController],
+  providers: [
+    PasswordService,
+    { provide: PASSWORD_HASHER, useClass: PasswordService },
+    UserRepository,
+    { provide: USER_REPOSITORY, useClass: UserRepository },
+    UserSyncService,
+    UserService,
+  ],
+  exports: [UserService],
 })
-export class UserModule {
-}
+export class UserModule {}
