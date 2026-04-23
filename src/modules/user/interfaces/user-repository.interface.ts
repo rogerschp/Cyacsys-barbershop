@@ -5,6 +5,7 @@ export interface CreateUserPortInput {
   email: string;
   name: string;
   passwordHash: string;
+  telephone: number;
   firebaseUid?: string | null;
   status?: UserStatus;
   role?: Role;

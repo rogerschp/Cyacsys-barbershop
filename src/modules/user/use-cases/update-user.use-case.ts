@@ -32,11 +32,14 @@ export class UpdateUserUseCase {
     const data: {
       name?: string;
       status?: UserStatus;
+      telephone?: number;
       role?: Role;
       passwordHash?: string;
     } = {};
     if (dto.name !== undefined) data.name = dto.name;
     if (dto.status !== undefined) data.status = dto.status;
+    if (dto.telephone !== undefined) data.telephone = dto.telephone;
+
     if (dto.role !== undefined) data.role = dto.role;
     if (dto.password) {
       data.passwordHash = await this.passwordService.hash(dto.password);

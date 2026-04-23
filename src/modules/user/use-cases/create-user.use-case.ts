@@ -33,6 +33,7 @@ export class CreateUserUseCase {
     const user = await this.repo.create({
       email: dto.email,
       name: dto.name,
+      telephone: dto.telephone,
       passwordHash,
       role: dto.role,
     });
