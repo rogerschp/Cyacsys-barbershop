@@ -69,6 +69,7 @@ describe('UserRepository', () => {
       const result = await repository.findByEmail('user@email.com');
       expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
         where: { email: 'user@email.com' },
+        relations: ['address'],
       });
       expect(result).toEqual(mockUser);
     });
@@ -84,6 +85,7 @@ describe('UserRepository', () => {
       const result = await repository.findById('uuid-123');
       expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
         where: { id: 'uuid-123' },
+        relations: ['address'],
       });
       expect(result).toEqual(mockUser);
     });
