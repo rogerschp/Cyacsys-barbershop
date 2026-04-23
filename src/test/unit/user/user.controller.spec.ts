@@ -28,7 +28,7 @@ describe('UserController (HTTP)', () => {
     passwordHash: '$2a$10$hash',
     status: UserStatus.ACTIVE,
     role: Role.CLIENT,
-    telephone: 5511999999999,
+    telephone: '5511999999999',
     addressId: null,
     address: null,
     createdAt: new Date('2021-01-01'),
