@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { TenantService } from '../tenant/tenant.service';
-import { UserService } from '../user/user.service';
+import { FindUserByIdUseCase } from '../user/use-cases/find-user-by-id.use-case';
 import { TenantUserEntity } from './entities/tenant-user.entity';
 import { TenantUserRole } from './entities/tenant-user-role.enum';
 import { TenantUserStatus } from './entities/tenant-user-status.enum';
@@ -20,7 +20,7 @@ export class TenantUserService {
     @Inject(TENANT_USER_REPOSITORY)
     private readonly repo: ITenantUserRepository,
     private readonly tenantService: TenantService,
-    private readonly userService: UserService,
+    private readonly findUserByIdUseCase: FindUserByIdUseCase,
   ) {}
   async addUserToTenant(
     userId: string,
@@ -28,7 +28,7 @@ export class TenantUserService {
     role: TenantUserRole,
   ): Promise<TenantUserEntity> {
     await this.tenantService.findById(tenantId);
-    await this.userService.findById(userId);
+    await this.findUserByIdUseCase.run(userId);
     const existing = await this.repo.findByTenantAndUser(tenantId, userId);
     if (existing) {
       throw new ConflictException(
