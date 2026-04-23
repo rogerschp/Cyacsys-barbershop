@@ -9,9 +9,7 @@ import {
 } from 'src/common/interfaces/password-hasher.interface';
 import { UserSyncService } from '../infrastructure/user-sync.service';
 import { CreateUserDto } from '../dto/create-user.dto';
-import { UserEntity } from '../entities/user.entity';
 import { FindUserByIdUseCase } from './find-user-by-id.use-case';
-import { FindUserByEmailUseCase } from './find-user-by-email.use-case';
 import { AddressRepository } from 'src/repository/address/address.repository';
 import { CheckUserExistsByEmailUseCase } from './check-user-exists-by-email.use-case';
 import { UserResponseDto } from '../dto/user-response.dto';

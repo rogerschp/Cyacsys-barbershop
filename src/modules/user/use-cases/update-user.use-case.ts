@@ -11,7 +11,6 @@ import {
 } from 'src/common/interfaces/password-hasher.interface';
 import { UserSyncService } from '../infrastructure/user-sync.service';
 import { UpdateUserDto } from '../dto/update-user.dto';
-import { UserEntity } from '../entities/user.entity';
 import { Role } from 'src/common/enums/role.enum';
 import { UserStatus } from '../entities/user-status.enum';
 import { UserResponseDto } from '../dto/user-response.dto';
