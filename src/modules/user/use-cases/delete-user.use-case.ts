@@ -5,7 +5,7 @@ import {
 } from '../interfaces/user-repository.interface';
 import { FindUserByIdUseCase } from './find-user-by-id.use-case';
 import { UserSyncService } from '../infrastructure/user-sync.service';
-import { UserEntity } from '../entities/user.entity';
+import { UserResponseDto } from '../dto/user-response.dto';
 
 @Injectable()
 export class DeleteUserUseCase {
@@ -15,7 +15,7 @@ export class DeleteUserUseCase {
     private readonly findUserById: FindUserByIdUseCase,
     private readonly userSyncService: UserSyncService,
   ) {}
-  async run(id: string): Promise<UserEntity> {
+  async run(id: string): Promise<UserResponseDto> {
     const user = await this.findUserById.run(id);
     if (!user) throw new NotFoundException('User not found!');
     if (user.firebaseUid) {

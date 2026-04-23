@@ -5,7 +5,8 @@ export interface CreateUserPortInput {
   email: string;
   name: string;
   passwordHash: string;
-  telephone: number;
+  telephone: string;
+  addressId?: string | null;
   firebaseUid?: string | null;
   status?: UserStatus;
   role?: Role;
@@ -13,6 +14,8 @@ export interface CreateUserPortInput {
 export interface UpdateUserPortInput {
   email?: string;
   name?: string;
+  telephone?: string;
+  addressId?: string | null;
   status?: UserStatus;
   role?: Role;
   passwordHash?: string;

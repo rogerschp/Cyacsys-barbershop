@@ -3,7 +3,8 @@ import {
   IUserRepository,
   USER_REPOSITORY,
 } from '../interfaces/user-repository.interface';
-import { UserEntity } from '../entities/user.entity';
+import { UserResponseDto } from '../dto/user-response.dto';
+import { UserMapper } from '../mappers/user.mapper';
 
 @Injectable()
 export class FindUserByEmailUseCase {
@@ -11,11 +12,11 @@ export class FindUserByEmailUseCase {
     @Inject(USER_REPOSITORY)
     private readonly repo: IUserRepository,
   ) {}
-  async run(email: string): Promise<UserEntity> {
+  async run(email: string): Promise<UserResponseDto> {
     const user = await this.repo.findByEmail(email);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return user;
+    return UserMapper.toResponse(user);
   }
 }

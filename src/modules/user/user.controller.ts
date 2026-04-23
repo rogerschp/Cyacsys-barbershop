@@ -68,6 +68,7 @@ export class UserController {
     @Body()
     dto: CreateUserDto,
   ) {
+    console.log(dto);
     return await this.createUserUseCase.run(dto);
   }
   @Get(':id')

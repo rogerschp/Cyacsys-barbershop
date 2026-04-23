@@ -3,7 +3,8 @@ import {
   IUserRepository,
   USER_REPOSITORY,
 } from '../interfaces/user-repository.interface';
-import { UserEntity } from '../entities/user.entity';
+import { UserMapper } from '../mappers/user.mapper';
+import { UserResponseDto } from '../dto/user-response.dto';
 
 @Injectable()
 export class FindUserByIdUseCase {
@@ -11,11 +12,11 @@ export class FindUserByIdUseCase {
     @Inject(USER_REPOSITORY)
     private readonly repo: IUserRepository,
   ) {}
-  async run(id: string): Promise<UserEntity> {
+  async run(id: string): Promise<UserResponseDto> {
     const user = await this.repo.findById(id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return user;
+    return UserMapper.toResponse(user);
   }
 }

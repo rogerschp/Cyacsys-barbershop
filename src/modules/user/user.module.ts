@@ -15,8 +15,10 @@ import { SyncUserWithFirebaseUseCase } from './use-cases/sync-user-with-firebase
 import { UpdateUserUseCase } from './use-cases/update-user.use-case';
 import { ValidateUserAccessUseCase } from './use-cases/validate-user-access.use-case';
 import { DeleteUserUseCase } from './use-cases/delete-user.use-case';
+import { AddressModule } from '../address/address.module';
+import { CheckUserExistsByEmailUseCase } from './use-cases/check-user-exists-by-email.use-case';
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  imports: [TypeOrmModule.forFeature([UserEntity]), AddressModule],
   controllers: [UserController],
   providers: [
     PasswordService,
@@ -32,7 +34,18 @@ import { DeleteUserUseCase } from './use-cases/delete-user.use-case';
     UpdateUserUseCase,
     ValidateUserAccessUseCase,
     DeleteUserUseCase,
+    CheckUserExistsByEmailUseCase,
   ],
-  exports: [USER_REPOSITORY, PASSWORD_HASHER],
+  exports: [
+    USER_REPOSITORY,
+    PASSWORD_HASHER,
+    FindUserByIdUseCase,
+    FindUserByFirebaseUidUseCase,
+    ValidateUserAccessUseCase,
+    SyncUserWithFirebaseUseCase,
+    FindUserByEmailUseCase,
+    FindUserByFirebaseUidUseCase,
+    FindUserByIdUseCase,
+  ],
 })
 export class UserModule {}

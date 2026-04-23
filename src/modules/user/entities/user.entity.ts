@@ -56,7 +56,7 @@ export class UserEntity {
     example: '5511992834085',
     description: 'Telefone para contato do usuario',
   })
-  telephone: number;
+  telephone: string;
   @Column({ name: 'address_id', nullable: true })
   @ApiProperty({ nullable: true, description: 'FK para o endereço do usuário' })
   addressId: string | null;

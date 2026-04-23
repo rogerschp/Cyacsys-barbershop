@@ -14,25 +14,26 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 import { UserEntity } from '../entities/user.entity';
 import { Role } from 'src/common/enums/role.enum';
 import { UserStatus } from '../entities/user-status.enum';
+import { UserResponseDto } from '../dto/user-response.dto';
 
 @Injectable()
 export class UpdateUserUseCase {
   constructor(
-    @Inject(USER_REPOSITORY)
     private readonly findUserById: FindUserByIdUseCase,
     private readonly findUserByEmail: FindUserByEmailUseCase,
     @Inject(PASSWORD_HASHER)
     private readonly passwordService: IPasswordHasher,
+    @Inject(USER_REPOSITORY)
     private readonly repo: IUserRepository,
     private readonly userSyncService: UserSyncService,
   ) {}
-  async run(id: string, dto: UpdateUserDto): Promise<UserEntity> {
+  async run(id: string, dto: UpdateUserDto): Promise<UserResponseDto> {
     const user = await this.findUserById.run(id);
     if (!user) throw new NotFoundException('User not found');
     const data: {
       name?: string;
       status?: UserStatus;
-      telephone?: number;
+      telephone?: string;
       role?: Role;
       passwordHash?: string;
     } = {};
@@ -52,7 +53,7 @@ export class UpdateUserUseCase {
         password?: string;
       } = {};
       if (dto.status !== undefined) {
-        firebaseUpdate.disabled = status !== UserStatus.ACTIVE;
+        firebaseUpdate.disabled = dto.status !== UserStatus.ACTIVE;
       }
       if (dto.name !== undefined) firebaseUpdate.displayName = dto.name;
       if (dto.password) firebaseUpdate.password = dto.password;
