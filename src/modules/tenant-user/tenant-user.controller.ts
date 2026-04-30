@@ -19,7 +19,6 @@ import {
 import { TenantRoles } from '../../common/decorators/tenant-roles.decorator';
 import { TenantMembershipGuard } from '../../common/guards/tenant-membership.guard';
 import { TenantRolesGuard } from '../../common/guards/tenant-roles.guard';
-//import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor';
 import { BearerAuthGuard } from '../auth/guards/bearer-auth.guard';
 import { AddMemberToTenantDto } from './dto/add-member-to-tenant.dto';
 import { MemberResponseDto } from './dto/member-response.dto';

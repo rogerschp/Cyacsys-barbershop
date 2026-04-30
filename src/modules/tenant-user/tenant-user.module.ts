@@ -13,32 +13,31 @@ import { TENANT_USER_REPOSITORY } from './interfaces/tenant-user-repository.inte
 import { TenantUserController } from './tenant-user.controller';
 import { TenantUserService } from './tenant-user.service';
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([TenantUserEntity]),
-        AuthModule,
-        forwardRef(() => TenantModule),
-        UserModule,
-    ],
-    controllers: [TenantUserController],
-    providers: [
-        TenantUserRepository,
-        { provide: TENANT_USER_REPOSITORY, useClass: TenantUserRepository },
-        TenantUserService,
-        TenantMembershipResolverAdapter,
-        {
-            provide: TENANT_MEMBERSHIP_RESOLVER,
-            useClass: TenantMembershipResolverAdapter,
-        },
-        TenantMembershipGuard,
-        TenantRolesGuard,
-    ],
-    exports: [
-        TenantUserService,
-        TENANT_MEMBERSHIP_RESOLVER,
-        TenantMembershipGuard,
-        TenantRolesGuard,
-        TypeOrmModule,
-    ],
+  imports: [
+    TypeOrmModule.forFeature([TenantUserEntity]),
+    AuthModule,
+    forwardRef(() => TenantModule),
+    UserModule,
+  ],
+  controllers: [TenantUserController],
+  providers: [
+    TenantUserRepository,
+    { provide: TENANT_USER_REPOSITORY, useClass: TenantUserRepository },
+    TenantUserService,
+    TenantMembershipResolverAdapter,
+    {
+      provide: TENANT_MEMBERSHIP_RESOLVER,
+      useClass: TenantMembershipResolverAdapter,
+    },
+    TenantMembershipGuard,
+    TenantRolesGuard,
+  ],
+  exports: [
+    TenantUserService,
+    TENANT_MEMBERSHIP_RESOLVER,
+    TenantMembershipGuard,
+    TenantRolesGuard,
+    TypeOrmModule,
+  ],
 })
-export class TenantUserModule {
-}
+export class TenantUserModule {}
