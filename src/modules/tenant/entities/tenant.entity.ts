@@ -72,4 +72,22 @@ export class TenantEntity {
     description: 'Soft delete; slug nunca é reutilizado',
   })
   deletedAt?: Date;
+
+  @Column({ type: 'jsonb', nullable: true })
+  @ApiProperty({
+    example: { instagram: '@vitinho_barber', facebook: 'barbeariavitinho' },
+    description: 'Objeto contendo links ou handles de redes sociais',
+    required: false,
+    nullable: true,
+  })
+  socialMedia: Record<string, string> | null;
+
+  @Column({ nullable: true, length: 14 })
+  @ApiProperty({
+    example: '12345678000199',
+    description: 'CNPJ da barbearia (apenas números). Opcional.',
+    required: false,
+    nullable: true,
+  })
+  cnpj: string | null;
 }

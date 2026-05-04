@@ -11,7 +11,12 @@ import { TenantMembershipResolverAdapter } from './adapters/tenant-membership-re
 import { TenantUserEntity } from './entities/tenant-user.entity';
 import { TENANT_USER_REPOSITORY } from './interfaces/tenant-user-repository.interface';
 import { TenantUserController } from './tenant-user.controller';
-import { TenantUserService } from './tenant-user.service';
+import { AddUserToTenantUseCase } from './use-cases/add-user-to-tenant.use-case';
+import { FindMembershipByTenantIdAndUserIdUseCase } from './use-cases/find-membership-by-tenantId-and-userId.use-case';
+import { FindTenantUserByIdAndTenantUseCase } from './use-cases/find-tenant-user-by-id-and-tenant.use-case';
+import { FindUserRoleByUserIdAndTenantIdUseCase } from './use-cases/find-user-role-by-userId-and-tenantId.use-case';
+import { RemoveUserFromTenantByUserIdAndTenantIdUseCase } from './use-cases/remove-user-from-tenant-by-userId-and-tenantId.use-case';
+import { ValidateMembershipByUserIdAndTenantIdUseCase } from './use-cases/validate-membership-by-userId-and-tenantId.use-case';
 @Module({
   imports: [
     TypeOrmModule.forFeature([TenantUserEntity]),
@@ -23,7 +28,12 @@ import { TenantUserService } from './tenant-user.service';
   providers: [
     TenantUserRepository,
     { provide: TENANT_USER_REPOSITORY, useClass: TenantUserRepository },
-    TenantUserService,
+    AddUserToTenantUseCase,
+    FindTenantUserByIdAndTenantUseCase,
+    FindMembershipByTenantIdAndUserIdUseCase,
+    FindUserRoleByUserIdAndTenantIdUseCase,
+    ValidateMembershipByUserIdAndTenantIdUseCase,
+    RemoveUserFromTenantByUserIdAndTenantIdUseCase,
     TenantMembershipResolverAdapter,
     {
       provide: TENANT_MEMBERSHIP_RESOLVER,
@@ -33,7 +43,12 @@ import { TenantUserService } from './tenant-user.service';
     TenantRolesGuard,
   ],
   exports: [
-    TenantUserService,
+    AddUserToTenantUseCase,
+    FindTenantUserByIdAndTenantUseCase,
+    FindMembershipByTenantIdAndUserIdUseCase,
+    FindUserRoleByUserIdAndTenantIdUseCase,
+    ValidateMembershipByUserIdAndTenantIdUseCase,
+    RemoveUserFromTenantByUserIdAndTenantIdUseCase,
     TENANT_MEMBERSHIP_RESOLVER,
     TenantMembershipGuard,
     TenantRolesGuard,
