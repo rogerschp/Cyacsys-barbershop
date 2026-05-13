@@ -5,8 +5,8 @@ import { GetAvailableSlotsUseCase } from 'src/modules/availability/use-cases/get
 import { AVAILABILITY_REPOSITORY } from 'src/modules/availability/interfaces/availability-repository.interface';
 import { BARBER_PROFILE_REPOSITORY } from 'src/modules/barber-profile/interfaces/barber-profile-repository.interface';
 import { SERVICE_REPOSITORY } from 'src/modules/service/interfaces/service-repository.interface';
-import { TenantUserService } from 'src/modules/tenant-user/tenant-user.service';
-import { TenantService } from 'src/modules/tenant/tenant.service';
+import { FindTenantUserByIdAndTenantUseCase } from 'src/modules/tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
+import { FindTenantByIdUseCase } from 'src/modules/tenant/use-cases/find-tenant-by-id.use-case';
 import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
 import { TenantUserRole } from 'src/modules/tenant-user/entities/tenant-user-role.enum';
 import { TenantStatus } from 'src/modules/tenant/entities/tenant-status.enum';
@@ -25,9 +25,9 @@ describe('GetAvailableSlotsUseCase', () => {
   let serviceRepository: {
     findById: jest.Mock;
   };
-  let tenantUserService: Record<string, jest.Mock>;
-  let tenantService: {
-    findById: jest.Mock;
+  let findTenantUserByIdAndTenantUseCase: Record<string, jest.Mock>;
+  let findTenantByIdUseCase: {
+    run: jest.Mock;
   };
   const tenantId = 'tenant-uuid';
   const barberProfileId = 'bp-uuid';
@@ -93,9 +93,9 @@ describe('GetAvailableSlotsUseCase', () => {
     serviceRepository = {
       findById: jest.fn().mockResolvedValue(mockService),
     };
-    tenantUserService = {};
-    tenantService = {
-      findById: jest.fn().mockResolvedValue(mockTenant),
+    findTenantUserByIdAndTenantUseCase = { run: jest.fn() };
+    findTenantByIdUseCase = {
+      run: jest.fn().mockResolvedValue(mockTenant),
     };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -106,8 +106,11 @@ describe('GetAvailableSlotsUseCase', () => {
           useValue: barberProfileRepository,
         },
         { provide: SERVICE_REPOSITORY, useValue: serviceRepository },
-        { provide: TenantUserService, useValue: tenantUserService },
-        { provide: TenantService, useValue: tenantService },
+        {
+          provide: FindTenantUserByIdAndTenantUseCase,
+          useValue: findTenantUserByIdAndTenantUseCase,
+        },
+        { provide: FindTenantByIdUseCase, useValue: findTenantByIdUseCase },
       ],
     }).compile();
     useCase = module.get(GetAvailableSlotsUseCase);

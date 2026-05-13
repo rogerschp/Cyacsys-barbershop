@@ -29,16 +29,26 @@ import { BearerAuthGuard } from '../auth/guards/bearer-auth.guard';
 import { RequestUser } from '../auth/strategies/bearer-token.strategy';
 import { TenantUserRole } from '../tenant-user/entities/tenant-user-role.enum';
 import { CreateTenantWithOwnerUseCase } from './use-cases/create-tenant-with-owner.use-case';
+import { CreateTenantUseCase } from './use-cases/create-tenant.use-case';
+import { DeleteTenantByIdUseCase } from './use-cases/delete-tenant-by-id.use-case';
+import { FindTenantByIdUseCase } from './use-cases/find-tenant-by-id.use-case';
+import { FindTenantBySlugUseCase } from './use-cases/find-tenant-by-slug.use-case';
+import { UpdateTenantByIdUseCase } from './use-cases/update-tenant-by-id.use-case';
+import { ValidateSlugUseCase } from './use-cases/validate-slug.use-case';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { ValidateSlugDto } from './dto/validate-slug.dto';
 import { TenantEntity } from './entities/tenant.entity';
-import { TenantService } from './tenant.service';
 @ApiTags('tenants')
 @Controller('tenants')
 export class TenantController {
   constructor(
-    private readonly tenantService: TenantService,
+    private readonly validateSlugUseCase: ValidateSlugUseCase,
+    private readonly findTenantByIdUseCase: FindTenantByIdUseCase,
+    private readonly findTenantBySlugUseCase: FindTenantBySlugUseCase,
+    private readonly createTenantUseCase: CreateTenantUseCase,
+    private readonly updateTenantByIdUseCase: UpdateTenantByIdUseCase,
+    private readonly deleteTenantByIdUseCase: DeleteTenantByIdUseCase,
     private readonly createTenantWithOwnerUseCase: CreateTenantWithOwnerUseCase,
   ) {}
   @Get('validate-slug')
@@ -52,7 +62,7 @@ export class TenantController {
     @Query()
     query: ValidateSlugDto,
   ) {
-    return this.tenantService.validateSlug(query);
+    return this.validateSlugUseCase.run(query);
   }
   @Get('by-id/:id')
   @ApiOperation({ summary: 'Busca tenant por ID' })
@@ -67,7 +77,7 @@ export class TenantController {
     @Param('id')
     id: string,
   ) {
-    return this.tenantService.findById(id);
+    return this.findTenantByIdUseCase.run(id);
   }
   @Get('by-slug/:slug')
   @ApiOperation({ summary: 'Busca tenant por slug' })
@@ -82,7 +92,7 @@ export class TenantController {
     @Param('slug')
     slug: string,
   ) {
-    return this.tenantService.findBySlug(slug);
+    return this.findTenantBySlugUseCase.run(slug);
   }
   @Post()
   @ApiOperation({ summary: 'Cria um novo tenant' })
@@ -98,7 +108,7 @@ export class TenantController {
     @Body()
     dto: CreateTenantDto,
   ) {
-    return this.tenantService.create(dto);
+    return this.createTenantUseCase.run(dto);
   }
   @Post('with-owner')
   @UseGuards(BearerAuthGuard)
@@ -156,7 +166,7 @@ export class TenantController {
     @Body()
     dto: UpdateTenantDto,
   ) {
-    return this.tenantService.update(id, dto);
+    return this.updateTenantByIdUseCase.run(id, dto);
   }
   @Delete(':id')
   @UseGuards(BearerAuthGuard)
@@ -180,6 +190,6 @@ export class TenantController {
     @Param('id')
     id: string,
   ) {
-    return this.tenantService.remove(id);
+    return this.deleteTenantByIdUseCase.run(id);
   }
 }

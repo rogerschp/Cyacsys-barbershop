@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
 import { hasEffectiveTenantRole } from '../../../common/utils/tenant-role.utils';
 import { TenantUserRole } from '../../tenant-user/entities/tenant-user-role.enum';
-import { TenantUserService } from '../../tenant-user/tenant-user.service';
+import { FindTenantUserByIdAndTenantUseCase } from '../../tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { CreateBarberProfileDto } from '../dto/create-barber-profile.dto';
 import { BarberProfileEntity } from '../entities/barber-profile.entity';
 import {
@@ -15,14 +15,14 @@ export class CreateBarberProfileUseCase {
   constructor(
     @Inject(BARBER_PROFILE_REPOSITORY)
     private readonly barberProfileRepository: IBarberProfileRepository,
-    private readonly tenantUserService: TenantUserService,
+    private readonly findTenantUserByIdAndTenantUseCase: FindTenantUserByIdAndTenantUseCase,
   ) {}
   async run(
     tenantId: string,
     dto: CreateBarberProfileDto,
     createdBy: string,
   ): Promise<BarberProfileEntity> {
-    const tenantUser = await this.tenantUserService.getByIdAndTenant(
+    const tenantUser = await this.findTenantUserByIdAndTenantUseCase.run(
       dto.tenantUserId,
       tenantId,
     );

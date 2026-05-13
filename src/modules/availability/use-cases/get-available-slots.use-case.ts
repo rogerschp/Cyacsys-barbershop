@@ -1,9 +1,9 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
-import { TenantService } from '../../tenant/tenant.service';
+import { FindTenantByIdUseCase } from '../../tenant/use-cases/find-tenant-by-id.use-case';
 import { IServiceRepository, SERVICE_REPOSITORY, } from '../../service/interfaces/service-repository.interface';
-import { TenantUserService } from '../../tenant-user/tenant-user.service';
+import { FindTenantUserByIdAndTenantUseCase } from '../../tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { BARBER_PROFILE_REPOSITORY } from '../../barber-profile/interfaces/barber-profile-repository.interface';
 import type { IBarberProfileRepository } from '../../barber-profile/interfaces/barber-profile-repository.interface';
 import { AvailableSlotsResponseDto } from '../dto/available-slots-response.dto';
@@ -20,7 +20,7 @@ export class GetAvailableSlotsUseCase {
     @Inject(BARBER_PROFILE_REPOSITORY)
     private readonly barberProfileRepository: IBarberProfileRepository, 
     @Inject(SERVICE_REPOSITORY)
-    private readonly serviceRepository: IServiceRepository, private readonly tenantUserService: TenantUserService, private readonly tenantService: TenantService) { }
+    private readonly serviceRepository: IServiceRepository, private readonly findTenantUserByIdAndTenantUseCase: FindTenantUserByIdAndTenantUseCase, private readonly findTenantByIdUseCase: FindTenantByIdUseCase) { }
     async run(tenantId: string, barberProfileId: string, serviceId: string, dateYmd: string, userId: string, callerRole?: string): Promise<AvailableSlotsResponseDto> {
         await assertBarberAgendaAccess({
             tenantId,
@@ -28,9 +28,9 @@ export class GetAvailableSlotsUseCase {
             userId,
             callerRole,
             barberProfileRepository: this.barberProfileRepository,
-            tenantUserService: this.tenantUserService,
+            findTenantUserByIdAndTenant: this.findTenantUserByIdAndTenantUseCase,
         });
-        const tenant = await this.tenantService.findById(tenantId);
+        const tenant = await this.findTenantByIdUseCase.run(tenantId);
         const timezone = tenant.timezone || 'America/Sao_Paulo';
         const dow = dayOfWeekForTenantDate(dateYmd, timezone);
         const barber = await this.barberProfileRepository.findById(barberProfileId, tenantId);

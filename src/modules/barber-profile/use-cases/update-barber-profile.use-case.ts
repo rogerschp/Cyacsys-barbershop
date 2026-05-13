@@ -1,7 +1,7 @@
 import { ForbiddenException, Inject, Injectable, Logger, NotFoundException, } from '@nestjs/common';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
 import { TenantUserRole } from '../../tenant-user/entities/tenant-user-role.enum';
-import { TenantUserService } from '../../tenant-user/tenant-user.service';
+import { FindTenantUserByIdAndTenantUseCase } from '../../tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { UpdateBarberProfileDto } from '../dto/update-barber-profile.dto';
 import { BarberProfileEntity } from '../entities/barber-profile.entity';
 import { BARBER_PROFILE_REPOSITORY, IBarberProfileRepository, UpdateBarberProfileData, } from '../interfaces/barber-profile-repository.interface';
@@ -10,14 +10,14 @@ export class UpdateBarberProfileUseCase {
     private readonly logger = new Logger(UpdateBarberProfileUseCase.name);
     constructor(
     @Inject(BARBER_PROFILE_REPOSITORY)
-    private readonly barberProfileRepository: IBarberProfileRepository, private readonly tenantUserService: TenantUserService) { }
+    private readonly barberProfileRepository: IBarberProfileRepository, private readonly findTenantUserByIdAndTenantUseCase: FindTenantUserByIdAndTenantUseCase) { }
     async run(tenantId: string, barberProfileId: string, dto: UpdateBarberProfileDto, performedBy?: string, callerRole?: string): Promise<BarberProfileEntity> {
         const existing = await this.barberProfileRepository.findById(barberProfileId, tenantId);
         if (!existing) {
             throw new NotFoundException('Barber profile not found');
         }
         if (callerRole === TenantUserRole.BARBER) {
-            const tenantUser = await this.tenantUserService.getByIdAndTenant(existing.tenantUserId, tenantId);
+            const tenantUser = await this.findTenantUserByIdAndTenantUseCase.run(existing.tenantUserId, tenantId);
             if (tenantUser.userId !== performedBy) {
                 throw new ForbiddenException('Só é possível alterar o próprio perfil de barbeiro.');
             }

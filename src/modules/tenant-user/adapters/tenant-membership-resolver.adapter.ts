@@ -3,15 +3,17 @@ import {
   ITenantMembershipResolver,
   TenantMembershipInfo,
 } from '../../../common/interfaces/tenant-membership-resolver.interface';
-import { TenantUserService } from '../tenant-user.service';
+import { ValidateMembershipByUserIdAndTenantIdUseCase } from '../use-cases/validate-membership-by-userId-and-tenantId.use-case';
 @Injectable()
 export class TenantMembershipResolverAdapter implements ITenantMembershipResolver {
-  constructor(private readonly tenantUserService: TenantUserService) {}
+  constructor(
+    private readonly validateMembershipByUserIdAndTenantIdUseCase: ValidateMembershipByUserIdAndTenantIdUseCase,
+  ) {}
   async validateMembership(
     userId: string,
     tenantId: string,
   ): Promise<TenantMembershipInfo> {
-    const entity = await this.tenantUserService.validateMembership(
+    const entity = await this.validateMembershipByUserIdAndTenantIdUseCase.run(
       userId,
       tenantId,
     );

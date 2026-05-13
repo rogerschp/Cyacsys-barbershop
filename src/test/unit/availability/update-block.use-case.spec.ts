@@ -3,7 +3,7 @@ import { NotFoundException } from '@nestjs/common';
 import { UpdateBlockUseCase } from 'src/modules/availability/use-cases/update-block.use-case';
 import { AVAILABILITY_REPOSITORY } from 'src/modules/availability/interfaces/availability-repository.interface';
 import { BARBER_PROFILE_REPOSITORY } from 'src/modules/barber-profile/interfaces/barber-profile-repository.interface';
-import { TenantUserService } from 'src/modules/tenant-user/tenant-user.service';
+import { FindTenantUserByIdAndTenantUseCase } from 'src/modules/tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
 import { TenantUserRole } from 'src/modules/tenant-user/entities/tenant-user-role.enum';
 import { BlockReason } from 'src/modules/availability/entities/block-reason.enum';
@@ -17,7 +17,7 @@ describe('UpdateBlockUseCase', () => {
     let barberProfileRepository: {
         findById: jest.Mock;
     };
-    let tenantUserService: Record<string, jest.Mock>;
+    let findTenantUserByIdAndTenantUseCase: Record<string, jest.Mock>;
     const tenantId = 'tenant-uuid';
     const barberProfileId = 'bp-uuid';
     const blockId = 'block-uuid';
@@ -46,7 +46,7 @@ describe('UpdateBlockUseCase', () => {
         barberProfileRepository = {
             findById: jest.fn().mockResolvedValue({ id: barberProfileId }),
         };
-        tenantUserService = {};
+        findTenantUserByIdAndTenantUseCase = { run: jest.fn() };
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 UpdateBlockUseCase,
@@ -55,7 +55,10 @@ describe('UpdateBlockUseCase', () => {
                     provide: BARBER_PROFILE_REPOSITORY,
                     useValue: barberProfileRepository,
                 },
-                { provide: TenantUserService, useValue: tenantUserService },
+                {
+                    provide: FindTenantUserByIdAndTenantUseCase,
+                    useValue: findTenantUserByIdAndTenantUseCase,
+                },
             ],
         }).compile();
         useCase = module.get(UpdateBlockUseCase);

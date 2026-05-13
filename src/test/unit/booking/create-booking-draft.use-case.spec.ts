@@ -6,8 +6,9 @@ import { CreateBookingDraftUseCase } from 'src/modules/booking/use-cases/create-
 import { BOOKING_REPOSITORY } from 'src/modules/booking/interfaces/booking-repository.interface';
 import { BARBER_PROFILE_REPOSITORY } from 'src/modules/barber-profile/interfaces/barber-profile-repository.interface';
 import { SERVICE_REPOSITORY } from 'src/modules/service/interfaces/service-repository.interface';
-import { TenantUserService } from 'src/modules/tenant-user/tenant-user.service';
-import { TenantService } from 'src/modules/tenant/tenant.service';
+import { FindTenantUserByIdAndTenantUseCase } from 'src/modules/tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
+import { FindTenantByIdUseCase } from 'src/modules/tenant/use-cases/find-tenant-by-id.use-case';
+import { ValidateMembershipByUserIdAndTenantIdUseCase } from 'src/modules/tenant-user/use-cases/validate-membership-by-userId-and-tenantId.use-case';
 import { GetAvailableSlotsUseCase } from 'src/modules/availability/use-cases/get-available-slots.use-case';
 import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
 import { BookingEntity } from 'src/modules/booking/entities/booking.entity';
@@ -24,11 +25,14 @@ describe('CreateBookingDraftUseCase', () => {
     let serviceRepository: {
         findById: jest.Mock;
     };
-    let tenantUserService: {
-        validateMembership: jest.Mock;
+    let findTenantUserByIdAndTenantUseCase: {
+        run: jest.Mock;
     };
-    let tenantService: {
-        findById: jest.Mock;
+    let validateMembershipByUserIdAndTenantIdUseCase: {
+        run: jest.Mock;
+    };
+    let findTenantByIdUseCase: {
+        run: jest.Mock;
     };
     let getAvailableSlotsUseCase: {
         run: jest.Mock;
@@ -67,11 +71,14 @@ describe('CreateBookingDraftUseCase', () => {
                 durationInMinutes: 30,
             }),
         };
-        tenantUserService = {
-            validateMembership: jest.fn().mockResolvedValue({ id: 'tu-uuid' }),
+        findTenantUserByIdAndTenantUseCase = {
+            run: jest.fn(),
         };
-        tenantService = {
-            findById: jest.fn().mockResolvedValue({
+        validateMembershipByUserIdAndTenantIdUseCase = {
+            run: jest.fn().mockResolvedValue({ id: 'tu-uuid' }),
+        };
+        findTenantByIdUseCase = {
+            run: jest.fn().mockResolvedValue({
                 id: tenantId,
                 timezone: 'America/Sao_Paulo',
             }),
@@ -92,8 +99,15 @@ describe('CreateBookingDraftUseCase', () => {
                     useValue: barberProfileRepository,
                 },
                 { provide: SERVICE_REPOSITORY, useValue: serviceRepository },
-                { provide: TenantUserService, useValue: tenantUserService },
-                { provide: TenantService, useValue: tenantService },
+                {
+                    provide: FindTenantUserByIdAndTenantUseCase,
+                    useValue: findTenantUserByIdAndTenantUseCase,
+                },
+                {
+                    provide: ValidateMembershipByUserIdAndTenantIdUseCase,
+                    useValue: validateMembershipByUserIdAndTenantIdUseCase,
+                },
+                { provide: FindTenantByIdUseCase, useValue: findTenantByIdUseCase },
                 { provide: GetAvailableSlotsUseCase, useValue: getAvailableSlotsUseCase },
             ],
         }).compile();

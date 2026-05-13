@@ -3,7 +3,7 @@ import { CreateBarberServiceLinkUseCase } from 'src/modules/availability/use-cas
 import { AVAILABILITY_REPOSITORY } from 'src/modules/availability/interfaces/availability-repository.interface';
 import { SERVICE_REPOSITORY } from 'src/modules/service/interfaces/service-repository.interface';
 import { BARBER_PROFILE_REPOSITORY } from 'src/modules/barber-profile/interfaces/barber-profile-repository.interface';
-import { TenantUserService } from 'src/modules/tenant-user/tenant-user.service';
+import { FindTenantUserByIdAndTenantUseCase } from 'src/modules/tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
 import { TenantUserRole } from 'src/modules/tenant-user/entities/tenant-user-role.enum';
 import { BarberServiceLinkEntity } from 'src/modules/availability/entities/barber-service-link.entity';
@@ -20,7 +20,7 @@ describe('CreateBarberServiceLinkUseCase', () => {
     let barberProfileRepository: {
         findById: jest.Mock;
     };
-    let tenantUserService: Record<string, jest.Mock>;
+    let findTenantUserByIdAndTenantUseCase: Record<string, jest.Mock>;
     const tenantId = 'tenant-uuid';
     const barberProfileId = 'bp-uuid';
     const serviceId = 'service-uuid';
@@ -57,14 +57,17 @@ describe('CreateBarberServiceLinkUseCase', () => {
         barberProfileRepository = {
             findById: jest.fn().mockResolvedValue({ id: barberProfileId }),
         };
-        tenantUserService = {};
+        findTenantUserByIdAndTenantUseCase = { run: jest.fn() };
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 CreateBarberServiceLinkUseCase,
                 { provide: AVAILABILITY_REPOSITORY, useValue: availabilityRepository },
                 { provide: SERVICE_REPOSITORY, useValue: serviceRepository },
                 { provide: BARBER_PROFILE_REPOSITORY, useValue: barberProfileRepository },
-                { provide: TenantUserService, useValue: tenantUserService },
+                {
+                    provide: FindTenantUserByIdAndTenantUseCase,
+                    useValue: findTenantUserByIdAndTenantUseCase,
+                },
             ],
         }).compile();
         useCase = module.get(CreateBarberServiceLinkUseCase);

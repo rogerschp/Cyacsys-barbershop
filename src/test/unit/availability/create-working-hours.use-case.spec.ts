@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CreateWorkingHoursUseCase } from 'src/modules/availability/use-cases/create-working-hours.use-case';
 import { AVAILABILITY_REPOSITORY } from 'src/modules/availability/interfaces/availability-repository.interface';
 import { BARBER_PROFILE_REPOSITORY } from 'src/modules/barber-profile/interfaces/barber-profile-repository.interface';
-import { TenantUserService } from 'src/modules/tenant-user/tenant-user.service';
+import { FindTenantUserByIdAndTenantUseCase } from 'src/modules/tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
 import { DayOfWeek } from 'src/modules/availability/entities/day-of-week.enum';
 import { WorkingHoursEntity } from 'src/modules/availability/entities/working-hours.entity';
@@ -18,8 +18,8 @@ describe('CreateWorkingHoursUseCase', () => {
   let barberProfileRepository: {
     findById: jest.Mock;
   };
-  let tenantUserService: {
-    getByIdAndTenant: jest.Mock;
+  let findTenantUserByIdAndTenantUseCase: {
+    run: jest.Mock;
   };
   const tenantId = 'tenant-uuid';
   const barberProfileId = 'bp-uuid';
@@ -54,8 +54,8 @@ describe('CreateWorkingHoursUseCase', () => {
     barberProfileRepository = {
       findById: jest.fn().mockResolvedValue({ id: barberProfileId }),
     };
-    tenantUserService = {
-      getByIdAndTenant: jest.fn(),
+    findTenantUserByIdAndTenantUseCase = {
+      run: jest.fn(),
     };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -65,7 +65,10 @@ describe('CreateWorkingHoursUseCase', () => {
           provide: BARBER_PROFILE_REPOSITORY,
           useValue: barberProfileRepository,
         },
-        { provide: TenantUserService, useValue: tenantUserService },
+        {
+          provide: FindTenantUserByIdAndTenantUseCase,
+          useValue: findTenantUserByIdAndTenantUseCase,
+        },
       ],
     }).compile();
     useCase = module.get(CreateWorkingHoursUseCase);

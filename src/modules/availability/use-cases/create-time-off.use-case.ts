@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
-import { TenantUserService } from '../../tenant-user/tenant-user.service';
+import { FindTenantUserByIdAndTenantUseCase } from '../../tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { BARBER_PROFILE_REPOSITORY } from '../../barber-profile/interfaces/barber-profile-repository.interface';
 import type { IBarberProfileRepository } from '../../barber-profile/interfaces/barber-profile-repository.interface';
 import { CreateTimeOffDto } from '../dto/create-time-off.dto';
@@ -19,7 +19,7 @@ export class CreateTimeOffUseCase {
     private readonly availabilityRepository: IAvailabilityRepository,
     @Inject(BARBER_PROFILE_REPOSITORY)
     private readonly barberProfileRepository: IBarberProfileRepository,
-    private readonly tenantUserService: TenantUserService,
+    private readonly findTenantUserByIdAndTenantUseCase: FindTenantUserByIdAndTenantUseCase,
   ) {}
   async run(
     tenantId: string,
@@ -34,7 +34,7 @@ export class CreateTimeOffUseCase {
       userId,
       callerRole,
       barberProfileRepository: this.barberProfileRepository,
-      tenantUserService: this.tenantUserService,
+      findTenantUserByIdAndTenant: this.findTenantUserByIdAndTenantUseCase,
     });
     if (!DateTime.fromISO(dto.date).isValid) {
       throw new BusinessRuleException(

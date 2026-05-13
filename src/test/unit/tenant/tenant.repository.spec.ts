@@ -12,7 +12,12 @@ describe('TenantRepository', () => {
         slug: 'barbearia-do-vitinho',
         name: 'Barbearia do Vitinho',
         status: TenantStatus.ACTIVE,
+        telephone: '5511999999999',
+        addressId: null,
+        address: null,
         timezone: 'America/Sao_Paulo',
+        socialMedia: null,
+        cnpj: null,
         createdAt: new Date('2021-01-01'),
         updatedAt: new Date('2021-01-01'),
         deletedAt: undefined,
@@ -86,6 +91,7 @@ describe('TenantRepository', () => {
             const dto = {
                 name: 'Barbearia do Vitinho',
                 slug: 'barbearia-do-vitinho',
+                telephone: '5511999999999',
             };
             typeOrmRepo.create.mockReturnValue(mockTenant as any);
             typeOrmRepo.save.mockResolvedValue(mockTenant);

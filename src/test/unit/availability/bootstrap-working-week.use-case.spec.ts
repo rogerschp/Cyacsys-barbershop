@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AVAILABILITY_REPOSITORY } from '../../../modules/availability/interfaces/availability-repository.interface';
 import { BARBER_PROFILE_REPOSITORY } from '../../../modules/barber-profile/interfaces/barber-profile-repository.interface';
-import { TenantUserService } from '../../../modules/tenant-user/tenant-user.service';
+import { FindTenantUserByIdAndTenantUseCase } from '../../../modules/tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { BootstrapWorkingWeekUseCase } from '../../../modules/availability/use-cases/bootstrap-working-week.use-case';
 import { DayOfWeek } from '../../../modules/availability/entities/day-of-week.enum';
 import { TenantUserRole } from '../../../modules/tenant-user/entities/tenant-user-role.enum';
@@ -12,7 +12,7 @@ describe('BootstrapWorkingWeekUseCase', () => {
   let useCase: BootstrapWorkingWeekUseCase;
   let availabilityRepository: Record<string, jest.Mock>;
   let barberProfileRepository: { findById: jest.Mock };
-  let tenantUserService: { getByIdAndTenant: jest.Mock };
+  let findTenantUserByIdAndTenantUseCase: { run: jest.Mock };
 
   const tenantId = 'tenant-uuid';
   const barberProfileId = 'bp-uuid';
@@ -52,8 +52,8 @@ describe('BootstrapWorkingWeekUseCase', () => {
         .mockImplementation(() => Promise.resolve({ id: barberProfileId })),
     };
 
-    tenantUserService = {
-      getByIdAndTenant: jest.fn(),
+    findTenantUserByIdAndTenantUseCase = {
+      run: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -64,7 +64,10 @@ describe('BootstrapWorkingWeekUseCase', () => {
           provide: BARBER_PROFILE_REPOSITORY,
           useValue: barberProfileRepository,
         },
-        { provide: TenantUserService, useValue: tenantUserService },
+        {
+          provide: FindTenantUserByIdAndTenantUseCase,
+          useValue: findTenantUserByIdAndTenantUseCase,
+        },
       ],
     }).compile();
 

@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ForbiddenException, NotFoundException, } from '@nestjs/common';
 import { UpdateBarberProfileUseCase } from 'src/modules/barber-profile/use-cases/update-barber-profile.use-case';
 import { BARBER_PROFILE_REPOSITORY } from 'src/modules/barber-profile/interfaces/barber-profile-repository.interface';
-import { TenantUserService } from 'src/modules/tenant-user/tenant-user.service';
+import { FindTenantUserByIdAndTenantUseCase } from 'src/modules/tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
 import { TenantUserRole } from 'src/modules/tenant-user/entities/tenant-user-role.enum';
 import { BarberProfileEntity } from 'src/modules/barber-profile/entities/barber-profile.entity';
@@ -13,8 +13,8 @@ describe('UpdateBarberProfileUseCase', () => {
         findById: jest.Mock;
         update: jest.Mock;
     };
-    let tenantUserService: {
-        getByIdAndTenant: jest.Mock;
+    let findTenantUserByIdAndTenantUseCase: {
+        run: jest.Mock;
     };
     const tenantId = 'tenant-uuid';
     const profileId = 'profile-uuid';
@@ -38,8 +38,8 @@ describe('UpdateBarberProfileUseCase', () => {
             findById: jest.fn().mockResolvedValue(mockProfile),
             update: jest.fn().mockResolvedValue({ ...mockProfile, displayName: 'Novo Nome' }),
         };
-        tenantUserService = {
-            getByIdAndTenant: jest.fn().mockResolvedValue({
+        findTenantUserByIdAndTenantUseCase = {
+            run: jest.fn().mockResolvedValue({
                 id: tenantUserId,
                 tenantId,
                 userId: currentUserId,
@@ -50,7 +50,10 @@ describe('UpdateBarberProfileUseCase', () => {
             providers: [
                 UpdateBarberProfileUseCase,
                 { provide: BARBER_PROFILE_REPOSITORY, useValue: barberProfileRepository },
-                { provide: TenantUserService, useValue: tenantUserService },
+                {
+                    provide: FindTenantUserByIdAndTenantUseCase,
+                    useValue: findTenantUserByIdAndTenantUseCase,
+                },
             ],
         }).compile();
         useCase = module.get<UpdateBarberProfileUseCase>(UpdateBarberProfileUseCase);
@@ -65,7 +68,7 @@ describe('UpdateBarberProfileUseCase', () => {
             barberProfileRepository.update.mockResolvedValue(updated);
             const result = await useCase.run(tenantId, profileId, dto, currentUserId, TenantUserRole.ADMIN);
             expect(barberProfileRepository.findById).toHaveBeenCalledWith(profileId, tenantId);
-            expect(tenantUserService.getByIdAndTenant).not.toHaveBeenCalled();
+            expect(findTenantUserByIdAndTenantUseCase.run).not.toHaveBeenCalled();
             expect(barberProfileRepository.update).toHaveBeenCalledWith(profileId, tenantId, { displayName: 'Novo Nome' });
             expect(result.displayName).toBe('Novo Nome');
         });
@@ -93,13 +96,13 @@ describe('UpdateBarberProfileUseCase', () => {
             const updated = { ...mockProfile, ...dto };
             barberProfileRepository.update.mockResolvedValue(updated);
             const result = await useCase.run(tenantId, profileId, dto, currentUserId, TenantUserRole.BARBER);
-            expect(tenantUserService.getByIdAndTenant).toHaveBeenCalledWith(tenantUserId, tenantId);
+            expect(findTenantUserByIdAndTenantUseCase.run).toHaveBeenCalledWith(tenantUserId, tenantId);
             expect(barberProfileRepository.update).toHaveBeenCalledWith(profileId, tenantId, { avatarUrl: dto.avatarUrl, bio: 'Nova bio' });
             expect(result.avatarUrl).toBe(dto.avatarUrl);
             expect(result.bio).toBe('Nova bio');
         });
         it('deve lançar ForbiddenException quando BARBER tenta editar perfil de outro', async () => {
-            tenantUserService.getByIdAndTenant.mockResolvedValue({
+            findTenantUserByIdAndTenantUseCase.run.mockResolvedValue({
                 id: tenantUserId,
                 tenantId,
                 userId: 'outro-user-id',

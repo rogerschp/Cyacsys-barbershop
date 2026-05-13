@@ -13,6 +13,7 @@ import { FindTenantBySlugUseCase } from './use-cases/find-tenant-by-slug.use-cas
 import { UpdateTenantByIdUseCase } from './use-cases/update-tenant-by-id.use-case';
 import { ValidateSlugUseCase } from './use-cases/validate-slug.use-case';
 import { DeleteTenantByIdUseCase } from './use-cases/delete-tenant-by-id.use-case';
+import { CreateTenantUseCase } from './use-cases/create-tenant.use-case';
 @Module({
   imports: [
     TypeOrmModule.forFeature([TenantEntity]),
@@ -28,6 +29,7 @@ import { DeleteTenantByIdUseCase } from './use-cases/delete-tenant-by-id.use-cas
     UpdateTenantByIdUseCase,
     ValidateSlugUseCase,
     DeleteTenantByIdUseCase,
+    CreateTenantUseCase,
     CreateTenantWithOwnerUseCase,
     TenantInterceptor,
   ],
@@ -39,6 +41,7 @@ import { DeleteTenantByIdUseCase } from './use-cases/delete-tenant-by-id.use-cas
     ValidateSlugUseCase,
     DeleteTenantByIdUseCase,
     UpdateTenantByIdUseCase,
+    CreateTenantUseCase,
   ],
 })
 export class TenantModule {}
