@@ -1,7 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { NotFoundException } from '@nestjs/common';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
-import { TenantService } from '../../tenant/tenant.service';
+import { FindTenantByIdUseCase } from '../../tenant/use-cases/find-tenant-by-id.use-case';
 import { CreateServiceDto } from '../dto/create-service.dto';
 import { ServiceEntity } from '../entities/service.entity';
 import { IServiceRepository, SERVICE_REPOSITORY, } from '../interfaces/service-repository.interface';
@@ -12,12 +11,9 @@ export class CreateServiceUseCase {
     private readonly logger = new Logger(CreateServiceUseCase.name);
     constructor(
     @Inject(SERVICE_REPOSITORY)
-    private readonly serviceRepository: IServiceRepository, private readonly tenantService: TenantService) { }
+    private readonly serviceRepository: IServiceRepository, private readonly findTenantByIdUseCase: FindTenantByIdUseCase) { }
     async run(tenantId: string, dto: CreateServiceDto, createdBy: string): Promise<ServiceEntity> {
-        const tenant = await this.tenantService.findById(tenantId);
-        if (!tenant) {
-            throw new NotFoundException('Tenant not found');
-        }
+        await this.findTenantByIdUseCase.run(tenantId);
         if (dto.price < MIN_PRICE) {
             throw new BusinessRuleException('SERVICE_INVALID_PRICE', 'Preço não pode ser negativo.');
         }

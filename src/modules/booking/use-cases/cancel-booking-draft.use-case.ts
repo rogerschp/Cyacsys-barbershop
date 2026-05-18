@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
-import { TenantUserService } from '../../tenant-user/tenant-user.service';
+import { FindTenantUserByIdAndTenantUseCase } from '../../tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { BARBER_PROFILE_REPOSITORY } from '../../barber-profile/interfaces/barber-profile-repository.interface';
 import type { IBarberProfileRepository } from '../../barber-profile/interfaces/barber-profile-repository.interface';
 import { BookingEntity } from '../entities/booking.entity';
@@ -13,7 +13,7 @@ export class CancelBookingDraftUseCase {
     @Inject(BOOKING_REPOSITORY)
     private readonly bookingRepository: IBookingRepository, 
     @Inject(BARBER_PROFILE_REPOSITORY)
-    private readonly barberProfileRepository: IBarberProfileRepository, private readonly tenantUserService: TenantUserService) { }
+    private readonly barberProfileRepository: IBarberProfileRepository, private readonly findTenantUserByIdAndTenantUseCase: FindTenantUserByIdAndTenantUseCase) { }
     async run(tenantId: string, barberProfileId: string, bookingId: string, userId: string, callerRole?: string): Promise<BookingEntity> {
         await assertBarberAgendaAccess({
             tenantId,
@@ -21,7 +21,7 @@ export class CancelBookingDraftUseCase {
             userId,
             callerRole,
             barberProfileRepository: this.barberProfileRepository,
-            tenantUserService: this.tenantUserService,
+            findTenantUserByIdAndTenant: this.findTenantUserByIdAndTenantUseCase,
         });
         const booking = await this.bookingRepository.findByIdForBarber(bookingId, tenantId, barberProfileId);
         if (!booking) {

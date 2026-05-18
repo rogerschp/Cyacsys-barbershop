@@ -4,7 +4,7 @@ import { DateTime } from 'luxon';
 import { ConfirmBookingUseCase } from 'src/modules/booking/use-cases/confirm-booking.use-case';
 import { BOOKING_REPOSITORY } from 'src/modules/booking/interfaces/booking-repository.interface';
 import { BARBER_PROFILE_REPOSITORY } from 'src/modules/barber-profile/interfaces/barber-profile-repository.interface';
-import { TenantUserService } from 'src/modules/tenant-user/tenant-user.service';
+import { FindTenantUserByIdAndTenantUseCase } from 'src/modules/tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
 import { BookingEntity } from 'src/modules/booking/entities/booking.entity';
 import { BookingStatus } from 'src/modules/booking/entities/booking-status.enum';
@@ -18,8 +18,8 @@ describe('ConfirmBookingUseCase', () => {
     let barberProfileRepository: {
         findById: jest.Mock;
     };
-    let tenantUserService: {
-        getByIdAndTenant: jest.Mock;
+    let findTenantUserByIdAndTenantUseCase: {
+        run: jest.Mock;
     };
     const tenantId = 'tenant-uuid';
     const barberProfileId = 'bp-uuid';
@@ -49,8 +49,8 @@ describe('ConfirmBookingUseCase', () => {
         barberProfileRepository = {
             findById: jest.fn().mockResolvedValue({ id: barberProfileId }),
         };
-        tenantUserService = {
-            getByIdAndTenant: jest.fn(),
+        findTenantUserByIdAndTenantUseCase = {
+            run: jest.fn(),
         };
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -60,7 +60,10 @@ describe('ConfirmBookingUseCase', () => {
                     provide: BARBER_PROFILE_REPOSITORY,
                     useValue: barberProfileRepository,
                 },
-                { provide: TenantUserService, useValue: tenantUserService },
+                {
+                    provide: FindTenantUserByIdAndTenantUseCase,
+                    useValue: findTenantUserByIdAndTenantUseCase,
+                },
             ],
         }).compile();
         useCase = module.get(ConfirmBookingUseCase);

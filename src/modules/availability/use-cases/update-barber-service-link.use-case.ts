@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { TenantUserService } from '../../tenant-user/tenant-user.service';
+import { FindTenantUserByIdAndTenantUseCase } from '../../tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { BARBER_PROFILE_REPOSITORY } from '../../barber-profile/interfaces/barber-profile-repository.interface';
 import type { IBarberProfileRepository } from '../../barber-profile/interfaces/barber-profile-repository.interface';
 import { UpdateBarberServiceLinkDto } from '../dto/update-barber-service-link.dto';
@@ -12,7 +12,7 @@ export class UpdateBarberServiceLinkUseCase {
     @Inject(AVAILABILITY_REPOSITORY)
     private readonly availabilityRepository: IAvailabilityRepository, 
     @Inject(BARBER_PROFILE_REPOSITORY)
-    private readonly barberProfileRepository: IBarberProfileRepository, private readonly tenantUserService: TenantUserService) { }
+    private readonly barberProfileRepository: IBarberProfileRepository, private readonly findTenantUserByIdAndTenantUseCase: FindTenantUserByIdAndTenantUseCase) { }
     async run(tenantId: string, barberProfileId: string, linkId: string, dto: UpdateBarberServiceLinkDto, userId: string, callerRole?: string): Promise<BarberServiceLinkEntity> {
         await assertBarberAgendaAccess({
             tenantId,
@@ -20,7 +20,7 @@ export class UpdateBarberServiceLinkUseCase {
             userId,
             callerRole,
             barberProfileRepository: this.barberProfileRepository,
-            tenantUserService: this.tenantUserService,
+            findTenantUserByIdAndTenant: this.findTenantUserByIdAndTenantUseCase,
         });
         const link = await this.availabilityRepository.findBarberServiceLinkById(linkId, tenantId);
         if (!link || link.barberProfileId !== barberProfileId) {

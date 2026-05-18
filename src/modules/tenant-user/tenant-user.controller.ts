@@ -19,13 +19,17 @@ import {
 import { TenantRoles } from '../../common/decorators/tenant-roles.decorator';
 import { TenantMembershipGuard } from '../../common/guards/tenant-membership.guard';
 import { TenantRolesGuard } from '../../common/guards/tenant-roles.guard';
-//import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor';
 import { BearerAuthGuard } from '../auth/guards/bearer-auth.guard';
 import { AddMemberToTenantDto } from './dto/add-member-to-tenant.dto';
 import { MemberResponseDto } from './dto/member-response.dto';
 import { TenantUserRole } from './entities/tenant-user-role.enum';
-import { TenantUserService } from './tenant-user.service';
 import { TenantResolverGuard } from '../../common/guards/tenant-resolver.guard';
+import { AddUserToTenantUseCase } from './use-cases/add-user-to-tenant.use-case';
+import { FindMembershipByTenantIdAndUserIdUseCase } from './use-cases/find-membership-by-tenantId-and-userId.use-case';
+import { FindTenantUserByIdAndTenantUseCase } from './use-cases/find-tenant-user-by-id-and-tenant.use-case';
+import { FindUserRoleByUserIdAndTenantIdUseCase } from './use-cases/find-user-role-by-userId-and-tenantId.use-case';
+import { RemoveUserFromTenantByUserIdAndTenantIdUseCase } from './use-cases/remove-user-from-tenant-by-userId-and-tenantId.use-case';
+import { ValidateMembershipByUserIdAndTenantIdUseCase } from './use-cases/validate-membership-by-userId-and-tenantId.use-case';
 @ApiTags('tenant-members')
 @Controller('tenants/:tenantId/members')
 @UseGuards(
@@ -37,7 +41,14 @@ import { TenantResolverGuard } from '../../common/guards/tenant-resolver.guard';
 //@UseInterceptors(TenantInterceptor)
 @ApiBearerAuth('bearer')
 export class TenantUserController {
-  constructor(private readonly tenantUserService: TenantUserService) {}
+  constructor(
+    private readonly addUserToTenantUseCase: AddUserToTenantUseCase,
+    private readonly findTenantUserByIdAndTenantUseCase: FindTenantUserByIdAndTenantUseCase,
+    private readonly findMembershipByTenantIdAndUserIdUseCase: FindMembershipByTenantIdAndUserIdUseCase,
+    private readonly findUserRoleByUserIdAndTenantIdUseCase: FindUserRoleByUserIdAndTenantIdUseCase,
+    private readonly validateMembershipByUserIdAndTenantIdUseCase: ValidateMembershipByUserIdAndTenantIdUseCase,
+    private readonly removeUserFromTenantByUserIdAndTenantIdUseCase: RemoveUserFromTenantByUserIdAndTenantIdUseCase,
+  ) {}
   @Post()
   @TenantRoles(TenantUserRole.OWNER, TenantUserRole.ADMIN)
   @ApiOperation({
@@ -68,11 +79,7 @@ export class TenantUserController {
     @Body()
     dto: AddMemberToTenantDto,
   ) {
-    return this.tenantUserService.addUserToTenant(
-      dto.userId,
-      tenantId,
-      dto.role,
-    );
+    return this.addUserToTenantUseCase.run(dto.userId, tenantId, dto.role);
   }
   @Get(':userId')
   @ApiOperation({
@@ -98,7 +105,7 @@ export class TenantUserController {
     @Param('userId')
     userId: string,
   ) {
-    return this.tenantUserService.getMembership(tenantId, userId);
+    return this.findMembershipByTenantIdAndUserIdUseCase.run(tenantId, userId);
   }
   @Delete(':userId')
   @TenantRoles(TenantUserRole.OWNER, TenantUserRole.ADMIN)
@@ -121,6 +128,9 @@ export class TenantUserController {
     @Param('userId')
     userId: string,
   ) {
-    await this.tenantUserService.removeUserFromTenant(userId, tenantId);
+    await this.removeUserFromTenantByUserIdAndTenantIdUseCase.run(
+      userId,
+      tenantId,
+    );
   }
 }

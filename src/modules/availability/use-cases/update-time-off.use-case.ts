@@ -1,7 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
-import { TenantUserService } from '../../tenant-user/tenant-user.service';
+import { FindTenantUserByIdAndTenantUseCase } from '../../tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { BARBER_PROFILE_REPOSITORY } from '../../barber-profile/interfaces/barber-profile-repository.interface';
 import type { IBarberProfileRepository } from '../../barber-profile/interfaces/barber-profile-repository.interface';
 import { UpdateTimeOffDto } from '../dto/update-time-off.dto';
@@ -16,7 +16,7 @@ export class UpdateTimeOffUseCase {
     @Inject(AVAILABILITY_REPOSITORY)
     private readonly availabilityRepository: IAvailabilityRepository, 
     @Inject(BARBER_PROFILE_REPOSITORY)
-    private readonly barberProfileRepository: IBarberProfileRepository, private readonly tenantUserService: TenantUserService) { }
+    private readonly barberProfileRepository: IBarberProfileRepository, private readonly findTenantUserByIdAndTenantUseCase: FindTenantUserByIdAndTenantUseCase) { }
     async run(tenantId: string, barberProfileId: string, timeOffId: string, dto: UpdateTimeOffDto, userId: string, callerRole?: string): Promise<TimeOffEntity> {
         await assertBarberAgendaAccess({
             tenantId,
@@ -24,7 +24,7 @@ export class UpdateTimeOffUseCase {
             userId,
             callerRole,
             barberProfileRepository: this.barberProfileRepository,
-            tenantUserService: this.tenantUserService,
+            findTenantUserByIdAndTenant: this.findTenantUserByIdAndTenantUseCase,
         });
         const existing = await this.availabilityRepository.findTimeOffById(timeOffId, tenantId);
         if (!existing || existing.barberProfileId !== barberProfileId) {

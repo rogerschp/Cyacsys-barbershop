@@ -16,7 +16,12 @@ describe('CreateTenantWithOwnerUseCase', () => {
         slug: 'barbearia-nova',
         name: 'Barbearia Nova',
         status: TenantStatus.ACTIVE,
+        telephone: '5511999999999',
+        addressId: null,
+        address: null,
         timezone: 'America/Sao_Paulo',
+        socialMedia: null,
+        cnpj: null,
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: undefined,
@@ -62,6 +67,7 @@ describe('CreateTenantWithOwnerUseCase', () => {
             const result = await useCase.run('user-uuid', {
                 name: 'Barbearia Nova',
                 slug: 'barbearia-nova',
+                telephone: '5511999999999',
             });
             expect(tenantRepository.existsBySlug).toHaveBeenCalledWith('barbearia-nova');
             expect(dataSource.transaction).toHaveBeenCalled();
@@ -72,11 +78,12 @@ describe('CreateTenantWithOwnerUseCase', () => {
             await expect(useCase.run('user-uuid', {
                 name: 'Barbearia Nova',
                 slug: 'barbearia-nova',
+                telephone: '5511999999999',
             })).rejects.toThrow(ConflictException);
             expect(dataSource.transaction).not.toHaveBeenCalled();
         });
         it('deve lancar BadRequestException quando slug invalido', async () => {
-            await expect(useCase.run('user-uuid', { name: 'ab' })).rejects.toThrow(BadRequestException);
+            await expect(useCase.run('user-uuid', { name: 'ab', telephone: '5511999999999' })).rejects.toThrow(BadRequestException);
             expect(dataSource.transaction).not.toHaveBeenCalled();
         });
     });

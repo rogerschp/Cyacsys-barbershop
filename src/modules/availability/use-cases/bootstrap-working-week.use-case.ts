@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
-import { TenantUserService } from '../../tenant-user/tenant-user.service';
+import { FindTenantUserByIdAndTenantUseCase } from '../../tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { BARBER_PROFILE_REPOSITORY } from '../../barber-profile/interfaces/barber-profile-repository.interface';
 import type { IBarberProfileRepository } from '../../barber-profile/interfaces/barber-profile-repository.interface';
 import { BootstrapWorkingWeekDto } from '../dto/bootstrap-working-week.dto';
@@ -30,7 +30,7 @@ export class BootstrapWorkingWeekUseCase {
     private readonly availabilityRepository: IAvailabilityRepository,
     @Inject(BARBER_PROFILE_REPOSITORY)
     private readonly barberProfileRepository: IBarberProfileRepository,
-    private readonly tenantUserService: TenantUserService,
+    private readonly findTenantUserByIdAndTenantUseCase: FindTenantUserByIdAndTenantUseCase,
   ) {}
 
   async run(
@@ -46,7 +46,7 @@ export class BootstrapWorkingWeekUseCase {
       userId,
       callerRole,
       barberProfileRepository: this.barberProfileRepository,
-      tenantUserService: this.tenantUserService,
+      findTenantUserByIdAndTenant: this.findTenantUserByIdAndTenantUseCase,
     });
 
     if (!dto.periods?.length) {
@@ -102,9 +102,13 @@ export class BootstrapWorkingWeekUseCase {
         continue;
       }
 
-      await this.availabilityRepository.updateWorkingHours(existing.id, tenantId, {
-        isActive: shouldBeActive,
-      });
+      await this.availabilityRepository.updateWorkingHours(
+        existing.id,
+        tenantId,
+        {
+          isActive: shouldBeActive,
+        },
+      );
 
       const existingPeriods =
         await this.availabilityRepository.listPeriodsByWorkingHoursId(

@@ -2,12 +2,13 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { QueryFailedError } from 'typeorm';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
-import { TenantService } from '../../tenant/tenant.service';
+import { FindTenantByIdUseCase } from '../../tenant/use-cases/find-tenant-by-id.use-case';
 import {
   IServiceRepository,
   SERVICE_REPOSITORY,
 } from '../../service/interfaces/service-repository.interface';
-import { TenantUserService } from '../../tenant-user/tenant-user.service';
+import { FindTenantUserByIdAndTenantUseCase } from '../../tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
+import { ValidateMembershipByUserIdAndTenantIdUseCase } from '../../tenant-user/use-cases/validate-membership-by-userId-and-tenantId.use-case';
 import { BARBER_PROFILE_REPOSITORY } from '../../barber-profile/interfaces/barber-profile-repository.interface';
 import type { IBarberProfileRepository } from '../../barber-profile/interfaces/barber-profile-repository.interface';
 import { GetAvailableSlotsUseCase } from '../../availability/use-cases/get-available-slots.use-case';
@@ -28,8 +29,9 @@ export class CreateBookingDraftUseCase {
     private readonly barberProfileRepository: IBarberProfileRepository,
     @Inject(SERVICE_REPOSITORY)
     private readonly serviceRepository: IServiceRepository,
-    private readonly tenantUserService: TenantUserService,
-    private readonly tenantService: TenantService,
+    private readonly findTenantUserByIdAndTenantUseCase: FindTenantUserByIdAndTenantUseCase,
+    private readonly findTenantByIdUseCase: FindTenantByIdUseCase,
+    private readonly validateMembershipByUserIdAndTenantIdUseCase: ValidateMembershipByUserIdAndTenantIdUseCase,
     private readonly getAvailableSlotsUseCase: GetAvailableSlotsUseCase,
   ) {}
   async run(
@@ -45,9 +47,9 @@ export class CreateBookingDraftUseCase {
       userId,
       callerRole,
       barberProfileRepository: this.barberProfileRepository,
-      tenantUserService: this.tenantUserService,
+      findTenantUserByIdAndTenant: this.findTenantUserByIdAndTenantUseCase,
     });
-    const tenant = await this.tenantService.findById(tenantId);
+    const tenant = await this.findTenantByIdUseCase.run(tenantId);
     const timezone = tenant.timezone || 'America/Sao_Paulo';
     const barber = await this.barberProfileRepository.findById(
       barberProfileId,
@@ -117,10 +119,11 @@ export class CreateBookingDraftUseCase {
       );
     }
     const endsAtUtc = slotStartUtc.plus({ minutes: service.durationInMinutes });
-    const membership = await this.tenantUserService.validateMembership(
-      userId,
-      tenantId,
-    );
+    const membership =
+      await this.validateMembershipByUserIdAndTenantIdUseCase.run(
+        userId,
+        tenantId,
+      );
     const createdByTenantUserId = membership.id;
     try {
       return await this.bookingRepository.createDraft({

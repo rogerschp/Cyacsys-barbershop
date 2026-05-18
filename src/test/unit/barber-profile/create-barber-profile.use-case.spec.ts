@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { CreateBarberProfileUseCase } from '../../../modules/barber-profile/use-cases/create-barber-profile.use-case';
 import { BARBER_PROFILE_REPOSITORY } from '../../../modules/barber-profile/interfaces/barber-profile-repository.interface';
-import { TenantUserService } from '../../../modules/tenant-user/tenant-user.service';
+import { FindTenantUserByIdAndTenantUseCase } from '../../../modules/tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
 import { TenantUserRole } from '../../../modules/tenant-user/entities/tenant-user-role.enum';
 import { BarberProfileEntity } from '../../../modules/barber-profile/entities/barber-profile.entity';
@@ -12,7 +12,7 @@ import { TenantUserEntity } from '../../../modules/tenant-user/entities/tenant-u
 describe('CreateBarberProfileUseCase', () => {
   let useCase: CreateBarberProfileUseCase;
   let barberProfileRepository: any;
-  let tenantUserService: any;
+  let findTenantUserByIdAndTenantUseCase: any;
   const tenantId = 'tenant-uuid';
   const tenantUserId = 'tenant-user-uuid';
   const createdBy = 'user-uuid';
@@ -53,8 +53,8 @@ describe('CreateBarberProfileUseCase', () => {
         .fn<() => Promise<BarberProfileEntity | null>>()
         .mockResolvedValue(null),
     };
-    tenantUserService = {
-      getByIdAndTenant: jest
+    findTenantUserByIdAndTenantUseCase = {
+      run: jest
         .fn<() => Promise<TenantUserEntity>>()
         .mockResolvedValue(mockTenantUser),
     };
@@ -65,7 +65,10 @@ describe('CreateBarberProfileUseCase', () => {
           provide: BARBER_PROFILE_REPOSITORY,
           useValue: barberProfileRepository,
         },
-        { provide: TenantUserService, useValue: tenantUserService },
+        {
+          provide: FindTenantUserByIdAndTenantUseCase,
+          useValue: findTenantUserByIdAndTenantUseCase,
+        },
       ],
     }).compile();
     useCase = module.get<CreateBarberProfileUseCase>(
@@ -78,7 +81,7 @@ describe('CreateBarberProfileUseCase', () => {
   describe('run', () => {
     it('deve criar perfil quando tenantUser existe, é BARBER e não tem perfil', async () => {
       const result = await useCase.run(tenantId, validDto, createdBy);
-      expect(tenantUserService.getByIdAndTenant).toHaveBeenCalledWith(
+      expect(findTenantUserByIdAndTenantUseCase.run).toHaveBeenCalledWith(
         tenantUserId,
         tenantId,
       );
@@ -96,7 +99,7 @@ describe('CreateBarberProfileUseCase', () => {
       expect(result).toEqual(mockProfile);
     });
     it('deve lançar NotFoundException quando tenantUser não existe', async () => {
-      tenantUserService.getByIdAndTenant.mockRejectedValue(
+      findTenantUserByIdAndTenantUseCase.run.mockRejectedValue(
         new NotFoundException('TENANT_USER_NOT_FOUND'),
       );
       await expect(useCase.run(tenantId, validDto, createdBy)).rejects.toThrow(
@@ -105,7 +108,7 @@ describe('CreateBarberProfileUseCase', () => {
       expect(barberProfileRepository.create).not.toHaveBeenCalled();
     });
     it('deve lançar BusinessRuleException quando role do tenantUser não é BARBER', async () => {
-      tenantUserService.getByIdAndTenant.mockResolvedValue({
+      findTenantUserByIdAndTenantUseCase.run.mockResolvedValue({
         ...mockTenantUser,
         role: TenantUserRole.ADMIN,
       });
@@ -115,7 +118,7 @@ describe('CreateBarberProfileUseCase', () => {
       expect(barberProfileRepository.create).not.toHaveBeenCalled();
     });
     it('deve criar perfil quando tenantUser é OWNER (owner também pode atuar como BARBER)', async () => {
-      tenantUserService.getByIdAndTenant.mockResolvedValue({
+      findTenantUserByIdAndTenantUseCase.run.mockResolvedValue({
         ...mockTenantUser,
         role: TenantUserRole.OWNER,
       });
