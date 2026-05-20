@@ -1,11 +1,12 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { TENANT_PROFESSIONAL_REPOSITORY } from '../../tenant-professional/interfaces/tenant-professional-repository.interface';
 import type { ITenantProfessionalRepository } from '../../tenant-professional/interfaces/tenant-professional-repository.interface';
-import { WorkingHoursEntity } from '../entities/working-hours.entity';
+import { UpdateProfessionalServiceLinkDto } from '../dto/update-professional-service-link.dto';
+import { ProfessionalServiceLinkEntity } from '../entities/professional-service-link.entity';
 import { AVAILABILITY_REPOSITORY, IAvailabilityRepository, } from '../interfaces/availability-repository.interface';
 import { assertTenantProfessionalAgendaAccess } from '../utils/assert-tenant-professional-agenda-access';
 @Injectable()
-export class ListWorkingHoursUseCase {
+export class UpdateProfessionalServiceLinkUseCase {
     constructor(
     @Inject(AVAILABILITY_REPOSITORY)
     private readonly availabilityRepository: IAvailabilityRepository, 
@@ -13,7 +14,7 @@ export class ListWorkingHoursUseCase {
     private readonly tenantProfessionalRepository: ITenantProfessionalRepository,
   ) {}
 
-  async run(tenantId: string, tenantProfessionalId: string, userId: string, callerRole?: string): Promise<WorkingHoursEntity[]> {
+  async run(tenantId: string, tenantProfessionalId: string, linkId: string, dto: UpdateProfessionalServiceLinkDto, userId: string, callerRole?: string): Promise<ProfessionalServiceLinkEntity> {
         await assertTenantProfessionalAgendaAccess({
             tenantId,
             tenantProfessionalId,
@@ -21,6 +22,15 @@ export class ListWorkingHoursUseCase {
             callerRole,
             tenantProfessionalRepository: this.tenantProfessionalRepository,
         });
-        return this.availabilityRepository.listWorkingHoursByProfessional(tenantProfessionalId, tenantId);
+        const link = await this.availabilityRepository.findProfessionalServiceLinkById(linkId, tenantId);
+        if (!link || link.tenantProfessionalId !== tenantProfessionalId) {
+            throw new NotFoundException('Professional service link not found');
+        }
+        if (dto.isActive === undefined) {
+            return link;
+        }
+        return this.availabilityRepository.updateProfessionalServiceLink(linkId, tenantId, {
+            isActive: dto.isActive,
+        });
     }
 }

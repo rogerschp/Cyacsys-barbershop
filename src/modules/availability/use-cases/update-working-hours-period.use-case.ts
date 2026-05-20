@@ -1,30 +1,30 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { FindTenantUserByIdAndTenantUseCase } from '../../tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
-import { BARBER_PROFILE_REPOSITORY } from '../../barber-profile/interfaces/barber-profile-repository.interface';
-import type { IBarberProfileRepository } from '../../barber-profile/interfaces/barber-profile-repository.interface';
+import { TENANT_PROFESSIONAL_REPOSITORY } from '../../tenant-professional/interfaces/tenant-professional-repository.interface';
+import type { ITenantProfessionalRepository } from '../../tenant-professional/interfaces/tenant-professional-repository.interface';
 import { UpdateWorkingHoursPeriodDto } from '../dto/update-working-hours-period.dto';
 import { WorkingHoursPeriodEntity } from '../entities/working-hours-period.entity';
 import { AVAILABILITY_REPOSITORY, IAvailabilityRepository, } from '../interfaces/availability-repository.interface';
-import { assertBarberAgendaAccess } from '../utils/assert-barber-agenda-access';
-import { ensureWorkingHoursForBarber } from '../utils/ensure-working-hours-for-barber';
+import { assertTenantProfessionalAgendaAccess } from '../utils/assert-tenant-professional-agenda-access';
+import { ensureWorkingHoursForTenantProfessional } from '../utils/ensure-working-hours-for-tenant-professional';
 import { validatePeriodsNoOverlap } from '../utils/validate-periods-no-overlap';
 @Injectable()
 export class UpdateWorkingHoursPeriodUseCase {
     constructor(
     @Inject(AVAILABILITY_REPOSITORY)
     private readonly availabilityRepository: IAvailabilityRepository, 
-    @Inject(BARBER_PROFILE_REPOSITORY)
-    private readonly barberProfileRepository: IBarberProfileRepository, private readonly findTenantUserByIdAndTenantUseCase: FindTenantUserByIdAndTenantUseCase) { }
-    async run(tenantId: string, barberProfileId: string, workingHoursId: string, periodId: string, dto: UpdateWorkingHoursPeriodDto, userId: string, callerRole?: string): Promise<WorkingHoursPeriodEntity> {
-        await assertBarberAgendaAccess({
+    @Inject(TENANT_PROFESSIONAL_REPOSITORY)
+    private readonly tenantProfessionalRepository: ITenantProfessionalRepository,
+  ) {}
+
+  async run(tenantId: string, tenantProfessionalId: string, workingHoursId: string, periodId: string, dto: UpdateWorkingHoursPeriodDto, userId: string, callerRole?: string): Promise<WorkingHoursPeriodEntity> {
+        await assertTenantProfessionalAgendaAccess({
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             userId,
             callerRole,
-            barberProfileRepository: this.barberProfileRepository,
-            findTenantUserByIdAndTenant: this.findTenantUserByIdAndTenantUseCase,
+            tenantProfessionalRepository: this.tenantProfessionalRepository,
         });
-        await ensureWorkingHoursForBarber(this.availabilityRepository, workingHoursId, barberProfileId, tenantId, false);
+        await ensureWorkingHoursForTenantProfessional(this.availabilityRepository, workingHoursId, tenantProfessionalId, tenantId, false);
         const period = await this.availabilityRepository.findWorkingHoursPeriodById(periodId, tenantId);
         if (!period || period.workingHoursId !== workingHoursId) {
             throw new NotFoundException('Working hours period not found');

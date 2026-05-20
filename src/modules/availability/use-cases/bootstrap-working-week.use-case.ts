@@ -1,8 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
-import { FindTenantUserByIdAndTenantUseCase } from '../../tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
-import { BARBER_PROFILE_REPOSITORY } from '../../barber-profile/interfaces/barber-profile-repository.interface';
-import type { IBarberProfileRepository } from '../../barber-profile/interfaces/barber-profile-repository.interface';
+import { TENANT_PROFESSIONAL_REPOSITORY } from '../../tenant-professional/interfaces/tenant-professional-repository.interface';
+import type { ITenantProfessionalRepository } from '../../tenant-professional/interfaces/tenant-professional-repository.interface';
 import { BootstrapWorkingWeekDto } from '../dto/bootstrap-working-week.dto';
 import { BootstrapWorkingWeekResponseDto } from '../dto/bootstrap-working-week-response.dto';
 import { DayOfWeek } from '../entities/day-of-week.enum';
@@ -10,7 +9,7 @@ import {
   AVAILABILITY_REPOSITORY,
   IAvailabilityRepository,
 } from '../interfaces/availability-repository.interface';
-import { assertBarberAgendaAccess } from '../utils/assert-barber-agenda-access';
+import { assertTenantProfessionalAgendaAccess } from '../utils/assert-tenant-professional-agenda-access';
 import { validatePeriodsNoOverlap } from '../utils/validate-periods-no-overlap';
 
 const ALL_DAYS: DayOfWeek[] = [
@@ -28,25 +27,23 @@ export class BootstrapWorkingWeekUseCase {
   constructor(
     @Inject(AVAILABILITY_REPOSITORY)
     private readonly availabilityRepository: IAvailabilityRepository,
-    @Inject(BARBER_PROFILE_REPOSITORY)
-    private readonly barberProfileRepository: IBarberProfileRepository,
-    private readonly findTenantUserByIdAndTenantUseCase: FindTenantUserByIdAndTenantUseCase,
+    @Inject(TENANT_PROFESSIONAL_REPOSITORY)
+    private readonly tenantProfessionalRepository: ITenantProfessionalRepository,
   ) {}
 
   async run(
     tenantId: string,
-    barberProfileId: string,
+    tenantProfessionalId: string,
     dto: BootstrapWorkingWeekDto,
     userId: string,
     callerRole?: string,
   ): Promise<BootstrapWorkingWeekResponseDto> {
-    await assertBarberAgendaAccess({
+    await assertTenantProfessionalAgendaAccess({
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       userId,
       callerRole,
-      barberProfileRepository: this.barberProfileRepository,
-      findTenantUserByIdAndTenant: this.findTenantUserByIdAndTenantUseCase,
+      tenantProfessionalRepository: this.tenantProfessionalRepository,
     });
 
     if (!dto.periods?.length) {
@@ -68,8 +65,8 @@ export class BootstrapWorkingWeekUseCase {
     for (const dayOfWeek of ALL_DAYS) {
       const shouldBeActive = !closedDays.has(dayOfWeek);
       const existing =
-        await this.availabilityRepository.findWorkingHoursByBarberAndDay(
-          barberProfileId,
+        await this.availabilityRepository.findWorkingHoursByProfessionalAndDay(
+          tenantProfessionalId,
           tenantId,
           dayOfWeek,
           false,
@@ -78,7 +75,7 @@ export class BootstrapWorkingWeekUseCase {
       if (!existing) {
         const createdWh = await this.availabilityRepository.createWorkingHours({
           tenantId,
-          barberProfileId,
+          tenantProfessionalId,
           dayOfWeek,
           isActive: shouldBeActive,
         });

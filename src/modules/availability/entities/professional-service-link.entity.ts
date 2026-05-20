@@ -4,7 +4,6 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  UpdateDateColumn,
   DeleteDateColumn,
   Index,
   ManyToOne,
@@ -12,12 +11,14 @@ import {
 } from 'typeorm';
 import { TenantEntity } from '../../tenant/entities/tenant.entity';
 import { TenantProfessionalEntity } from '../../tenant-professional/entities/tenant-professional.entity';
-import { TimeOffReason } from './time-off-reason.enum';
+import { ServiceEntity } from '../../service/entities/service.entity';
 
-@Entity('professional_time_offs')
-@Index('IDX_professional_time_offs_tenant_id', ['tenantId'])
-@Index('IDX_professional_time_offs_tp_date', ['tenantProfessionalId', 'date'])
-export class TimeOffEntity {
+@Entity('professional_service_links')
+@Index('IDX_professional_service_links_tenant_id', ['tenantId'])
+@Index('IDX_professional_service_links_tenant_professional_id', [
+  'tenantProfessionalId',
+])
+export class ProfessionalServiceLinkEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty()
   id: string;
@@ -36,27 +37,19 @@ export class TimeOffEntity {
   @JoinColumn({ name: 'tenant_professional_id' })
   tenantProfessional: TenantProfessionalEntity;
 
-  @Column({ type: 'date' })
-  @ApiProperty({ example: '2026-12-25' })
-  date: string;
+  @Column({ name: 'service_id' })
+  serviceId: string;
 
-  @Column({ name: 'start_time', type: 'varchar', length: 5, nullable: true })
-  @ApiProperty({ nullable: true, example: '09:00' })
-  startTime: string | null;
+  @ManyToOne(() => ServiceEntity, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'service_id' })
+  service: ServiceEntity;
 
-  @Column({ name: 'end_time', type: 'varchar', length: 5, nullable: true })
-  @ApiProperty({ nullable: true, example: '12:00' })
-  endTime: string | null;
-
-  @Column({ type: 'varchar', length: 32 })
-  @ApiProperty({ enum: TimeOffReason })
-  reason: TimeOffReason;
+  @Column({ name: 'is_active', default: true })
+  @ApiProperty()
+  isActive: boolean;
 
   @CreateDateColumn()
   createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 
   @DeleteDateColumn()
   deletedAt?: Date;

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AVAILABILITY_REPOSITORY } from '../../../modules/availability/interfaces/availability-repository.interface';
-import { BARBER_PROFILE_REPOSITORY } from '../../../modules/barber-profile/interfaces/barber-profile-repository.interface';
+import { TENANT_PROFESSIONAL_REPOSITORY } from '../../../modules/tenant-professional/interfaces/tenant-professional-repository.interface';
 import { FindTenantUserByIdAndTenantUseCase } from '../../../modules/tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { BootstrapWorkingWeekUseCase } from '../../../modules/availability/use-cases/bootstrap-working-week.use-case';
 import { DayOfWeek } from '../../../modules/availability/entities/day-of-week.enum';
@@ -11,16 +11,16 @@ import { BusinessRuleException } from '../../../common/exceptions/business-rule.
 describe('BootstrapWorkingWeekUseCase', () => {
   let useCase: BootstrapWorkingWeekUseCase;
   let availabilityRepository: Record<string, jest.Mock>;
-  let barberProfileRepository: { findById: jest.Mock };
+  let tenantProfessionalRepository: { findById: jest.Mock };
   let findTenantUserByIdAndTenantUseCase: { run: jest.Mock };
 
   const tenantId = 'tenant-uuid';
-  const barberProfileId = 'bp-uuid';
+  const tenantProfessionalId = 'bp-uuid';
   const userId = 'user-uuid';
 
   beforeEach(async () => {
     availabilityRepository = {
-      findWorkingHoursByBarberAndDay: jest
+      findWorkingHoursByProfessionalAndDay: jest
         .fn()
         .mockImplementation(() => Promise.resolve(null)),
       createWorkingHours: jest
@@ -46,10 +46,10 @@ describe('BootstrapWorkingWeekUseCase', () => {
         .mockImplementation(() => Promise.resolve(undefined)),
     };
 
-    barberProfileRepository = {
+    tenantProfessionalRepository = {
       findById: jest
         .fn()
-        .mockImplementation(() => Promise.resolve({ id: barberProfileId })),
+        .mockImplementation(() => Promise.resolve({ id: tenantProfessionalId })),
     };
 
     findTenantUserByIdAndTenantUseCase = {
@@ -61,8 +61,8 @@ describe('BootstrapWorkingWeekUseCase', () => {
         BootstrapWorkingWeekUseCase,
         { provide: AVAILABILITY_REPOSITORY, useValue: availabilityRepository },
         {
-          provide: BARBER_PROFILE_REPOSITORY,
-          useValue: barberProfileRepository,
+          provide: TENANT_PROFESSIONAL_REPOSITORY,
+          useValue: tenantProfessionalRepository,
         },
         {
           provide: FindTenantUserByIdAndTenantUseCase,
@@ -77,7 +77,7 @@ describe('BootstrapWorkingWeekUseCase', () => {
   it('cria semana completa e fecha somente os dias informados', async () => {
     const result = await useCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       {
         closedDays: [DayOfWeek.SUNDAY],
         periods: [{ startTime: '09:00', endTime: '12:00' }],
@@ -100,7 +100,7 @@ describe('BootstrapWorkingWeekUseCase', () => {
   });
 
   it('atualiza agenda existente removendo períodos ao fechar um dia', async () => {
-    availabilityRepository.findWorkingHoursByBarberAndDay.mockImplementation(
+    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockImplementation(
       (...args: any[]) => {
         const dayOfWeek = args[2];
         return Promise.resolve({ id: `existing-${dayOfWeek}`, dayOfWeek });
@@ -112,7 +112,7 @@ describe('BootstrapWorkingWeekUseCase', () => {
 
     const result = await useCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       {
         closedDays: [DayOfWeek.SATURDAY, DayOfWeek.SUNDAY],
         periods: [{ startTime: '09:00', endTime: '12:00' }],
@@ -134,7 +134,7 @@ describe('BootstrapWorkingWeekUseCase', () => {
     await expect(
       useCase.run(
         tenantId,
-        barberProfileId,
+        tenantProfessionalId,
         { closedDays: [DayOfWeek.SUNDAY], periods: [] },
         userId,
         TenantUserRole.ADMIN,
@@ -143,7 +143,7 @@ describe('BootstrapWorkingWeekUseCase', () => {
   });
 
   it('não sobrescreve jornadas existentes quando overwriteExisting=false', async () => {
-    availabilityRepository.findWorkingHoursByBarberAndDay.mockImplementation(
+    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockImplementation(
       (...args: any[]) => {
         const dayOfWeek = args[2];
         return Promise.resolve({ id: `existing-${dayOfWeek}`, dayOfWeek });
@@ -152,7 +152,7 @@ describe('BootstrapWorkingWeekUseCase', () => {
 
     const result = await useCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       {
         closedDays: [DayOfWeek.SUNDAY],
         periods: [{ startTime: '09:00', endTime: '12:00' }],

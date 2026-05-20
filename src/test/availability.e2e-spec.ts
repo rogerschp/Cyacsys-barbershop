@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AvailabilityController } from '../modules/availability/availability.controller';
-import { CreateBarberServiceLinkUseCase } from '../modules/availability/use-cases/create-barber-service-link.use-case';
+import { CreateProfessionalServiceLinkUseCase } from '../modules/availability/use-cases/create-professional-service-link.use-case';
 import { UpdateBarberServiceLinkUseCase } from '../modules/availability/use-cases/update-barber-service-link.use-case';
 import { DeleteBarberServiceLinkUseCase } from '../modules/availability/use-cases/delete-barber-service-link.use-case';
 import { ListBarberServiceLinksUseCase } from '../modules/availability/use-cases/list-barber-service-links.use-case';
@@ -34,21 +34,21 @@ import { TimeOffReason } from '../modules/availability/entities/time-off-reason.
 describe('AvailabilityController (e2e)', () => {
     let app: INestApplication;
     let getAvailableSlotsUseCase: jest.Mocked<GetAvailableSlotsUseCase>;
-    let createBarberServiceLinkUseCase: jest.Mocked<CreateBarberServiceLinkUseCase>;
-    let listBarberServiceLinksUseCase: jest.Mocked<ListBarberServiceLinksUseCase>;
+    let createProfessionalServiceLinkUseCase: jest.Mocked<CreateProfessionalServiceLinkUseCase>;
+    let listProfessionalServiceLinksUseCase: jest.Mocked<ListBarberServiceLinksUseCase>;
     let createWorkingHoursUseCase: jest.Mocked<CreateWorkingHoursUseCase>;
     let listWorkingHoursUseCase: jest.Mocked<ListWorkingHoursUseCase>;
     let createBlockUseCase: jest.Mocked<CreateBlockUseCase>;
     let createTimeOffUseCase: jest.Mocked<CreateTimeOffUseCase>;
     const tenantId = 'tenant-e2e-uuid';
-    const barberProfileId = 'bp-e2e-uuid';
-    const basePath = `/tenants/${tenantId}/barber-profiles/${barberProfileId}`;
+    const tenantProfessionalId = 'bp-e2e-uuid';
+    const basePath = `/tenants/${tenantId}/tenant-professionals/${tenantProfessionalId}`;
     beforeAll(async () => {
         const mocks = {
-            createBarberServiceLink: { run: jest.fn() },
+            createProfessionalServiceLink: { run: jest.fn() },
             updateBarberServiceLink: { run: jest.fn() },
             deleteBarberServiceLink: { run: jest.fn() },
-            listBarberServiceLinks: { run: jest.fn() },
+            listProfessionalServiceLinks: { run: jest.fn() },
             createWorkingHours: { run: jest.fn() },
             updateWorkingHours: { run: jest.fn() },
             deleteWorkingHours: { run: jest.fn() },
@@ -70,10 +70,10 @@ describe('AvailabilityController (e2e)', () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
             controllers: [AvailabilityController],
             providers: [
-                { provide: CreateBarberServiceLinkUseCase, useValue: mocks.createBarberServiceLink },
+                { provide: CreateProfessionalServiceLinkUseCase, useValue: mocks.createProfessionalServiceLink },
                 { provide: UpdateBarberServiceLinkUseCase, useValue: mocks.updateBarberServiceLink },
                 { provide: DeleteBarberServiceLinkUseCase, useValue: mocks.deleteBarberServiceLink },
-                { provide: ListBarberServiceLinksUseCase, useValue: mocks.listBarberServiceLinks },
+                { provide: ListBarberServiceLinksUseCase, useValue: mocks.listProfessionalServiceLinks },
                 { provide: CreateWorkingHoursUseCase, useValue: mocks.createWorkingHours },
                 { provide: UpdateWorkingHoursUseCase, useValue: mocks.updateWorkingHours },
                 { provide: DeleteWorkingHoursUseCase, useValue: mocks.deleteWorkingHours },
@@ -116,8 +116,8 @@ describe('AvailabilityController (e2e)', () => {
         }));
         await app.init();
         getAvailableSlotsUseCase = moduleFixture.get(GetAvailableSlotsUseCase) as jest.Mocked<GetAvailableSlotsUseCase>;
-        createBarberServiceLinkUseCase = moduleFixture.get(CreateBarberServiceLinkUseCase) as jest.Mocked<CreateBarberServiceLinkUseCase>;
-        listBarberServiceLinksUseCase = moduleFixture.get(ListBarberServiceLinksUseCase) as jest.Mocked<ListBarberServiceLinksUseCase>;
+        createProfessionalServiceLinkUseCase = moduleFixture.get(CreateProfessionalServiceLinkUseCase) as jest.Mocked<CreateProfessionalServiceLinkUseCase>;
+        listProfessionalServiceLinksUseCase = moduleFixture.get(ListBarberServiceLinksUseCase) as jest.Mocked<ListBarberServiceLinksUseCase>;
         createWorkingHoursUseCase = moduleFixture.get(CreateWorkingHoursUseCase) as jest.Mocked<CreateWorkingHoursUseCase>;
         listWorkingHoursUseCase = moduleFixture.get(ListWorkingHoursUseCase) as jest.Mocked<ListWorkingHoursUseCase>;
         createBlockUseCase = moduleFixture.get(CreateBlockUseCase) as jest.Mocked<CreateBlockUseCase>;
@@ -134,8 +134,8 @@ describe('AvailabilityController (e2e)', () => {
             timezone: 'America/Sao_Paulo',
             slots: ['09:00', '10:00'],
         });
-        createBarberServiceLinkUseCase.run.mockResolvedValue({ id: 'link-1' } as any);
-        listBarberServiceLinksUseCase.run.mockResolvedValue([]);
+        createProfessionalServiceLinkUseCase.run.mockResolvedValue({ id: 'link-1' } as any);
+        listProfessionalServiceLinksUseCase.run.mockResolvedValue([]);
         createWorkingHoursUseCase.run.mockResolvedValue({
             id: 'wh-1',
             dayOfWeek: DayOfWeek.MONDAY,
@@ -167,7 +167,7 @@ describe('AvailabilityController (e2e)', () => {
                     timezone: 'America/Sao_Paulo',
                     slots: ['09:00', '10:00'],
                 });
-                expect(getAvailableSlotsUseCase.run).toHaveBeenCalledWith(tenantId, barberProfileId, 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', '2030-01-07', 'user-e2e-123', TenantUserRole.ADMIN);
+                expect(getAvailableSlotsUseCase.run).toHaveBeenCalledWith(tenantId, tenantProfessionalId, 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', '2030-01-07', 'user-e2e-123', TenantUserRole.ADMIN);
             });
         });
         it('deve retornar 400 quando falta serviceId ou date', () => {
@@ -184,7 +184,7 @@ describe('AvailabilityController (e2e)', () => {
                 .send({ serviceId: 'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22' })
                 .expect(201)
                 .expect(() => {
-                expect(createBarberServiceLinkUseCase.run).toHaveBeenCalledWith(tenantId, barberProfileId, { serviceId: 'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22' }, 'user-e2e-123', TenantUserRole.ADMIN);
+                expect(createProfessionalServiceLinkUseCase.run).toHaveBeenCalledWith(tenantId, tenantProfessionalId, { serviceId: 'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22' }, 'user-e2e-123', TenantUserRole.ADMIN);
             });
         });
         it('deve retornar 400 quando serviceId inválido', () => {
@@ -200,7 +200,7 @@ describe('AvailabilityController (e2e)', () => {
                 .get(`${basePath}/working-hours`)
                 .expect(200)
                 .expect(() => {
-                expect(listWorkingHoursUseCase.run).toHaveBeenCalledWith(tenantId, barberProfileId, 'user-e2e-123', TenantUserRole.ADMIN);
+                expect(listWorkingHoursUseCase.run).toHaveBeenCalledWith(tenantId, tenantProfessionalId, 'user-e2e-123', TenantUserRole.ADMIN);
             });
         });
     });
@@ -215,7 +215,7 @@ describe('AvailabilityController (e2e)', () => {
             })
                 .expect(201)
                 .expect(() => {
-                expect(createWorkingHoursUseCase.run).toHaveBeenCalledWith(tenantId, barberProfileId, expect.objectContaining({ dayOfWeek: DayOfWeek.MONDAY }), 'user-e2e-123', TenantUserRole.ADMIN);
+                expect(createWorkingHoursUseCase.run).toHaveBeenCalledWith(tenantId, tenantProfessionalId, expect.objectContaining({ dayOfWeek: DayOfWeek.MONDAY }), 'user-e2e-123', TenantUserRole.ADMIN);
             });
         });
     });
@@ -231,7 +231,7 @@ describe('AvailabilityController (e2e)', () => {
             })
                 .expect(201)
                 .expect(() => {
-                expect(createBlockUseCase.run).toHaveBeenCalledWith(tenantId, barberProfileId, expect.objectContaining({ reason: BlockReason.LUNCH }), 'user-e2e-123', TenantUserRole.ADMIN);
+                expect(createBlockUseCase.run).toHaveBeenCalledWith(tenantId, tenantProfessionalId, expect.objectContaining({ reason: BlockReason.LUNCH }), 'user-e2e-123', TenantUserRole.ADMIN);
             });
         });
         it('deve retornar 400 quando reason é BOOKING', () => {
@@ -256,7 +256,7 @@ describe('AvailabilityController (e2e)', () => {
             })
                 .expect(201)
                 .expect(() => {
-                expect(createTimeOffUseCase.run).toHaveBeenCalledWith(tenantId, barberProfileId, expect.objectContaining({
+                expect(createTimeOffUseCase.run).toHaveBeenCalledWith(tenantId, tenantProfessionalId, expect.objectContaining({
                     date: '2030-01-08',
                     reason: TimeOffReason.DAY_OFF,
                 }), 'user-e2e-123', TenantUserRole.ADMIN);

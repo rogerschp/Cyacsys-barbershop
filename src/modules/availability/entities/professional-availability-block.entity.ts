@@ -4,7 +4,6 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  UpdateDateColumn,
   DeleteDateColumn,
   Index,
   ManyToOne,
@@ -12,12 +11,15 @@ import {
 } from 'typeorm';
 import { TenantEntity } from '../../tenant/entities/tenant.entity';
 import { TenantProfessionalEntity } from '../../tenant-professional/entities/tenant-professional.entity';
-import { TimeOffReason } from './time-off-reason.enum';
+import { BlockReason } from './block-reason.enum';
 
-@Entity('professional_time_offs')
-@Index('IDX_professional_time_offs_tenant_id', ['tenantId'])
-@Index('IDX_professional_time_offs_tp_date', ['tenantProfessionalId', 'date'])
-export class TimeOffEntity {
+@Entity('professional_availability_blocks')
+@Index('IDX_professional_availability_blocks_tenant_id', ['tenantId'])
+@Index('IDX_professional_availability_blocks_tp_date', [
+  'tenantProfessionalId',
+  'date',
+])
+export class ProfessionalAvailabilityBlockEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty()
   id: string;
@@ -37,26 +39,26 @@ export class TimeOffEntity {
   tenantProfessional: TenantProfessionalEntity;
 
   @Column({ type: 'date' })
-  @ApiProperty({ example: '2026-12-25' })
+  @ApiProperty({ example: '2026-03-21' })
   date: string;
 
-  @Column({ name: 'start_time', type: 'varchar', length: 5, nullable: true })
-  @ApiProperty({ nullable: true, example: '09:00' })
-  startTime: string | null;
+  @Column({ name: 'start_time', type: 'varchar', length: 5 })
+  @ApiProperty({ example: '10:00' })
+  startTime: string;
 
-  @Column({ name: 'end_time', type: 'varchar', length: 5, nullable: true })
-  @ApiProperty({ nullable: true, example: '12:00' })
-  endTime: string | null;
+  @Column({ name: 'end_time', type: 'varchar', length: 5 })
+  @ApiProperty({ example: '11:00' })
+  endTime: string;
 
   @Column({ type: 'varchar', length: 32 })
-  @ApiProperty({ enum: TimeOffReason })
-  reason: TimeOffReason;
+  @ApiProperty({ enum: BlockReason })
+  reason: BlockReason;
+
+  @Column({ name: 'booking_id', type: 'uuid', nullable: true })
+  bookingId: string | null;
 
   @CreateDateColumn()
   createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 
   @DeleteDateColumn()
   deletedAt?: Date;

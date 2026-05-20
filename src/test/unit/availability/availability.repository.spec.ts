@@ -2,19 +2,19 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AvailabilityRepository } from 'src/repository/availability/availability.repository';
-import { BarberServiceLinkEntity } from 'src/modules/availability/entities/barber-service-link.entity';
+import { ProfessionalServiceLinkEntity } from 'src/modules/availability/entities/professional-service-link.entity';
 import { WorkingHoursEntity } from 'src/modules/availability/entities/working-hours.entity';
 import { WorkingHoursPeriodEntity } from 'src/modules/availability/entities/working-hours-period.entity';
 import { TimeOffEntity } from 'src/modules/availability/entities/time-off.entity';
-import { BarberAvailabilityBlockEntity } from 'src/modules/availability/entities/barber-availability-block.entity';
+import { ProfessionalAvailabilityBlockEntity } from 'src/modules/availability/entities/professional-availability-block.entity';
 import { DayOfWeek } from 'src/modules/availability/entities/day-of-week.enum';
 describe('AvailabilityRepository', () => {
     let repository: AvailabilityRepository;
-    let barberServiceRepo: jest.Mocked<Repository<BarberServiceLinkEntity>>;
+    let barberServiceRepo: jest.Mocked<Repository<ProfessionalServiceLinkEntity>>;
     let workingHoursRepo: jest.Mocked<Repository<WorkingHoursEntity>>;
     let periodRepo: jest.Mocked<Repository<WorkingHoursPeriodEntity>>;
     let timeOffRepo: jest.Mocked<Repository<TimeOffEntity>>;
-    let blockRepo: jest.Mocked<Repository<BarberAvailabilityBlockEntity>>;
+    let blockRepo: jest.Mocked<Repository<ProfessionalAvailabilityBlockEntity>>;
     let mockQb: {
         where: jest.Mock;
         andWhere: jest.Mock;
@@ -25,12 +25,12 @@ describe('AvailabilityRepository', () => {
         getExists: jest.Mock;
     };
     const tenantId = 'tenant-uuid';
-    const barberProfileId = 'bp-uuid';
+    const tenantProfessionalId = 'bp-uuid';
     const whId = 'wh-uuid';
     const mockWh: WorkingHoursEntity = {
         id: whId,
         tenantId,
-        barberProfileId,
+        tenantProfessionalId,
         dayOfWeek: DayOfWeek.MONDAY,
         isActive: true,
         createdAt: new Date(),
@@ -78,19 +78,19 @@ describe('AvailabilityRepository', () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 AvailabilityRepository,
-                { provide: getRepositoryToken(BarberServiceLinkEntity), useValue: mockBarberService },
+                { provide: getRepositoryToken(ProfessionalServiceLinkEntity), useValue: mockBarberService },
                 { provide: getRepositoryToken(WorkingHoursEntity), useValue: mockWh },
                 { provide: getRepositoryToken(WorkingHoursPeriodEntity), useValue: mockPeriod },
                 { provide: getRepositoryToken(TimeOffEntity), useValue: mockTimeOff },
-                { provide: getRepositoryToken(BarberAvailabilityBlockEntity), useValue: mockBlock },
+                { provide: getRepositoryToken(ProfessionalAvailabilityBlockEntity), useValue: mockBlock },
             ],
         }).compile();
         repository = module.get(AvailabilityRepository);
-        barberServiceRepo = module.get(getRepositoryToken(BarberServiceLinkEntity));
+        barberServiceRepo = module.get(getRepositoryToken(ProfessionalServiceLinkEntity));
         workingHoursRepo = module.get(getRepositoryToken(WorkingHoursEntity));
         periodRepo = module.get(getRepositoryToken(WorkingHoursPeriodEntity));
         timeOffRepo = module.get(getRepositoryToken(TimeOffEntity));
-        blockRepo = module.get(getRepositoryToken(BarberAvailabilityBlockEntity));
+        blockRepo = module.get(getRepositoryToken(ProfessionalAvailabilityBlockEntity));
         mockQb.getExists.mockResolvedValue(false);
         mockQb.getOne.mockResolvedValue(null);
         mockQb.getMany.mockResolvedValue([]);
@@ -98,19 +98,19 @@ describe('AvailabilityRepository', () => {
     it('deve estar definido', () => {
         expect(repository).toBeDefined();
     });
-    describe('createBarberServiceLink', () => {
+    describe('createProfessionalServiceLink', () => {
         it('cria vínculo com isActive true', async () => {
-            const link = { id: 'l1' } as BarberServiceLinkEntity;
+            const link = { id: 'l1' } as ProfessionalServiceLinkEntity;
             barberServiceRepo.create.mockReturnValue(link as any);
             barberServiceRepo.save.mockResolvedValue(link);
-            const result = await repository.createBarberServiceLink({
+            const result = await repository.createProfessionalServiceLink({
                 tenantId,
-                barberProfileId,
+                tenantProfessionalId,
                 serviceId: 's1',
             });
             expect(barberServiceRepo.create).toHaveBeenCalledWith(expect.objectContaining({
                 tenantId,
-                barberProfileId,
+                tenantProfessionalId,
                 serviceId: 's1',
                 isActive: true,
             }));
@@ -120,7 +120,7 @@ describe('AvailabilityRepository', () => {
     describe('existsOtherWorkingHoursForDay', () => {
         it('retorna resultado de getExists', async () => {
             mockQb.getExists.mockResolvedValue(true);
-            const result = await repository.existsOtherWorkingHoursForDay(barberProfileId, tenantId, DayOfWeek.TUESDAY);
+            const result = await repository.existsOtherWorkingHoursForDay(tenantProfessionalId, tenantId, DayOfWeek.TUESDAY);
             expect(result).toBe(true);
             expect(workingHoursRepo.createQueryBuilder).toHaveBeenCalledWith('wh');
         });
@@ -154,52 +154,52 @@ describe('AvailabilityRepository', () => {
     });
 
     describe('barber service link', () => {
-        const link = { id: 'l1', tenantId, barberProfileId } as BarberServiceLinkEntity;
+        const link = { id: 'l1', tenantId, tenantProfessionalId } as ProfessionalServiceLinkEntity;
 
-        it('findBarberServiceLinkById', async () => {
+        it('findProfessionalServiceLinkById', async () => {
             barberServiceRepo.findOne.mockResolvedValue(link);
-            await expect(repository.findBarberServiceLinkById('l1', tenantId)).resolves.toBe(link);
+            await expect(repository.findProfessionalServiceLinkById('l1', tenantId)).resolves.toBe(link);
         });
 
-        it('findBarberServiceLinkByBarberAndService', async () => {
+        it('findProfessionalServiceLinkByProfessionalAndService', async () => {
             barberServiceRepo.findOne.mockResolvedValue(link);
             await expect(
-                repository.findBarberServiceLinkByBarberAndService(barberProfileId, tenantId, 's1'),
+                repository.findProfessionalServiceLinkByProfessionalAndService(tenantProfessionalId, tenantId, 's1'),
             ).resolves.toBe(link);
         });
 
-        it('listBarberServiceLinksByBarber', async () => {
+        it('listProfessionalServiceLinksByProfessional', async () => {
             barberServiceRepo.find.mockResolvedValue([link]);
-            await expect(repository.listBarberServiceLinksByBarber(barberProfileId, tenantId)).resolves.toEqual([
+            await expect(repository.listProfessionalServiceLinksByProfessional(tenantProfessionalId, tenantId)).resolves.toEqual([
                 link,
             ]);
         });
 
-        it('updateBarberServiceLink', async () => {
+        it('updateProfessionalServiceLink', async () => {
             barberServiceRepo.update.mockResolvedValue({ affected: 1 } as any);
             barberServiceRepo.findOne.mockResolvedValue(link);
-            const res = await repository.updateBarberServiceLink('l1', tenantId, { isActive: false });
+            const res = await repository.updateProfessionalServiceLink('l1', tenantId, { isActive: false });
             expect(res).toBe(link);
         });
 
-        it('updateBarberServiceLink lança se não encontrar após update', async () => {
+        it('updateProfessionalServiceLink lança se não encontrar após update', async () => {
             barberServiceRepo.update.mockResolvedValue({ affected: 1 } as any);
             barberServiceRepo.findOne.mockResolvedValue(null);
-            await expect(repository.updateBarberServiceLink('l1', tenantId, {})).rejects.toThrow(
-                'Barber service link not found after update',
+            await expect(repository.updateProfessionalServiceLink('l1', tenantId, {})).rejects.toThrow(
+                'Professional service link not found after update',
             );
         });
 
-        it('softDeleteBarberServiceLink', async () => {
+        it('softDeleteProfessionalServiceLink', async () => {
             barberServiceRepo.findOne.mockResolvedValue(link);
             barberServiceRepo.softDelete.mockResolvedValue({ affected: 1 } as any);
-            await expect(repository.softDeleteBarberServiceLink('l1', tenantId)).resolves.toBe(link);
+            await expect(repository.softDeleteProfessionalServiceLink('l1', tenantId)).resolves.toBe(link);
         });
 
-        it('softDeleteBarberServiceLink lança se não existe', async () => {
+        it('softDeleteProfessionalServiceLink lança se não existe', async () => {
             barberServiceRepo.findOne.mockResolvedValue(null);
-            await expect(repository.softDeleteBarberServiceLink('l1', tenantId)).rejects.toThrow(
-                'Barber service link not found',
+            await expect(repository.softDeleteProfessionalServiceLink('l1', tenantId)).rejects.toThrow(
+                'Professional service link not found',
             );
         });
     });
@@ -211,18 +211,18 @@ describe('AvailabilityRepository', () => {
             workingHoursRepo.save.mockResolvedValue(created);
             const res = await repository.createWorkingHours({
                 tenantId,
-                barberProfileId,
+                tenantProfessionalId,
                 dayOfWeek: DayOfWeek.FRIDAY,
                 isActive: true,
             });
             expect(res).toBe(created);
         });
 
-        it('findWorkingHoursByBarberAndDay com períodos', async () => {
+        it('findWorkingHoursByProfessionalAndDay com períodos', async () => {
             workingHoursRepo.findOne.mockResolvedValue(mockWh);
             periodRepo.find.mockResolvedValue([] as any);
-            const res = await repository.findWorkingHoursByBarberAndDay(
-                barberProfileId,
+            const res = await repository.findWorkingHoursByProfessionalAndDay(
+                tenantProfessionalId,
                 tenantId,
                 DayOfWeek.MONDAY,
                 true,
@@ -230,10 +230,10 @@ describe('AvailabilityRepository', () => {
             expect(res?.periods).toEqual([]);
         });
 
-        it('listWorkingHoursByBarber preenche períodos', async () => {
+        it('listWorkingHoursByProfessional preenche períodos', async () => {
             workingHoursRepo.find.mockResolvedValue([mockWh]);
             periodRepo.find.mockResolvedValue([] as any);
-            const list = await repository.listWorkingHoursByBarber(barberProfileId, tenantId);
+            const list = await repository.listWorkingHoursByProfessional(tenantProfessionalId, tenantId);
             expect(list).toHaveLength(1);
             expect(periodRepo.find).toHaveBeenCalled();
         });
@@ -241,7 +241,7 @@ describe('AvailabilityRepository', () => {
         it('existsOtherWorkingHoursForDay com excludeWorkingHoursId', async () => {
             mockQb.getExists.mockResolvedValue(false);
             await repository.existsOtherWorkingHoursForDay(
-                barberProfileId,
+                tenantProfessionalId,
                 tenantId,
                 DayOfWeek.MONDAY,
                 'other-wh',
@@ -337,7 +337,7 @@ describe('AvailabilityRepository', () => {
         const to = {
             id: 't1',
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             date: '2026-01-01',
         } as TimeOffEntity;
 
@@ -346,7 +346,7 @@ describe('AvailabilityRepository', () => {
             timeOffRepo.save.mockResolvedValue(to);
             const res = await repository.createTimeOff({
                 tenantId,
-                barberProfileId,
+                tenantProfessionalId,
                 date: '2026-01-01',
                 startTime: '09:00',
                 endTime: '12:00',
@@ -360,9 +360,9 @@ describe('AvailabilityRepository', () => {
             await expect(repository.findTimeOffById('t1', tenantId)).resolves.toBe(to);
             timeOffRepo.find.mockResolvedValue([to]);
             await expect(
-                repository.listTimeOffsOnDate(barberProfileId, tenantId, '2026-01-01'),
+                repository.listTimeOffsOnDate(tenantProfessionalId, tenantId, '2026-01-01'),
             ).resolves.toEqual([to]);
-            await expect(repository.listTimeOffsByBarber(barberProfileId, tenantId)).resolves.toEqual([to]);
+            await expect(repository.listTimeOffsByProfessional(tenantProfessionalId, tenantId)).resolves.toEqual([to]);
         });
 
         it('updateTimeOff', async () => {
@@ -384,16 +384,16 @@ describe('AvailabilityRepository', () => {
         const blk = {
             id: 'b1',
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             date: '2026-01-02',
-        } as BarberAvailabilityBlockEntity;
+        } as ProfessionalAvailabilityBlockEntity;
 
         it('createBlock', async () => {
             blockRepo.create.mockReturnValue(blk as any);
             blockRepo.save.mockResolvedValue(blk);
             const res = await repository.createBlock({
                 tenantId,
-                barberProfileId,
+                tenantProfessionalId,
                 date: '2026-01-02',
                 startTime: '12:00',
                 endTime: '13:00',
@@ -410,7 +410,7 @@ describe('AvailabilityRepository', () => {
             blockRepo.save.mockResolvedValue(blk);
             await repository.createBlock({
                 tenantId,
-                barberProfileId,
+                tenantProfessionalId,
                 date: '2026-01-02',
                 startTime: '12:00',
                 endTime: '13:00',
@@ -427,9 +427,9 @@ describe('AvailabilityRepository', () => {
             await expect(repository.findBlockById('b1', tenantId)).resolves.toBe(blk);
             blockRepo.find.mockResolvedValue([blk]);
             await expect(
-                repository.listBlocksOnDate(barberProfileId, tenantId, '2026-01-02'),
+                repository.listBlocksOnDate(tenantProfessionalId, tenantId, '2026-01-02'),
             ).resolves.toEqual([blk]);
-            await expect(repository.listBlocksByBarber(barberProfileId, tenantId)).resolves.toEqual([blk]);
+            await expect(repository.listBlocksByProfessional(tenantProfessionalId, tenantId)).resolves.toEqual([blk]);
         });
 
         it('updateBlock', async () => {
