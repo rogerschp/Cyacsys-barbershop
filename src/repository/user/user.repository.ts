@@ -28,10 +28,16 @@ export class UserRepository implements IUserRepository {
     return this.repo.findOne({ where: { firebaseUid } });
   }
   async findByEmail(email: string): Promise<UserEntity | null> {
-    return this.repo.findOne({ where: { email }, relations: ['address'] });
+    return this.repo.findOne({
+      where: { email },
+      relations: ['address', 'professionalProfile'],
+    });
   }
   async findById(id: string): Promise<UserEntity | null> {
-    return this.repo.findOne({ where: { id }, relations: ['address'] });
+    return this.repo.findOne({
+      where: { id },
+      relations: ['address', 'professionalProfile'],
+    });
   }
   async update(id: string, data: UpdateUserPortInput): Promise<void> {
     await this.repo.save({ id, ...data } as Partial<UserEntity>);

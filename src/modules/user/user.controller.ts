@@ -8,8 +8,11 @@ import {
   Patch,
   Post,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiParam,
@@ -17,6 +20,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { BearerAuthGuard } from '../auth/guards/bearer-auth.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
@@ -52,6 +56,37 @@ export class UserController {
     if (!user) throw new NotFoundException('User not found');
     return user;
   }
+
+  @Get('me')
+  @UseGuards(BearerAuthGuard)
+  @ApiBearerAuth('bearer')
+  @ApiOperation({
+    summary:
+      'Retorna o usuário autenticado (inclui professionalProfile quando existir)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Usuário autenticado',
+    type: UserResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Token ausente ou inválido' })
+  async findMe(
+    @Req()
+    req: {
+      user?: {
+        dbUser?: {
+          id: string;
+        };
+      };
+    },
+  ) {
+    const userId = req.user?.dbUser?.id;
+    if (!userId) {
+      throw new NotFoundException('User not found');
+    }
+    return this.findUserByIdUseCase.run(userId);
+  }
+
   @Post()
   @ApiOperation({
     summary: 'Cria um novo usuário (banco primeiro, depois sync Firebase)',

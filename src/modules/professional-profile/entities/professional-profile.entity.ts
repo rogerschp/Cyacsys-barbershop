@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   Index,
-  ManyToOne,
+  OneToOne,
   JoinColumn,
 } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
@@ -25,7 +25,9 @@ export class ProfessionalProfileEntity {
   @ApiProperty({ description: 'FK para User; identidade profissional global' })
   userId: string;
 
-  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
+  @OneToOne(() => UserEntity, (user) => user.professionalProfile, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 

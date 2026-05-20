@@ -58,8 +58,7 @@ export class CreateUserUseCase {
         displayName: dto.name,
       });
       await this.repo.setFirebaseUid(user.id, uid);
-      const created = await this.findUserById.run(user.id);
-      return created ?? user;
+      return this.findUserById.run(user.id);
     } catch (err) {
       await this.repo.softDelete(user.id);
       if (addressId) await this.addressRepository.softDelete(addressId);

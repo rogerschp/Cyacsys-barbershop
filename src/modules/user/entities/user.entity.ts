@@ -9,11 +9,13 @@ import {
   Index,
   UpdateDateColumn,
   ManyToOne,
+  OneToOne,
   JoinColumn,
 } from 'typeorm';
 import { Role } from '../../../common/enums/role.enum';
 import { UserStatus } from './user-status.enum';
 import { AddressEntity } from 'src/modules/address/entities/address.entity';
+import { ProfessionalProfileEntity } from '../../professional-profile/entities/professional-profile.entity';
 @Entity('users')
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -64,6 +66,9 @@ export class UserEntity {
   @ManyToOne(() => AddressEntity, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'address_id' })
   address: AddressEntity | null;
+
+  @OneToOne(() => ProfessionalProfileEntity, (profile) => profile.user)
+  professionalProfile?: ProfessionalProfileEntity | null;
   @CreateDateColumn()
   @ApiProperty({ example: '2021-01-01T00:00:00.000Z' })
   createdAt: Date;

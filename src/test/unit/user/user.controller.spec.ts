@@ -11,6 +11,8 @@ import { UserEntity } from 'src/modules/user/entities/user.entity';
 import { UserStatus } from 'src/modules/user/entities/user-status.enum';
 import { Role } from 'src/common/enums/role.enum';
 import { ConflictException } from '@nestjs/common';
+import { BearerAuthGuard } from 'src/modules/auth/guards/bearer-auth.guard';
+
 describe('UserController (HTTP)', () => {
   let app: INestApplication;
   const useCases = {
@@ -20,6 +22,20 @@ describe('UserController (HTTP)', () => {
     updateUserUseCase: { run: jest.fn() },
     deleteUserUseCase: { run: jest.fn() },
   };
+  const mockUserResponse = {
+    id: 'uuid-123',
+    firebaseUid: 'firebase-uid-1',
+    email: 'user@email.com',
+    name: 'João Silva',
+    status: UserStatus.ACTIVE,
+    role: Role.CLIENT,
+    telephone: '5511999999999',
+    address: null,
+    professionalProfile: null,
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2021-01-01'),
+  };
+
   const mockUser: UserEntity = {
     id: 'uuid-123',
     firebaseUid: 'firebase-uid-1',
@@ -63,7 +79,7 @@ describe('UserController (HTTP)', () => {
   });
   describe('GET /users/by-email', () => {
     it('deve retornar 200 e o usuário quando o email existe', () => {
-      useCases.findUserByEmailUseCase.run.mockResolvedValue(mockUser);
+      useCases.findUserByEmailUseCase.run.mockResolvedValue(mockUserResponse);
       return request(app.getHttpServer())
         .get('/users/by-email')
         .query({ email: 'user@email.com' })
@@ -87,7 +103,7 @@ describe('UserController (HTTP)', () => {
   });
   describe('POST /users', () => {
     it('deve retornar 201 e o usuário criado', () => {
-      useCases.createUserUseCase.run.mockResolvedValue(mockUser);
+      useCases.createUserUseCase.run.mockResolvedValue(mockUserResponse);
       return request(app.getHttpServer())
         .post('/users')
         .send({
@@ -121,9 +137,73 @@ describe('UserController (HTTP)', () => {
         .expect(409);
     });
   });
+  describe('GET /users/me', () => {
+    let meApp: INestApplication;
+
+    beforeAll(async () => {
+      const moduleFixture: TestingModule = await Test.createTestingModule({
+        controllers: [UserController],
+        providers: [
+          {
+            provide: FindUserByEmailUseCase,
+            useValue: useCases.findUserByEmailUseCase,
+          },
+          {
+            provide: FindUserByIdUseCase,
+            useValue: useCases.findUserByIdUseCase,
+          },
+          { provide: CreateUserUseCase, useValue: useCases.createUserUseCase },
+          { provide: UpdateUserUseCase, useValue: useCases.updateUserUseCase },
+          { provide: DeleteUserUseCase, useValue: useCases.deleteUserUseCase },
+        ],
+      })
+        .overrideGuard(BearerAuthGuard)
+        .useValue({
+          canActivate: (context: any) => {
+            const req = context.switchToHttp().getRequest();
+            req.user = { dbUser: { id: 'uuid-123' }, uid: 'firebase-uid' };
+            return true;
+          },
+        })
+        .compile();
+
+      meApp = moduleFixture.createNestApplication();
+      await meApp.init();
+    });
+
+    afterAll(async () => {
+      await meApp.close();
+    });
+
+    it('retorna 200 com professionalProfile quando existir', () => {
+      useCases.findUserByIdUseCase.run.mockResolvedValue({
+        ...mockUserResponse,
+        professionalProfile: {
+          id: 'pp-uuid',
+          userId: 'uuid-123',
+          displayName: 'João Pro',
+          isActive: true,
+        },
+      });
+
+      return request(meApp.getHttpServer())
+        .get('/users/me')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.professionalProfile).toMatchObject({
+            id: 'pp-uuid',
+            displayName: 'João Pro',
+          });
+          expect(useCases.findUserByIdUseCase.run).toHaveBeenCalledWith(
+            'uuid-123',
+          );
+        });
+    });
+  });
+
   describe('GET /users/:id', () => {
     it('deve retornar 200 e o usuário quando o id existe', () => {
-      useCases.findUserByIdUseCase.run.mockResolvedValue(mockUser);
+      useCases.findUserByIdUseCase.run.mockResolvedValue(mockUserResponse);
       return request(app.getHttpServer())
         .get('/users/uuid-123')
         .expect(200)
@@ -146,7 +226,7 @@ describe('UserController (HTTP)', () => {
   });
   describe('PATCH /users/:id', () => {
     it('deve retornar 200 e o usuário atualizado', () => {
-      const updated = { ...mockUser, name: 'Nome Atualizado' };
+      const updated = { ...mockUserResponse, name: 'Nome Atualizado' };
       useCases.updateUserUseCase.run.mockResolvedValue(updated);
       return request(app.getHttpServer())
         .patch('/users/uuid-123')
