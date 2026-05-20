@@ -6,6 +6,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AvailabilityModule } from './modules/availability/availability.module';
 import { BookingModule } from './modules/booking/booking.module';
 import { BarberProfileModule } from './modules/barber-profile/barber-profile.module';
+import { ProfessionalProfileModule } from './modules/professional-profile/professional-profile.module';
+import { TenantProfessionalModule } from './modules/tenant-professional/tenant-professional.module';
 import { FirebaseModule } from './modules/firebase/firebase.module';
 import { ServiceModule } from './modules/service/service.module';
 import { TenantModule } from './modules/tenant/tenant.module';
@@ -27,6 +29,8 @@ import { UserModule } from './modules/user/user.module';
         TenantUserModule,
         ServiceModule,
         BarberProfileModule,
+        ProfessionalProfileModule,
+        TenantProfessionalModule,
         AvailabilityModule,
         BookingModule,
         UserModule,
