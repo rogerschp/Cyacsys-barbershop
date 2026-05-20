@@ -7,63 +7,67 @@ import {
   IServiceRepository,
   SERVICE_REPOSITORY,
 } from '../../service/interfaces/service-repository.interface';
-import { FindTenantUserByIdAndTenantUseCase } from '../../tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { ValidateMembershipByUserIdAndTenantIdUseCase } from '../../tenant-user/use-cases/validate-membership-by-userId-and-tenantId.use-case';
-import { BARBER_PROFILE_REPOSITORY } from '../../barber-profile/interfaces/barber-profile-repository.interface';
-import type { IBarberProfileRepository } from '../../barber-profile/interfaces/barber-profile-repository.interface';
+import {
+  TENANT_PROFESSIONAL_REPOSITORY,
+  ITenantProfessionalRepository,
+} from '../../tenant-professional/interfaces/tenant-professional-repository.interface';
 import { GetAvailableSlotsUseCase } from '../../availability/use-cases/get-available-slots.use-case';
+import { assertActiveTenantProfessional } from '../../availability/utils/assert-active-tenant-professional';
+import { assertTenantProfessionalAgendaAccess } from '../../availability/utils/assert-tenant-professional-agenda-access';
 import { CreateBookingDraftDto } from '../dto/create-booking-draft.dto';
 import { BookingEntity } from '../entities/booking.entity';
 import {
   BOOKING_REPOSITORY,
   IBookingRepository,
 } from '../interfaces/booking-repository.interface';
-import { assertBarberAgendaAccess } from '../../availability/utils/assert-barber-agenda-access';
+import { assertBookingModeAllowsDraft } from '../utils/assert-booking-mode-allows-draft';
 import { BOOKING_MIN_LEAD_MINUTES } from '../booking-lead.constants';
+
 @Injectable()
 export class CreateBookingDraftUseCase {
   constructor(
     @Inject(BOOKING_REPOSITORY)
     private readonly bookingRepository: IBookingRepository,
-    @Inject(BARBER_PROFILE_REPOSITORY)
-    private readonly barberProfileRepository: IBarberProfileRepository,
+    @Inject(TENANT_PROFESSIONAL_REPOSITORY)
+    private readonly tenantProfessionalRepository: ITenantProfessionalRepository,
     @Inject(SERVICE_REPOSITORY)
     private readonly serviceRepository: IServiceRepository,
-    private readonly findTenantUserByIdAndTenantUseCase: FindTenantUserByIdAndTenantUseCase,
     private readonly findTenantByIdUseCase: FindTenantByIdUseCase,
     private readonly validateMembershipByUserIdAndTenantIdUseCase: ValidateMembershipByUserIdAndTenantIdUseCase,
     private readonly getAvailableSlotsUseCase: GetAvailableSlotsUseCase,
   ) {}
+
   async run(
     tenantId: string,
-    barberProfileId: string,
+    tenantProfessionalId: string,
     dto: CreateBookingDraftDto,
     userId: string,
     callerRole?: string,
   ): Promise<BookingEntity> {
-    await assertBarberAgendaAccess({
+    await assertTenantProfessionalAgendaAccess({
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       userId,
       callerRole,
-      barberProfileRepository: this.barberProfileRepository,
-      findTenantUserByIdAndTenant: this.findTenantUserByIdAndTenantUseCase,
+      tenantProfessionalRepository: this.tenantProfessionalRepository,
     });
-    const tenant = await this.findTenantByIdUseCase.run(tenantId);
-    const timezone = tenant.timezone || 'America/Sao_Paulo';
-    const barber = await this.barberProfileRepository.findById(
-      barberProfileId,
+
+    const link = await assertActiveTenantProfessional(
+      this.tenantProfessionalRepository,
+      tenantProfessionalId,
       tenantId,
     );
-    if (!barber) {
-      throw new NotFoundException('Barber profile not found');
+
+    const bookingMode = link.professionalProfile?.bookingMode;
+    if (!bookingMode) {
+      throw new NotFoundException('Professional profile not found');
     }
-    if (!barber.isActive) {
-      throw new BusinessRuleException(
-        'BARBER_INACTIVE',
-        'Barbeiro inativo não recebe agendamentos.',
-      );
-    }
+    assertBookingModeAllowsDraft(bookingMode);
+
+    const tenant = await this.findTenantByIdUseCase.run(tenantId);
+    const timezone = tenant.timezone || 'America/Sao_Paulo';
+
     const service = await this.serviceRepository.findById(
       dto.serviceId,
       tenantId,
@@ -77,9 +81,10 @@ export class CreateBookingDraftUseCase {
         'Serviço inativo não pode ser agendado.',
       );
     }
+
     const available = await this.getAvailableSlotsUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       dto.serviceId,
       dto.date,
       userId,
@@ -91,6 +96,7 @@ export class CreateBookingDraftUseCase {
         'Este horário não está disponível para o serviço escolhido.',
       );
     }
+
     const slotStartUtc = DateTime.fromFormat(
       `${dto.date} ${dto.startTime}`,
       'yyyy-MM-dd HH:mm',
@@ -102,6 +108,7 @@ export class CreateBookingDraftUseCase {
         'Data ou horário de início inválidos para o fuso do tenant.',
       );
     }
+
     const nowUtc = DateTime.now().toUTC();
     if (slotStartUtc <= nowUtc) {
       throw new BusinessRuleException(
@@ -109,6 +116,7 @@ export class CreateBookingDraftUseCase {
         'O horário de início precisa ser no futuro (não pode ser agora ou no passado).',
       );
     }
+
     const earliestBookableUtc = nowUtc.plus({
       minutes: BOOKING_MIN_LEAD_MINUTES,
     });
@@ -118,6 +126,7 @@ export class CreateBookingDraftUseCase {
         `É necessário agendar com pelo menos ${BOOKING_MIN_LEAD_MINUTES} minutos de antecedência.`,
       );
     }
+
     const endsAtUtc = slotStartUtc.plus({ minutes: service.durationInMinutes });
     const membership =
       await this.validateMembershipByUserIdAndTenantIdUseCase.run(
@@ -125,10 +134,11 @@ export class CreateBookingDraftUseCase {
         tenantId,
       );
     const createdByTenantUserId = membership.id;
+
     try {
       return await this.bookingRepository.createDraft({
         tenantId,
-        barberProfileId,
+        tenantProfessionalId,
         serviceId: dto.serviceId,
         startsAt: slotStartUtc.toJSDate(),
         endsAt: endsAtUtc.toJSDate(),
@@ -138,21 +148,19 @@ export class CreateBookingDraftUseCase {
       if (e instanceof Error && e.message === 'BOOKING_SLOT_CONFLICT') {
         throw new BusinessRuleException(
           'SLOT_NOT_AVAILABLE',
-          'Este horário já está reservado ou em rascunho para o barbeiro.',
+          'Este horário já está reservado ou em rascunho para o profissional.',
         );
       }
       if (e instanceof QueryFailedError) {
         const code = (
           e as QueryFailedError & {
-            driverError?: {
-              code?: string;
-            };
+            driverError?: { code?: string };
           }
         ).driverError?.code;
         if (code === '23505') {
           throw new BusinessRuleException(
             'SLOT_NOT_AVAILABLE',
-            'Este horário já está reservado ou em rascunho para o barbeiro.',
+            'Este horário já está reservado ou em rascunho para o profissional.',
           );
         }
       }

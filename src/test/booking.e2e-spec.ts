@@ -19,10 +19,10 @@ describe('BookingController (e2e)', () => {
   let cancelBookingDraftUseCase: jest.Mocked<CancelBookingDraftUseCase>;
 
   const tenantId = 'tenant-e2e-uuid';
-  const barberProfileId = 'bp-e2e-uuid';
+  const tenantProfessionalId = 'tp-e2e-uuid';
   const bookingId = 'booking-e2e-uuid';
   const serviceId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
-  const basePath = `/tenants/${tenantId}/barber-profiles/${barberProfileId}/bookings`;
+  const basePath = `/tenants/${tenantId}/tenant-professionals/${tenantProfessionalId}/bookings`;
 
   beforeAll(async () => {
     const mocks = {
@@ -113,7 +113,7 @@ describe('BookingController (e2e)', () => {
           });
           expect(createBookingDraftUseCase.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             {
               serviceId,
               date: '2099-07-01',
@@ -156,7 +156,7 @@ describe('BookingController (e2e)', () => {
           expect(res.body.status).toBe(BookingStatus.CONFIRMED);
           expect(confirmBookingUseCase.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             bookingId,
             'user-e2e-123',
             TenantUserRole.STAFF,
@@ -174,7 +174,7 @@ describe('BookingController (e2e)', () => {
           expect(res.body.status).toBe(BookingStatus.CANCELLED);
           expect(cancelBookingDraftUseCase.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             bookingId,
             'user-e2e-123',
             TenantUserRole.STAFF,
