@@ -1,8 +1,8 @@
-# Cyacsys API — Profissionais de estética (multi-tenant)
+# Cyacsys API — Beauty & wellness professionals (multi-tenant)
 
-API REST multi-tenant para estabelecimentos de estética e bem-estar: tenants, membros, **perfil profissional global**, vínculo por estabelecimento, serviços, **agenda contextual**, **agendamentos** e autenticação **Firebase + JWT**.
+REST API for multi-tenant beauty and wellness businesses: tenants, members, **global professional profiles**, per-establishment links, services, **contextual scheduling**, **bookings**, and **Firebase + JWT** authentication.
 
-Construída com [NestJS](https://nestjs.com/), [TypeORM](https://typeorm.io/) e PostgreSQL.
+Built with [NestJS](https://nestjs.com/), [TypeORM](https://typeorm.io/), and PostgreSQL.
 
 [![Node.js](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![NestJS](https://img.shields.io/badge/NestJS-10-E0234E?logo=nestjs&logoColor=white)](https://nestjs.com/)
@@ -11,84 +11,85 @@ Construída com [NestJS](https://nestjs.com/), [TypeORM](https://typeorm.io/) e 
 
 ---
 
-## Índice
+## Table of contents
 
-- [Funcionalidades](#funcionalidades)
-- [Modelo de domínio](#modelo-de-domínio)
-- [Documentação](#documentação)
-- [Stack](#stack-tecnológica)
-- [Instalação e execução](#instalação)
+- [Features](#features)
+- [Domain model](#domain-model)
+- [Documentation](#documentation)
+- [Tech stack](#tech-stack)
+- [Setup](#setup)
 - [Migrations](#migrations)
-- [Swagger](#documentação-da-api-swagger)
-- [Testes](#testes)
-- [Estrutura do projeto](#estrutura-do-projeto)
+- [Swagger](#api-documentation-swagger)
+- [Tests](#tests)
+- [Project structure](#project-structure)
 - [Breaking changes](#breaking-changes)
 
 ---
 
-## Funcionalidades
+## Features
 
-| Área | Descrição |
-|------|-----------|
-| **Auth** | Login Firebase, refresh, logout |
-| **Multi-tenant** | Estabelecimentos com slug, timezone IANA, status |
-| **Membros** | Usuário ↔ tenant (OWNER, ADMIN, STAFF, BARBER) |
-| **Usuários** | CRUD global; `professionalProfile` opcional na resposta |
-| **Perfil profissional** | Identidade global (tipo, bookingMode, contatos) |
-| **Tenant professional** | Vínculo profissional ↔ tenant |
-| **Serviços** | Catálogo por tenant |
-| **Disponibilidade** | Jornada, folgas, bloqueios, slots (por `tenantProfessionalId`) |
-| **Booking** | Rascunho/confirmação conforme `bookingMode` |
+| Area | Description |
+|------|-------------|
+| **Auth** | Firebase login, refresh, logout |
+| **Multi-tenant** | Establishments with slug, IANA timezone, status |
+| **Members** | User ↔ tenant (OWNER, ADMIN, STAFF, BARBER) |
+| **Users** | Global CRUD; optional `professionalProfile` in responses |
+| **Professional profile** | Global identity (type, `bookingMode`, contacts) |
+| **Tenant professional** | Professional ↔ tenant link |
+| **Services** | Catalog per tenant |
+| **Availability** | Working hours, time off, blocks, slots (`tenantProfessionalId`) |
+| **Booking** | Draft / confirm driven by `bookingMode` |
 
 ---
 
-## Modelo de domínio
+## Domain model
 
 ```
 User
  └── ProfessionalProfile (global)
-      └── TenantProfessional (por tenant)
+      └── TenantProfessional (per tenant)
            ├── Availability
            └── Booking
 ```
 
-- Qualquer usuário pode ser cliente e profissional; **não** há `isProfessional`.
-- Frontend: `GET /users/me` → `professionalProfile !== null`.
+- Any user can be a client and a professional; there is **no** `isProfessional` flag.
+- Frontend: `GET /users/me` → treat as professional when `professionalProfile !== null`.
 
 ---
 
-## Documentação
+## Documentation
 
-| Recurso | Caminho |
-|---------|---------|
-| Índice dos módulos | [docs/README.md](docs/README.md) |
-| Migração da API antiga | [docs/BREAKING-CHANGES.md](docs/BREAKING-CHANGES.md) |
+| Resource | Path |
+|----------|------|
+| Module index | [docs/README.md](docs/README.md) |
+| Migration from legacy API | [docs/BREAKING-CHANGES.md](docs/BREAKING-CHANGES.md) |
+| Refactor overview | [docs/refactor-professional-profile.md](docs/refactor-professional-profile.md) |
 | RBAC | [docs/RBAC.md](docs/RBAC.md) |
-| Escopo / hardening | [docs/HARDENING.md](docs/HARDENING.md) |
+| Scope / hardening | [docs/HARDENING.md](docs/HARDENING.md) |
 
 ---
 
-## Stack tecnológica
+## Tech stack
 
-| Tecnologia | Uso |
+| Technology | Use |
 |------------|-----|
-| NestJS | HTTP, módulos, guards |
-| TypeORM | ORM, migrations PostgreSQL |
-| Firebase Admin | Auth |
-| Swagger | OpenAPI em `/api` |
-| Jest + Supertest | Testes |
-| Luxon | Timezone do tenant |
+| NestJS | HTTP, modules, guards |
+| TypeORM | ORM, PostgreSQL migrations |
+| Firebase Admin | Authentication |
+| Swagger | OpenAPI at `/api` |
+| Jest + Supertest | Tests |
+| Luxon | Tenant timezone handling |
 
 ---
 
-## Instalação
+## Setup
 
 ```bash
-git clone <url-do-repositorio>
+git clone <repository-url>
 cd cyacsys-barbershop
 yarn install
 cp .envExample .env
-# Preencha DB_* e FIREBASE_*
+# Set DB_* and FIREBASE_*
 yarn migration:run
 yarn start:dev
 ```
@@ -101,25 +102,35 @@ yarn start:dev
 yarn migration:run
 ```
 
-Ordem relevante do refactor profissional: ver [docs/refactor-professional-profile.md](docs/refactor-professional-profile.md).
+Professional-profile refactor order: see [docs/refactor-professional-profile.md](docs/refactor-professional-profile.md).
+
+| Order | Migration | Purpose |
+|-------|-----------|---------|
+| 1 | `1779000000000` | `professional_profiles` |
+| 2 | `1779100000000` | `tenant_professionals` + backfill from `barber_profiles` |
+| 3 | `1779200000000` | Availability → `tenant_professional_id` |
+| 4 | `1779300000000` | Booking → `tenant_professional_id` |
+| 5 | `1779400000000` | Drop `barber_profiles` |
+
+If `AvailabilityUseTenantProfessional` fails on a missing `FK_working_hours_barber_profile`, pull the latest code (FK drop is resolved dynamically) and run `migration:run` again. Migrations `177900` and `177910` are not re-run.
 
 ---
 
-## Documentação da API (Swagger)
+## API documentation (Swagger)
 
-[http://localhost:3000/api](http://localhost:3000/api) — Bearer JWT. Rotas por tenant exigem membership ativo.
+[http://localhost:3000/api](http://localhost:3000/api) — Bearer JWT. Tenant-scoped routes require active membership.
 
 ---
 
-## Testes
+## Tests
 
 ```bash
-yarn test              # unitários
+yarn test              # unit
 yarn test:e2e          # e2e
 yarn test:cov
 ```
 
-Exemplos:
+Examples:
 
 ```bash
 npx jest --config jest.config.ts --testPathPattern="professional-profile|tenant-professional"
@@ -128,7 +139,7 @@ npx jest --config jest-e2e.json --testPathPattern="booking|availability"
 
 ---
 
-## Estrutura do projeto
+## Project structure
 
 ```
 src/
@@ -149,17 +160,17 @@ src/
 ├── repository/
 ├── test/              # *.e2e-spec.ts
 └── test/unit/
-docs/                  # Documentação por módulo
+docs/                  # Per-module documentation
 ```
 
 ---
 
 ## Breaking changes
 
-Rotas `/tenants/:id/barber-profiles` foram **removidas**. Ver [docs/BREAKING-CHANGES.md](docs/BREAKING-CHANGES.md).
+`/tenants/:id/barber-profiles` routes were **removed**. See [docs/BREAKING-CHANGES.md](docs/BREAKING-CHANGES.md).
 
 ---
 
-## Licença
+## License
 
-Projeto proprietário — Cyacsys. Todos os direitos reservados.
+Proprietary — Cyacsys. All rights reserved.

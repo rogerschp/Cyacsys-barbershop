@@ -7,7 +7,6 @@ import { DeleteUserUseCase } from 'src/modules/user/use-cases/delete-user.use-ca
 import { FindUserByEmailUseCase } from 'src/modules/user/use-cases/find-user-by-email.use-case';
 import { FindUserByIdUseCase } from 'src/modules/user/use-cases/find-user-by-id.use-case';
 import { UpdateUserUseCase } from 'src/modules/user/use-cases/update-user.use-case';
-import { UserEntity } from 'src/modules/user/entities/user.entity';
 import { UserStatus } from 'src/modules/user/entities/user-status.enum';
 import { Role } from 'src/common/enums/role.enum';
 import { ConflictException } from '@nestjs/common';
@@ -36,21 +35,6 @@ describe('UserController (HTTP)', () => {
     updatedAt: new Date('2021-01-01'),
   };
 
-  const mockUser: UserEntity = {
-    id: 'uuid-123',
-    firebaseUid: 'firebase-uid-1',
-    email: 'user@email.com',
-    name: 'João Silva',
-    passwordHash: '$2a$10$hash',
-    status: UserStatus.ACTIVE,
-    role: Role.CLIENT,
-    telephone: '5511999999999',
-    addressId: null,
-    address: null,
-    createdAt: new Date('2021-01-01'),
-    updatedAt: new Date('2021-01-01'),
-    deletedAt: undefined,
-  };
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [UserController],

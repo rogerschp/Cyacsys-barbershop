@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { CreateTenantWithOwnerUseCase } from 'src/modules/tenant/use-cases/create-tenant-with-owner.use-case';
 import { TenantRepository } from 'src/repository/tenant/tenant.repository';
+import { AddressRepository } from 'src/repository/address/address.repository';
 import { TenantEntity } from 'src/modules/tenant/entities/tenant.entity';
 import { TenantStatus } from 'src/modules/tenant/entities/tenant-status.enum';
 import { getDataSourceToken } from '@nestjs/typeorm';
@@ -54,6 +55,13 @@ describe('CreateTenantWithOwnerUseCase', () => {
                 CreateTenantWithOwnerUseCase,
                 { provide: getDataSourceToken(), useValue: dataSource },
                 { provide: TenantRepository, useValue: mockRepo },
+                {
+                    provide: AddressRepository,
+                    useValue: {
+                        create: jest.fn(),
+                        softDelete: jest.fn(),
+                    },
+                },
             ],
         }).compile();
         useCase = module.get<CreateTenantWithOwnerUseCase>(CreateTenantWithOwnerUseCase);
