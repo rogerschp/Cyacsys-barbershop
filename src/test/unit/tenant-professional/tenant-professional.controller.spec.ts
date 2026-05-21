@@ -20,6 +20,11 @@ import { BookingMode } from 'src/modules/professional-profile/entities/booking-m
 describe('TenantProfessionalController (HTTP)', () => {
   let app: INestApplication;
   let listUseCase: jest.Mocked<ListTenantProfessionalsUseCase>;
+  let linkUseCase: jest.Mocked<LinkProfessionalToTenantUseCase>;
+  let linkMineUseCase: jest.Mocked<LinkMyProfessionalToTenantUseCase>;
+  let getUseCase: jest.Mocked<GetTenantProfessionalUseCase>;
+  let updateStatusUseCase: jest.Mocked<UpdateTenantProfessionalStatusUseCase>;
+  let leaveUseCase: jest.Mocked<LeaveTenantProfessionalUseCase>;
 
   const tenantId = 'tenant-uuid';
   const mockLink = {
@@ -87,9 +92,12 @@ describe('TenantProfessionalController (HTTP)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
-    listUseCase = moduleFixture.get(
-      ListTenantProfessionalsUseCase,
-    ) as jest.Mocked<ListTenantProfessionalsUseCase>;
+    listUseCase = moduleFixture.get(ListTenantProfessionalsUseCase);
+    linkUseCase = moduleFixture.get(LinkProfessionalToTenantUseCase);
+    linkMineUseCase = moduleFixture.get(LinkMyProfessionalToTenantUseCase);
+    getUseCase = moduleFixture.get(GetTenantProfessionalUseCase);
+    updateStatusUseCase = moduleFixture.get(UpdateTenantProfessionalStatusUseCase);
+    leaveUseCase = moduleFixture.get(LeaveTenantProfessionalUseCase);
   });
 
   afterAll(async () => {
@@ -106,5 +114,76 @@ describe('TenantProfessionalController (HTTP)', () => {
     expect(listUseCase.run).toHaveBeenCalledWith(tenantId, {
       activeOnly: false,
     });
+  });
+
+  it('GET com activeOnly=true repassa filtro', async () => {
+    listUseCase.run.mockResolvedValue([]);
+    await request(app.getHttpServer())
+      .get(`/tenants/${tenantId}/tenant-professionals`)
+      .query({ activeOnly: 'true' })
+      .expect(200);
+    expect(listUseCase.run).toHaveBeenCalledWith(tenantId, { activeOnly: true });
+  });
+
+  it('POST /tenants/:tenantId/tenant-professionals/me', async () => {
+    linkMineUseCase.run.mockResolvedValue(mockLink as never);
+    const res = await request(app.getHttpServer())
+      .post(`/tenants/${tenantId}/tenant-professionals/me`)
+      .expect(201);
+    expect(res.body.id).toBe('tp-uuid');
+    expect(linkMineUseCase.run).toHaveBeenCalledWith(tenantId, 'user-uuid-123');
+  });
+
+  it('POST /tenants/:tenantId/tenant-professionals', async () => {
+    linkUseCase.run.mockResolvedValue(mockLink as never);
+    const res = await request(app.getHttpServer())
+      .post(`/tenants/${tenantId}/tenant-professionals`)
+      .send({ professionalProfileId: 'profile-uuid', role: TenantUserRole.BARBER })
+      .expect(201);
+    expect(res.body.id).toBe('tp-uuid');
+    expect(linkUseCase.run).toHaveBeenCalledWith(
+      tenantId,
+      { professionalProfileId: 'profile-uuid', role: TenantUserRole.BARBER },
+      'user-uuid-123',
+    );
+  });
+
+  it('GET /tenants/:tenantId/tenant-professionals/:id', async () => {
+    getUseCase.run.mockResolvedValue(mockLink as never);
+    const res = await request(app.getHttpServer())
+      .get(`/tenants/${tenantId}/tenant-professionals/tp-uuid`)
+      .expect(200);
+    expect(res.body.id).toBe('tp-uuid');
+    expect(getUseCase.run).toHaveBeenCalledWith(tenantId, 'tp-uuid');
+  });
+
+  it('PATCH /tenants/:tenantId/tenant-professionals/:id/status', async () => {
+    updateStatusUseCase.run.mockResolvedValue(mockLink as never);
+    await request(app.getHttpServer())
+      .patch(`/tenants/${tenantId}/tenant-professionals/tp-uuid/status`)
+      .send({ status: TenantProfessionalStatus.INACTIVE })
+      .expect(200);
+    expect(updateStatusUseCase.run).toHaveBeenCalledWith(
+      tenantId,
+      'tp-uuid',
+      { status: TenantProfessionalStatus.INACTIVE },
+      'user-uuid-123',
+    );
+  });
+
+  it('PATCH /tenants/:tenantId/tenant-professionals/:id/leave', async () => {
+    leaveUseCase.run.mockResolvedValue({
+      ...mockLink,
+      status: TenantProfessionalStatus.LEFT,
+    } as never);
+    await request(app.getHttpServer())
+      .patch(`/tenants/${tenantId}/tenant-professionals/tp-uuid/leave`)
+      .expect(200);
+    expect(leaveUseCase.run).toHaveBeenCalledWith(
+      tenantId,
+      'tp-uuid',
+      'user-uuid-123',
+      TenantUserRole.ADMIN,
+    );
   });
 });

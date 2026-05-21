@@ -230,6 +230,18 @@ describe('AvailabilityRepository', () => {
             expect(res?.periods).toEqual([]);
         });
 
+        it('findWorkingHoursByProfessionalAndDay sem períodos não consulta periodRepo', async () => {
+            workingHoursRepo.findOne.mockResolvedValue(mockWh);
+            const res = await repository.findWorkingHoursByProfessionalAndDay(
+                tenantProfessionalId,
+                tenantId,
+                DayOfWeek.MONDAY,
+                false,
+            );
+            expect(res).toBe(mockWh);
+            expect(periodRepo.find).not.toHaveBeenCalled();
+        });
+
         it('listWorkingHoursByProfessional preenche períodos', async () => {
             workingHoursRepo.find.mockResolvedValue([mockWh]);
             periodRepo.find.mockResolvedValue([] as any);
@@ -325,6 +337,21 @@ describe('AvailabilityRepository', () => {
             );
         });
 
+        it('updateWorkingHoursPeriod lança se não encontrado após update', async () => {
+            mockQb.getOne.mockResolvedValueOnce(period).mockResolvedValueOnce(null);
+            periodRepo.update.mockResolvedValue({ affected: 1 } as any);
+            await expect(
+                repository.updateWorkingHoursPeriod('p1', tenantId, { endTime: '13:00' }),
+            ).rejects.toThrow('Period not found after update');
+        });
+
+        it('softDeleteWorkingHoursPeriod lança se período não existe', async () => {
+            mockQb.getOne.mockResolvedValue(null);
+            await expect(repository.softDeleteWorkingHoursPeriod('p1', tenantId)).rejects.toThrow(
+                'Period not found',
+            );
+        });
+
         it('softDeleteWorkingHoursPeriod', async () => {
             mockQb.getOne.mockResolvedValue(period);
             periodRepo.softDelete.mockResolvedValue({ affected: 1 } as any);
@@ -370,6 +397,21 @@ describe('AvailabilityRepository', () => {
             timeOffRepo.findOne.mockResolvedValue(to);
             await expect(repository.updateTimeOff('t1', tenantId, { reason: 'SICK' as any })).resolves.toBe(
                 to,
+            );
+        });
+
+        it('updateTimeOff lança quando não encontrado após update', async () => {
+            timeOffRepo.update.mockResolvedValue({ affected: 1 } as any);
+            timeOffRepo.findOne.mockResolvedValue(null);
+            await expect(repository.updateTimeOff('t1', tenantId, {})).rejects.toThrow(
+                'Time off not found after update',
+            );
+        });
+
+        it('softDeleteTimeOff lança quando não existe', async () => {
+            timeOffRepo.findOne.mockResolvedValue(null);
+            await expect(repository.softDeleteTimeOff('t1', tenantId)).rejects.toThrow(
+                'Time off not found',
             );
         });
 
@@ -436,6 +478,19 @@ describe('AvailabilityRepository', () => {
             blockRepo.update.mockResolvedValue({ affected: 1 } as any);
             blockRepo.findOne.mockResolvedValue(blk);
             await expect(repository.updateBlock('b1', tenantId, { startTime: '12:30' })).resolves.toBe(blk);
+        });
+
+        it('updateBlock lança quando não encontrado após update', async () => {
+            blockRepo.update.mockResolvedValue({ affected: 1 } as any);
+            blockRepo.findOne.mockResolvedValue(null);
+            await expect(repository.updateBlock('b1', tenantId, {})).rejects.toThrow(
+                'Block not found after update',
+            );
+        });
+
+        it('softDeleteBlock lança quando não existe', async () => {
+            blockRepo.findOne.mockResolvedValue(null);
+            await expect(repository.softDeleteBlock('b1', tenantId)).rejects.toThrow('Block not found');
         });
 
         it('softDeleteBlock', async () => {

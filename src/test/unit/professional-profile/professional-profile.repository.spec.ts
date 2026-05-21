@@ -69,7 +69,82 @@ describe('ProfessionalProfileRepository', () => {
         userId,
         bookingMode: BookingMode.DIRECT_BOOKING,
         isActive: true,
+        bio: null,
+        whatsappNumber: null,
+        instagramUsername: null,
       }),
     );
+  });
+
+  it('create persiste bookingMode e contatos quando informados', async () => {
+    typeOrmRepo.create.mockReturnValue(mockProfile as ProfessionalProfileEntity);
+    typeOrmRepo.save.mockResolvedValue(mockProfile);
+
+    await repository.create({
+      userId,
+      displayName: 'João',
+      avatarUrl: 'https://example.com/a.jpg',
+      professionalType: ProfessionalType.TATTOO_ARTIST,
+      experienceYears: 3,
+      bookingMode: BookingMode.WHATSAPP_ONLY,
+      bio: 'Bio',
+      whatsappNumber: '5511999999999',
+      instagramUsername: 'joao',
+    });
+
+    expect(typeOrmRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bookingMode: BookingMode.WHATSAPP_ONLY,
+        bio: 'Bio',
+        whatsappNumber: '5511999999999',
+        instagramUsername: 'joao',
+      }),
+    );
+  });
+
+  it('findById retorna perfil não deletado', async () => {
+    typeOrmRepo.findOne.mockResolvedValue(mockProfile);
+    const result = await repository.findById(profileId);
+    expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
+      where: { id: profileId },
+      withDeleted: false,
+    });
+    expect(result).toBe(mockProfile);
+  });
+
+  it('findByUserIdNonDeleted usa query builder', async () => {
+    mockQueryBuilder.getOne.mockResolvedValue(mockProfile);
+    const result = await repository.findByUserIdNonDeleted(userId);
+    expect(mockQueryBuilder.where).toHaveBeenCalledWith('pp.user_id = :userId', {
+      userId,
+    });
+    expect(result).toBe(mockProfile);
+  });
+
+  it('update aplica campos parciais e recarrega', async () => {
+    typeOrmRepo.findOne.mockResolvedValue(mockProfile);
+
+    await repository.update(profileId, userId, {
+      displayName: 'Novo',
+      bookingMode: BookingMode.QUOTE_REQUIRED,
+      isActive: false,
+    });
+
+    expect(typeOrmRepo.update).toHaveBeenCalledWith(
+      { id: profileId, userId },
+      {
+        displayName: 'Novo',
+        bookingMode: BookingMode.QUOTE_REQUIRED,
+        isActive: false,
+      },
+    );
+  });
+
+  it('update lança erro quando perfil não é encontrado após update', async () => {
+    typeOrmRepo.findOne.mockResolvedValue(null);
+
+    await expect(
+      repository.update(profileId, userId, { displayName: 'X' }),
+    ).rejects.toThrow('Professional profile not found after update');
   });
 });

@@ -127,6 +127,47 @@ describe('ServiceController (HTTP)', () => {
             })
                 .expect(404);
         });
+        it('usa createdBy vazio quando dbUser não está no request', async () => {
+            const moduleFixture = await Test.createTestingModule({
+                controllers: [ServiceController],
+                providers: [
+                    { provide: CreateServiceUseCase, useValue: { run: jest.fn().mockResolvedValue(mockService) } },
+                    { provide: UpdateServiceUseCase, useValue: { run: jest.fn() } },
+                    { provide: DeactivateServiceUseCase, useValue: { run: jest.fn() } },
+                    { provide: ListServicesByTenantUseCase, useValue: { run: jest.fn() } },
+                    { provide: GetServiceUseCase, useValue: { run: jest.fn() } },
+                ],
+            })
+                .overrideGuard(BearerAuthGuard)
+                .useValue({
+                    canActivate: (context: any) => {
+                        context.switchToHttp().getRequest().user = { uid: 'firebase-only' };
+                        return true;
+                    },
+                })
+                .overrideInterceptor(TenantInterceptor)
+                .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
+                .overrideGuard(TenantMembershipGuard)
+                .useValue({ canActivate: () => true })
+                .overrideGuard(TenantResolverGuard)
+                .useValue({ canActivate: () => true })
+                .overrideGuard(TenantRolesGuard)
+                .useValue({ canActivate: () => true })
+                .compile();
+            const isolatedApp = moduleFixture.createNestApplication();
+            await isolatedApp.init();
+            const isolatedCreate = moduleFixture.get(CreateServiceUseCase) as jest.Mocked<CreateServiceUseCase>;
+            await request(isolatedApp.getHttpServer())
+                .post(`/tenants/${tenantId}/services`)
+                .send({ name: 'Corte', price: 45, durationInMinutes: 30 })
+                .expect(201);
+            expect(isolatedCreate.run).toHaveBeenCalledWith(
+                tenantId,
+                expect.any(Object),
+                '',
+            );
+            await isolatedApp.close();
+        });
     });
     describe('GET /tenants/:tenantId/services', () => {
         it('deve retornar 200 e lista de serviços', () => {

@@ -76,4 +76,78 @@ describe('TenantProfessionalRepository', () => {
     expect(typeOrmRepo.findOne).toHaveBeenCalled();
     expect(result.professionalProfile).toBeDefined();
   });
+
+  it('create lança erro quando reload após save falha', async () => {
+    typeOrmRepo.create.mockReturnValue(mockLink);
+    typeOrmRepo.save.mockResolvedValue(mockLink);
+    typeOrmRepo.findOne.mockResolvedValue(null);
+
+    await expect(
+      repository.create({
+        tenantId: 'tenant-uuid',
+        professionalProfileId: 'profile-uuid',
+        role: TenantUserRole.BARBER,
+      }),
+    ).rejects.toThrow('Tenant professional not found after create');
+  });
+
+  it('findById e findByTenantAndProfile consultam com relações', async () => {
+    typeOrmRepo.findOne.mockResolvedValue(mockLink);
+
+    await repository.findById('tp-uuid', 'tenant-uuid');
+    await repository.findByTenantAndProfile('tenant-uuid', 'profile-uuid');
+
+    expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
+      where: { id: 'tp-uuid', tenantId: 'tenant-uuid' },
+      relations: { professionalProfile: true },
+    });
+    expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
+      where: { tenantId: 'tenant-uuid', professionalProfileId: 'profile-uuid' },
+      relations: { professionalProfile: true },
+    });
+  });
+
+  it('listByTenant sem activeOnly não filtra status', async () => {
+    await repository.listByTenant('tenant-uuid');
+    expect(mockQueryBuilder.andWhere).not.toHaveBeenCalledWith(
+      'tp.status = :status',
+      expect.anything(),
+    );
+  });
+
+  it('listByTenant com activeOnly aplica filtros', async () => {
+    await repository.listByTenant('tenant-uuid', { activeOnly: true });
+    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('tp.status = :status', {
+      status: TenantProfessionalStatus.ACTIVE,
+    });
+    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('pp.is_active = true');
+  });
+
+  it('update aplica apenas campos informados e recarrega', async () => {
+    typeOrmRepo.findOne.mockResolvedValue(mockLink);
+    const leftAt = new Date('2022-01-01');
+
+    await repository.update('tp-uuid', 'tenant-uuid', {
+      role: TenantUserRole.ADMIN,
+      status: TenantProfessionalStatus.INACTIVE,
+      leftAt,
+    });
+
+    expect(typeOrmRepo.update).toHaveBeenCalledWith(
+      { id: 'tp-uuid', tenantId: 'tenant-uuid' },
+      {
+        role: TenantUserRole.ADMIN,
+        status: TenantProfessionalStatus.INACTIVE,
+        leftAt,
+      },
+    );
+  });
+
+  it('update lança erro quando entidade não é encontrada após update', async () => {
+    typeOrmRepo.findOne.mockResolvedValue(null);
+
+    await expect(
+      repository.update('tp-uuid', 'tenant-uuid', { status: TenantProfessionalStatus.LEFT }),
+    ).rejects.toThrow('Tenant professional not found after update');
+  });
 });

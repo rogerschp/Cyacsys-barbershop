@@ -204,6 +204,98 @@ describe('GetAvailableSlotsUseCase', () => {
     );
     expect(result.slots).toEqual(['09:00', '10:00', '11:00']);
   });
+  it('retorna slots vazios quando jornada existe mas está inativa', async () => {
+    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue({
+      ...({
+        id: 'wh-1',
+        tenantId,
+        tenantProfessionalId,
+        dayOfWeek: DayOfWeek.MONDAY,
+        isActive: false,
+        periods: [{ startTime: '09:00', endTime: '12:00' }],
+      } as WorkingHoursEntity),
+    });
+    const result = await useCase.run(
+      tenantId,
+      tenantProfessionalId,
+      serviceId,
+      dateYmd,
+      userId,
+      TenantUserRole.ADMIN,
+    );
+    expect(result.slots).toEqual([]);
+  });
+
+  it('retorna slots vazios em folga de dia inteiro', async () => {
+    const wh: WorkingHoursEntity = {
+      id: 'wh-1',
+      tenantId,
+      tenantProfessionalId,
+      dayOfWeek: DayOfWeek.MONDAY,
+      isActive: true,
+      periods: [{ startTime: '09:00', endTime: '12:00' } as any],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: undefined,
+    } as WorkingHoursEntity;
+    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue(wh);
+    availabilityRepository.listTimeOffsOnDate.mockResolvedValue([
+      { startTime: null, endTime: null } as any,
+    ]);
+    jest
+      .spyOn(DateTime, 'now')
+      .mockReturnValue(
+        DateTime.fromObject(
+          { year: 2030, month: 1, day: 7, hour: 7, minute: 0, second: 0 },
+          { zone: 'America/Sao_Paulo' },
+        ) as any,
+      );
+    const result = await useCase.run(
+      tenantId,
+      tenantProfessionalId,
+      serviceId,
+      dateYmd,
+      userId,
+      TenantUserRole.ADMIN,
+    );
+    expect(result.slots).toEqual([]);
+  });
+
+  it('omite slot que colide com block', async () => {
+    const wh: WorkingHoursEntity = {
+      id: 'wh-1',
+      tenantId,
+      tenantProfessionalId,
+      dayOfWeek: DayOfWeek.MONDAY,
+      isActive: true,
+      periods: [{ startTime: '09:00', endTime: '12:00' } as any],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: undefined,
+    } as WorkingHoursEntity;
+    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue(wh);
+    availabilityRepository.listBlocksOnDate.mockResolvedValue([
+      { startTime: '10:00', endTime: '11:00' } as any,
+    ]);
+    jest
+      .spyOn(DateTime, 'now')
+      .mockReturnValue(
+        DateTime.fromObject(
+          { year: 2030, month: 1, day: 7, hour: 7, minute: 0, second: 0 },
+          { zone: 'America/Sao_Paulo' },
+        ) as any,
+      );
+    const result = await useCase.run(
+      tenantId,
+      tenantProfessionalId,
+      serviceId,
+      dateYmd,
+      userId,
+      TenantUserRole.ADMIN,
+    );
+    expect(result.slots).toEqual(['09:00', '11:00']);
+  });
+
   it('omite slots com menos de 15 minutos de antecedência', async () => {
     const wh: WorkingHoursEntity = {
       id: 'wh-1',

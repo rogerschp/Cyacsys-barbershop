@@ -15,6 +15,8 @@ describe('ProfessionalProfileController (HTTP)', () => {
   let app: INestApplication;
   let createUseCase: jest.Mocked<CreateProfessionalProfileUseCase>;
   let getUseCase: jest.Mocked<GetProfessionalProfileByUserUseCase>;
+  let updateUseCase: jest.Mocked<UpdateProfessionalProfileUseCase>;
+  let deactivateUseCase: jest.Mocked<DeactivateProfessionalProfileUseCase>;
 
   const mockProfile: ProfessionalProfileEntity = {
     id: 'profile-uuid',
@@ -67,9 +69,9 @@ describe('ProfessionalProfileController (HTTP)', () => {
     createUseCase = moduleFixture.get(
       CreateProfessionalProfileUseCase,
     ) as jest.Mocked<CreateProfessionalProfileUseCase>;
-    getUseCase = moduleFixture.get(
-      GetProfessionalProfileByUserUseCase,
-    ) as jest.Mocked<GetProfessionalProfileByUserUseCase>;
+    getUseCase = moduleFixture.get(GetProfessionalProfileByUserUseCase);
+    updateUseCase = moduleFixture.get(UpdateProfessionalProfileUseCase);
+    deactivateUseCase = moduleFixture.get(DeactivateProfessionalProfileUseCase);
   });
 
   afterAll(async () => {
@@ -100,5 +102,33 @@ describe('ProfessionalProfileController (HTTP)', () => {
       .get('/users/me/professional-profile')
       .expect(200);
     expect(res.body.userId).toBe('user-uuid-123');
+  });
+
+  it('PATCH /users/me/professional-profile', async () => {
+    updateUseCase.run.mockResolvedValue({
+      ...mockProfile,
+      displayName: 'Atualizado',
+    });
+    const res = await request(app.getHttpServer())
+      .patch('/users/me/professional-profile')
+      .send({ displayName: 'Atualizado', bookingMode: BookingMode.WHATSAPP_ONLY })
+      .expect(200);
+    expect(res.body.displayName).toBe('Atualizado');
+    expect(updateUseCase.run).toHaveBeenCalledWith('user-uuid-123', {
+      displayName: 'Atualizado',
+      bookingMode: BookingMode.WHATSAPP_ONLY,
+    });
+  });
+
+  it('PATCH /users/me/professional-profile/deactivate', async () => {
+    deactivateUseCase.run.mockResolvedValue({
+      ...mockProfile,
+      isActive: false,
+    });
+    const res = await request(app.getHttpServer())
+      .patch('/users/me/professional-profile/deactivate')
+      .expect(200);
+    expect(res.body.isActive).toBe(false);
+    expect(deactivateUseCase.run).toHaveBeenCalledWith('user-uuid-123');
   });
 });
