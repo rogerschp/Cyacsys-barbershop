@@ -8,9 +8,11 @@ import { CancelBookingDraftUseCase } from '../modules/booking/use-cases/cancel-b
 import { BearerAuthGuard } from '../modules/auth/guards/bearer-auth.guard';
 import { TenantInterceptor } from '../common/interceptors/tenant.interceptor';
 import { TenantMembershipGuard } from '../common/guards/tenant-membership.guard';
+import { TenantResolverGuard } from '../common/guards/tenant-resolver.guard';
 import { TenantRolesGuard } from '../common/guards/tenant-roles.guard';
 import { TenantUserRole } from '../modules/tenant-user/entities/tenant-user-role.enum';
 import { BookingStatus } from '../modules/booking/entities/booking-status.enum';
+import { BusinessRuleException } from '../common/exceptions/business-rule.exception';
 
 describe('BookingController (e2e)', () => {
   let app: INestApplication;
@@ -19,10 +21,10 @@ describe('BookingController (e2e)', () => {
   let cancelBookingDraftUseCase: jest.Mocked<CancelBookingDraftUseCase>;
 
   const tenantId = 'tenant-e2e-uuid';
-  const barberProfileId = 'bp-e2e-uuid';
+  const tenantProfessionalId = 'tp-e2e-uuid';
   const bookingId = 'booking-e2e-uuid';
   const serviceId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
-  const basePath = `/tenants/${tenantId}/barber-profiles/${barberProfileId}/bookings`;
+  const basePath = `/tenants/${tenantId}/tenant-professionals/${tenantProfessionalId}/bookings`;
 
   beforeAll(async () => {
     const mocks = {
@@ -51,6 +53,8 @@ describe('BookingController (e2e)', () => {
       .overrideInterceptor(TenantInterceptor)
       .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
       .overrideGuard(TenantMembershipGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(TenantResolverGuard)
       .useValue({ canActivate: () => true })
       .overrideGuard(TenantRolesGuard)
       .useValue({ canActivate: () => true })
@@ -113,7 +117,7 @@ describe('BookingController (e2e)', () => {
           });
           expect(createBookingDraftUseCase.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             {
               serviceId,
               date: '2099-07-01',
@@ -145,6 +149,23 @@ describe('BookingController (e2e)', () => {
         })
         .expect(400);
     });
+
+    it('propaga BOOKING_REQUIRES_QUOTE do use case', () => {
+      createBookingDraftUseCase.run.mockRejectedValue(
+        new BusinessRuleException(
+          'BOOKING_REQUIRES_QUOTE',
+          'Este profissional exige orçamento antes do agendamento.',
+        ),
+      );
+      return request(app.getHttpServer())
+        .post(`${basePath}/draft`)
+        .send({
+          serviceId,
+          date: '2099-07-01',
+          startTime: '09:00',
+        })
+        .expect(400);
+    });
   });
 
   describe(`PATCH ${basePath}/:bookingId/confirm`, () => {
@@ -156,7 +177,7 @@ describe('BookingController (e2e)', () => {
           expect(res.body.status).toBe(BookingStatus.CONFIRMED);
           expect(confirmBookingUseCase.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             bookingId,
             'user-e2e-123',
             TenantUserRole.STAFF,
@@ -174,7 +195,7 @@ describe('BookingController (e2e)', () => {
           expect(res.body.status).toBe(BookingStatus.CANCELLED);
           expect(cancelBookingDraftUseCase.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             bookingId,
             'user-e2e-123',
             TenantUserRole.STAFF,

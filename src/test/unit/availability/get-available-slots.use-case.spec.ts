@@ -3,34 +3,33 @@ import { DateTime } from 'luxon';
 import { NotFoundException } from '@nestjs/common';
 import { GetAvailableSlotsUseCase } from 'src/modules/availability/use-cases/get-available-slots.use-case';
 import { AVAILABILITY_REPOSITORY } from 'src/modules/availability/interfaces/availability-repository.interface';
-import { BARBER_PROFILE_REPOSITORY } from 'src/modules/barber-profile/interfaces/barber-profile-repository.interface';
+import { TENANT_PROFESSIONAL_REPOSITORY } from 'src/modules/tenant-professional/interfaces/tenant-professional-repository.interface';
 import { SERVICE_REPOSITORY } from 'src/modules/service/interfaces/service-repository.interface';
-import { FindTenantUserByIdAndTenantUseCase } from 'src/modules/tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { FindTenantByIdUseCase } from 'src/modules/tenant/use-cases/find-tenant-by-id.use-case';
 import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
 import { TenantUserRole } from 'src/modules/tenant-user/entities/tenant-user-role.enum';
 import { TenantStatus } from 'src/modules/tenant/entities/tenant-status.enum';
 import { DayOfWeek } from 'src/modules/availability/entities/day-of-week.enum';
-import { BarberProfileEntity } from 'src/modules/barber-profile/entities/barber-profile.entity';
+import { TenantProfessionalEntity } from 'src/modules/tenant-professional/entities/tenant-professional.entity';
+import { TenantProfessionalStatus } from 'src/modules/tenant-professional/entities/tenant-professional-status.enum';
 import { TenantEntity } from 'src/modules/tenant/entities/tenant.entity';
 import { ServiceEntity } from 'src/modules/service/entities/service.entity';
-import { BarberServiceLinkEntity } from 'src/modules/availability/entities/barber-service-link.entity';
+import { ProfessionalServiceLinkEntity } from 'src/modules/availability/entities/professional-service-link.entity';
 import { WorkingHoursEntity } from 'src/modules/availability/entities/working-hours.entity';
 describe('GetAvailableSlotsUseCase', () => {
   let useCase: GetAvailableSlotsUseCase;
   let availabilityRepository: Record<string, jest.Mock>;
-  let barberProfileRepository: {
+  let tenantProfessionalRepository: {
     findById: jest.Mock;
   };
   let serviceRepository: {
     findById: jest.Mock;
   };
-  let findTenantUserByIdAndTenantUseCase: Record<string, jest.Mock>;
   let findTenantByIdUseCase: {
     run: jest.Mock;
   };
   const tenantId = 'tenant-uuid';
-  const barberProfileId = 'bp-uuid';
+  const tenantProfessionalId = 'bp-uuid';
   const serviceId = 'service-uuid';
   const userId = 'user-uuid';
   const dateYmd = '2030-01-07';
@@ -44,19 +43,21 @@ describe('GetAvailableSlotsUseCase', () => {
     updatedAt: new Date(),
     deletedAt: undefined,
   } as TenantEntity;
-  const mockBarber: BarberProfileEntity = {
-    id: barberProfileId,
+  const mockTenantProfessional: TenantProfessionalEntity = {
+    id: tenantProfessionalId,
     tenantId,
-    tenantUserId: 'tu-uuid',
-    displayName: 'João',
-    bio: null,
-    avatarUrl: 'https://x.com/a.jpg',
-    experienceYears: 1,
-    isActive: true,
+    professionalProfileId: 'pp-uuid',
+    role: TenantUserRole.BARBER,
+    status: TenantProfessionalStatus.ACTIVE,
+    joinedAt: new Date(),
+    leftAt: null,
     createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: undefined,
-  } as BarberProfileEntity;
+    professionalProfile: {
+      id: 'pp-uuid',
+      userId,
+      isActive: true,
+    },
+  } as TenantProfessionalEntity;
   const mockService: ServiceEntity = {
     id: serviceId,
     tenantId,
@@ -69,31 +70,30 @@ describe('GetAvailableSlotsUseCase', () => {
     updatedAt: new Date(),
     deletedAt: undefined,
   } as ServiceEntity;
-  const mockLink: BarberServiceLinkEntity = {
+  const mockLink: ProfessionalServiceLinkEntity = {
     id: 'link-uuid',
     tenantId,
-    barberProfileId,
+    tenantProfessionalId,
     serviceId,
     isActive: true,
     createdAt: new Date(),
     deletedAt: undefined,
-  } as BarberServiceLinkEntity;
+  } as ProfessionalServiceLinkEntity;
   beforeEach(async () => {
     availabilityRepository = {
-      findBarberServiceLinkByBarberAndService: jest
+      findProfessionalServiceLinkByProfessionalAndService: jest
         .fn()
         .mockResolvedValue(mockLink),
-      findWorkingHoursByBarberAndDay: jest.fn(),
+      findWorkingHoursByProfessionalAndDay: jest.fn(),
       listTimeOffsOnDate: jest.fn().mockResolvedValue([]),
       listBlocksOnDate: jest.fn().mockResolvedValue([]),
     };
-    barberProfileRepository = {
-      findById: jest.fn().mockResolvedValue(mockBarber),
+    tenantProfessionalRepository = {
+      findById: jest.fn().mockResolvedValue(mockTenantProfessional),
     };
     serviceRepository = {
       findById: jest.fn().mockResolvedValue(mockService),
     };
-    findTenantUserByIdAndTenantUseCase = { run: jest.fn() };
     findTenantByIdUseCase = {
       run: jest.fn().mockResolvedValue(mockTenant),
     };
@@ -102,14 +102,10 @@ describe('GetAvailableSlotsUseCase', () => {
         GetAvailableSlotsUseCase,
         { provide: AVAILABILITY_REPOSITORY, useValue: availabilityRepository },
         {
-          provide: BARBER_PROFILE_REPOSITORY,
-          useValue: barberProfileRepository,
+          provide: TENANT_PROFESSIONAL_REPOSITORY,
+          useValue: tenantProfessionalRepository,
         },
         { provide: SERVICE_REPOSITORY, useValue: serviceRepository },
-        {
-          provide: FindTenantUserByIdAndTenantUseCase,
-          useValue: findTenantUserByIdAndTenantUseCase,
-        },
         { provide: FindTenantByIdUseCase, useValue: findTenantByIdUseCase },
       ],
     }).compile();
@@ -119,12 +115,12 @@ describe('GetAvailableSlotsUseCase', () => {
     jest.restoreAllMocks();
   });
   it('retorna slots vazios quando não há jornada ativa', async () => {
-    availabilityRepository.findWorkingHoursByBarberAndDay.mockResolvedValue(
+    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue(
       null,
     );
     const result = await useCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       serviceId,
       dateYmd,
       userId,
@@ -133,15 +129,15 @@ describe('GetAvailableSlotsUseCase', () => {
     expect(result.slots).toEqual([]);
     expect(result.timezone).toBe('America/Sao_Paulo');
   });
-  it('lança BARBER_INACTIVE quando barbeiro inativo', async () => {
-    barberProfileRepository.findById.mockResolvedValue({
-      ...mockBarber,
-      isActive: false,
+  it('lança TENANT_PROFESSIONAL_INACTIVE quando vínculo inativo', async () => {
+    tenantProfessionalRepository.findById.mockResolvedValue({
+      ...mockTenantProfessional,
+      status: TenantProfessionalStatus.INACTIVE,
     });
     await expect(
       useCase.run(
         tenantId,
-        barberProfileId,
+        tenantProfessionalId,
         serviceId,
         dateYmd,
         userId,
@@ -154,7 +150,7 @@ describe('GetAvailableSlotsUseCase', () => {
     await expect(
       useCase.run(
         tenantId,
-        barberProfileId,
+        tenantProfessionalId,
         serviceId,
         dateYmd,
         userId,
@@ -162,14 +158,14 @@ describe('GetAvailableSlotsUseCase', () => {
       ),
     ).rejects.toThrow(NotFoundException);
   });
-  it('lança BARBER_SERVICE_NOT_OFFERED quando não há vínculo ativo', async () => {
-    availabilityRepository.findBarberServiceLinkByBarberAndService.mockResolvedValue(
+  it('lança PROFESSIONAL_SERVICE_NOT_OFFERED quando não há vínculo ativo', async () => {
+    availabilityRepository.findProfessionalServiceLinkByProfessionalAndService.mockResolvedValue(
       null,
     );
     await expect(
       useCase.run(
         tenantId,
-        barberProfileId,
+        tenantProfessionalId,
         serviceId,
         dateYmd,
         userId,
@@ -181,7 +177,7 @@ describe('GetAvailableSlotsUseCase', () => {
     const wh: WorkingHoursEntity = {
       id: 'wh-1',
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       dayOfWeek: DayOfWeek.MONDAY,
       isActive: true,
       periods: [{ startTime: '09:00', endTime: '12:00' } as any],
@@ -189,7 +185,7 @@ describe('GetAvailableSlotsUseCase', () => {
       updatedAt: new Date(),
       deletedAt: undefined,
     } as WorkingHoursEntity;
-    availabilityRepository.findWorkingHoursByBarberAndDay.mockResolvedValue(wh);
+    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue(wh);
     jest
       .spyOn(DateTime, 'now')
       .mockReturnValue(
@@ -200,7 +196,7 @@ describe('GetAvailableSlotsUseCase', () => {
       );
     const result = await useCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       serviceId,
       dateYmd,
       userId,
@@ -208,11 +204,33 @@ describe('GetAvailableSlotsUseCase', () => {
     );
     expect(result.slots).toEqual(['09:00', '10:00', '11:00']);
   });
-  it('omite slots com menos de 15 minutos de antecedência', async () => {
+  it('retorna slots vazios quando jornada existe mas está inativa', async () => {
+    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue({
+      ...({
+        id: 'wh-1',
+        tenantId,
+        tenantProfessionalId,
+        dayOfWeek: DayOfWeek.MONDAY,
+        isActive: false,
+        periods: [{ startTime: '09:00', endTime: '12:00' }],
+      } as WorkingHoursEntity),
+    });
+    const result = await useCase.run(
+      tenantId,
+      tenantProfessionalId,
+      serviceId,
+      dateYmd,
+      userId,
+      TenantUserRole.ADMIN,
+    );
+    expect(result.slots).toEqual([]);
+  });
+
+  it('retorna slots vazios em folga de dia inteiro', async () => {
     const wh: WorkingHoursEntity = {
       id: 'wh-1',
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       dayOfWeek: DayOfWeek.MONDAY,
       isActive: true,
       periods: [{ startTime: '09:00', endTime: '12:00' } as any],
@@ -220,7 +238,77 @@ describe('GetAvailableSlotsUseCase', () => {
       updatedAt: new Date(),
       deletedAt: undefined,
     } as WorkingHoursEntity;
-    availabilityRepository.findWorkingHoursByBarberAndDay.mockResolvedValue(wh);
+    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue(wh);
+    availabilityRepository.listTimeOffsOnDate.mockResolvedValue([
+      { startTime: null, endTime: null } as any,
+    ]);
+    jest
+      .spyOn(DateTime, 'now')
+      .mockReturnValue(
+        DateTime.fromObject(
+          { year: 2030, month: 1, day: 7, hour: 7, minute: 0, second: 0 },
+          { zone: 'America/Sao_Paulo' },
+        ) as any,
+      );
+    const result = await useCase.run(
+      tenantId,
+      tenantProfessionalId,
+      serviceId,
+      dateYmd,
+      userId,
+      TenantUserRole.ADMIN,
+    );
+    expect(result.slots).toEqual([]);
+  });
+
+  it('omite slot que colide com block', async () => {
+    const wh: WorkingHoursEntity = {
+      id: 'wh-1',
+      tenantId,
+      tenantProfessionalId,
+      dayOfWeek: DayOfWeek.MONDAY,
+      isActive: true,
+      periods: [{ startTime: '09:00', endTime: '12:00' } as any],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: undefined,
+    } as WorkingHoursEntity;
+    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue(wh);
+    availabilityRepository.listBlocksOnDate.mockResolvedValue([
+      { startTime: '10:00', endTime: '11:00' } as any,
+    ]);
+    jest
+      .spyOn(DateTime, 'now')
+      .mockReturnValue(
+        DateTime.fromObject(
+          { year: 2030, month: 1, day: 7, hour: 7, minute: 0, second: 0 },
+          { zone: 'America/Sao_Paulo' },
+        ) as any,
+      );
+    const result = await useCase.run(
+      tenantId,
+      tenantProfessionalId,
+      serviceId,
+      dateYmd,
+      userId,
+      TenantUserRole.ADMIN,
+    );
+    expect(result.slots).toEqual(['09:00', '11:00']);
+  });
+
+  it('omite slots com menos de 15 minutos de antecedência', async () => {
+    const wh: WorkingHoursEntity = {
+      id: 'wh-1',
+      tenantId,
+      tenantProfessionalId,
+      dayOfWeek: DayOfWeek.MONDAY,
+      isActive: true,
+      periods: [{ startTime: '09:00', endTime: '12:00' } as any],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: undefined,
+    } as WorkingHoursEntity;
+    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue(wh);
     jest
       .spyOn(DateTime, 'now')
       .mockReturnValue(
@@ -231,7 +319,7 @@ describe('GetAvailableSlotsUseCase', () => {
       );
     const result = await useCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       serviceId,
       dateYmd,
       userId,

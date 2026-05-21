@@ -10,24 +10,24 @@ import { AvailabilityController } from 'src/modules/availability/availability.co
 import { BlockReason } from 'src/modules/availability/entities/block-reason.enum';
 import { DayOfWeek } from 'src/modules/availability/entities/day-of-week.enum';
 import { TimeOffReason } from 'src/modules/availability/entities/time-off-reason.enum';
-import { CreateBarberServiceLinkUseCase } from 'src/modules/availability/use-cases/create-barber-service-link.use-case';
+import { CreateProfessionalServiceLinkUseCase } from 'src/modules/availability/use-cases/create-professional-service-link.use-case';
 import { BootstrapWorkingWeekUseCase } from 'src/modules/availability/use-cases/bootstrap-working-week.use-case';
 import { CreateBlockUseCase } from 'src/modules/availability/use-cases/create-block.use-case';
 import { CreateTimeOffUseCase } from 'src/modules/availability/use-cases/create-time-off.use-case';
 import { CreateWorkingHoursPeriodUseCase } from 'src/modules/availability/use-cases/create-working-hours-period.use-case';
 import { CreateWorkingHoursUseCase } from 'src/modules/availability/use-cases/create-working-hours.use-case';
-import { DeleteBarberServiceLinkUseCase } from 'src/modules/availability/use-cases/delete-barber-service-link.use-case';
+import { DeleteProfessionalServiceLinkUseCase } from 'src/modules/availability/use-cases/delete-professional-service-link.use-case';
 import { DeleteBlockUseCase } from 'src/modules/availability/use-cases/delete-block.use-case';
 import { DeleteTimeOffUseCase } from 'src/modules/availability/use-cases/delete-time-off.use-case';
 import { DeleteWorkingHoursPeriodUseCase } from 'src/modules/availability/use-cases/delete-working-hours-period.use-case';
 import { DeleteWorkingHoursUseCase } from 'src/modules/availability/use-cases/delete-working-hours.use-case';
 import { GetAvailableSlotsUseCase } from 'src/modules/availability/use-cases/get-available-slots.use-case';
 import { GetWorkingHoursUseCase } from 'src/modules/availability/use-cases/get-working-hours.use-case';
-import { ListBarberServiceLinksUseCase } from 'src/modules/availability/use-cases/list-barber-service-links.use-case';
+import { ListProfessionalServiceLinksUseCase } from 'src/modules/availability/use-cases/list-professional-service-links.use-case';
 import { ListBlocksUseCase } from 'src/modules/availability/use-cases/list-blocks.use-case';
 import { ListTimeOffsUseCase } from 'src/modules/availability/use-cases/list-time-offs.use-case';
 import { ListWorkingHoursUseCase } from 'src/modules/availability/use-cases/list-working-hours.use-case';
-import { UpdateBarberServiceLinkUseCase } from 'src/modules/availability/use-cases/update-barber-service-link.use-case';
+import { UpdateProfessionalServiceLinkUseCase } from 'src/modules/availability/use-cases/update-professional-service-link.use-case';
 import { UpdateBlockUseCase } from 'src/modules/availability/use-cases/update-block.use-case';
 import { UpdateTimeOffUseCase } from 'src/modules/availability/use-cases/update-time-off.use-case';
 import { UpdateWorkingHoursPeriodUseCase } from 'src/modules/availability/use-cases/update-working-hours-period.use-case';
@@ -41,17 +41,17 @@ function mockUseCase() {
 describe('AvailabilityController (HTTP)', () => {
     let app: INestApplication;
     const tenantId = 'tenant-uuid';
-    const barberProfileId = 'bp-uuid';
+    const tenantProfessionalId = 'bp-uuid';
     const serviceId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
-    const base = `/tenants/${tenantId}/barber-profiles/${barberProfileId}`;
+    const base = `/tenants/${tenantId}/tenant-professionals/${tenantProfessionalId}`;
     const userId = 'user-uuid-123';
     const role = TenantUserRole.STAFF;
 
     const uc = {
-        createBarberServiceLink: mockUseCase(),
-        updateBarberServiceLink: mockUseCase(),
-        deleteBarberServiceLink: mockUseCase(),
-        listBarberServiceLinks: mockUseCase(),
+        createProfessionalServiceLink: mockUseCase(),
+        updateProfessionalServiceLink: mockUseCase(),
+        deleteProfessionalServiceLink: mockUseCase(),
+        listProfessionalServiceLinks: mockUseCase(),
         createWorkingHours: mockUseCase(),
         bootstrapWorkingWeek: mockUseCase(),
         updateWorkingHours: mockUseCase(),
@@ -76,10 +76,10 @@ describe('AvailabilityController (HTTP)', () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
             controllers: [AvailabilityController],
             providers: [
-                { provide: CreateBarberServiceLinkUseCase, useValue: uc.createBarberServiceLink },
-                { provide: UpdateBarberServiceLinkUseCase, useValue: uc.updateBarberServiceLink },
-                { provide: DeleteBarberServiceLinkUseCase, useValue: uc.deleteBarberServiceLink },
-                { provide: ListBarberServiceLinksUseCase, useValue: uc.listBarberServiceLinks },
+                { provide: CreateProfessionalServiceLinkUseCase, useValue: uc.createProfessionalServiceLink },
+                { provide: UpdateProfessionalServiceLinkUseCase, useValue: uc.updateProfessionalServiceLink },
+                { provide: DeleteProfessionalServiceLinkUseCase, useValue: uc.deleteProfessionalServiceLink },
+                { provide: ListProfessionalServiceLinksUseCase, useValue: uc.listProfessionalServiceLinks },
                 { provide: CreateWorkingHoursUseCase, useValue: uc.createWorkingHours },
                 { provide: BootstrapWorkingWeekUseCase, useValue: uc.bootstrapWorkingWeek },
                 { provide: UpdateWorkingHoursUseCase, useValue: uc.updateWorkingHours },
@@ -146,7 +146,7 @@ describe('AvailabilityController (HTTP)', () => {
             .expect(() => {
                 expect(uc.getAvailableSlots.run).toHaveBeenCalledWith(
                     tenantId,
-                    barberProfileId,
+                    tenantProfessionalId,
                     serviceId,
                     '2026-06-15',
                     userId,
@@ -160,9 +160,9 @@ describe('AvailabilityController (HTTP)', () => {
             .get(`${base}/offered-services`)
             .expect(200)
             .expect(() => {
-                expect(uc.listBarberServiceLinks.run).toHaveBeenCalledWith(
+                expect(uc.listProfessionalServiceLinks.run).toHaveBeenCalledWith(
                     tenantId,
-                    barberProfileId,
+                    tenantProfessionalId,
                     userId,
                     role,
                 );
@@ -175,9 +175,9 @@ describe('AvailabilityController (HTTP)', () => {
             .send({ serviceId })
             .expect(201)
             .expect(() => {
-                expect(uc.createBarberServiceLink.run).toHaveBeenCalledWith(
+                expect(uc.createProfessionalServiceLink.run).toHaveBeenCalledWith(
                     tenantId,
-                    barberProfileId,
+                    tenantProfessionalId,
                     { serviceId },
                     userId,
                     role,
@@ -191,9 +191,9 @@ describe('AvailabilityController (HTTP)', () => {
             .send({ isActive: false })
             .expect(200)
             .expect(() => {
-                expect(uc.updateBarberServiceLink.run).toHaveBeenCalledWith(
+                expect(uc.updateProfessionalServiceLink.run).toHaveBeenCalledWith(
                     tenantId,
-                    barberProfileId,
+                    tenantProfessionalId,
                     'link-1',
                     { isActive: false },
                     userId,
@@ -207,9 +207,9 @@ describe('AvailabilityController (HTTP)', () => {
             .delete(`${base}/offered-services/link-1`)
             .expect(200)
             .expect(() => {
-                expect(uc.deleteBarberServiceLink.run).toHaveBeenCalledWith(
+                expect(uc.deleteProfessionalServiceLink.run).toHaveBeenCalledWith(
                     tenantId,
-                    barberProfileId,
+                    tenantProfessionalId,
                     'link-1',
                     userId,
                     role,
@@ -224,7 +224,7 @@ describe('AvailabilityController (HTTP)', () => {
             .expect(() => {
                 expect(uc.listWorkingHours.run).toHaveBeenCalledWith(
                     tenantId,
-                    barberProfileId,
+                    tenantProfessionalId,
                     userId,
                     role,
                 );
@@ -256,7 +256,7 @@ describe('AvailabilityController (HTTP)', () => {
             .expect(() => {
                 expect(uc.bootstrapWorkingWeek.run).toHaveBeenCalledWith(
                     tenantId,
-                    barberProfileId,
+                    tenantProfessionalId,
                     {
                         closedDays: [DayOfWeek.SUNDAY],
                         periods: [{ startTime: '09:00', endTime: '12:00' }],
@@ -274,7 +274,7 @@ describe('AvailabilityController (HTTP)', () => {
             .expect(() => {
                 expect(uc.getWorkingHours.run).toHaveBeenCalledWith(
                     tenantId,
-                    barberProfileId,
+                    tenantProfessionalId,
                     'wh-1',
                     userId,
                     role,
@@ -300,7 +300,7 @@ describe('AvailabilityController (HTTP)', () => {
             .expect(() => {
                 expect(uc.deleteWorkingHours.run).toHaveBeenCalledWith(
                     tenantId,
-                    barberProfileId,
+                    tenantProfessionalId,
                     'wh-1',
                     userId,
                     role,
@@ -345,7 +345,7 @@ describe('AvailabilityController (HTTP)', () => {
             .expect(() => {
                 expect(uc.listTimeOffs.run).toHaveBeenCalledWith(
                     tenantId,
-                    barberProfileId,
+                    tenantProfessionalId,
                     userId,
                     role,
                 );
@@ -384,7 +384,7 @@ describe('AvailabilityController (HTTP)', () => {
             .expect(() => {
                 expect(uc.deleteTimeOff.run).toHaveBeenCalledWith(
                     tenantId,
-                    barberProfileId,
+                    tenantProfessionalId,
                     't1',
                     userId,
                     role,
@@ -399,7 +399,7 @@ describe('AvailabilityController (HTTP)', () => {
             .expect(() => {
                 expect(uc.listBlocks.run).toHaveBeenCalledWith(
                     tenantId,
-                    barberProfileId,
+                    tenantProfessionalId,
                     userId,
                     role,
                 );
@@ -438,7 +438,7 @@ describe('AvailabilityController (HTTP)', () => {
             .expect(() => {
                 expect(uc.deleteBlock.run).toHaveBeenCalledWith(
                     tenantId,
-                    barberProfileId,
+                    tenantProfessionalId,
                     'b1',
                     userId,
                     role,
@@ -450,15 +450,15 @@ describe('AvailabilityController (HTTP)', () => {
 describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
     let app: INestApplication;
     const tenantId = 'tenant-uuid';
-    const barberProfileId = 'bp-uuid';
+    const tenantProfessionalId = 'bp-uuid';
     const serviceId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
-    const base = `/tenants/${tenantId}/barber-profiles/${barberProfileId}`;
+    const base = `/tenants/${tenantId}/tenant-professionals/${tenantProfessionalId}`;
 
     const uc = {
-        createBarberServiceLink: mockUseCase(),
-        updateBarberServiceLink: mockUseCase(),
-        deleteBarberServiceLink: mockUseCase(),
-        listBarberServiceLinks: mockUseCase(),
+        createProfessionalServiceLink: mockUseCase(),
+        updateProfessionalServiceLink: mockUseCase(),
+        deleteProfessionalServiceLink: mockUseCase(),
+        listProfessionalServiceLinks: mockUseCase(),
         createWorkingHours: mockUseCase(),
         bootstrapWorkingWeek: mockUseCase(),
         updateWorkingHours: mockUseCase(),
@@ -483,10 +483,10 @@ describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
             controllers: [AvailabilityController],
             providers: [
-                { provide: CreateBarberServiceLinkUseCase, useValue: uc.createBarberServiceLink },
-                { provide: UpdateBarberServiceLinkUseCase, useValue: uc.updateBarberServiceLink },
-                { provide: DeleteBarberServiceLinkUseCase, useValue: uc.deleteBarberServiceLink },
-                { provide: ListBarberServiceLinksUseCase, useValue: uc.listBarberServiceLinks },
+                { provide: CreateProfessionalServiceLinkUseCase, useValue: uc.createProfessionalServiceLink },
+                { provide: UpdateProfessionalServiceLinkUseCase, useValue: uc.updateProfessionalServiceLink },
+                { provide: DeleteProfessionalServiceLinkUseCase, useValue: uc.deleteProfessionalServiceLink },
+                { provide: ListProfessionalServiceLinksUseCase, useValue: uc.listProfessionalServiceLinks },
                 { provide: CreateWorkingHoursUseCase, useValue: uc.createWorkingHours },
                 { provide: BootstrapWorkingWeekUseCase, useValue: uc.bootstrapWorkingWeek },
                 { provide: UpdateWorkingHoursUseCase, useValue: uc.updateWorkingHours },
@@ -552,7 +552,7 @@ describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
             .expect(200);
         expect(uc.getAvailableSlots.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             serviceId,
             '2026-06-15',
             '',
@@ -560,9 +560,9 @@ describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
         );
 
         await request(app.getHttpServer()).get(`${base}/offered-services`).expect(200);
-        expect(uc.listBarberServiceLinks.run).toHaveBeenCalledWith(
+        expect(uc.listProfessionalServiceLinks.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             '',
             undefined,
         );
@@ -570,7 +570,7 @@ describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
         await request(app.getHttpServer()).get(`${base}/working-hours`).expect(200);
         expect(uc.listWorkingHours.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             '',
             undefined,
         );
@@ -578,7 +578,7 @@ describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
         await request(app.getHttpServer()).get(`${base}/working-hours/wh-1`).expect(200);
         expect(uc.getWorkingHours.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             'wh-1',
             '',
             undefined,
@@ -587,7 +587,7 @@ describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
         await request(app.getHttpServer()).get(`${base}/time-offs`).expect(200);
         expect(uc.listTimeOffs.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             '',
             undefined,
         );
@@ -595,24 +595,24 @@ describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
         await request(app.getHttpServer()).get(`${base}/blocks`).expect(200);
         expect(uc.listBlocks.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             '',
             undefined,
         );
 
         await request(app.getHttpServer()).post(`${base}/offered-services`).send({ serviceId }).expect(201);
-        expect(uc.createBarberServiceLink.run).toHaveBeenCalledWith(
+        expect(uc.createProfessionalServiceLink.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             { serviceId },
             '',
             undefined,
         );
 
         await request(app.getHttpServer()).delete(`${base}/offered-services/lx`).expect(200);
-        expect(uc.deleteBarberServiceLink.run).toHaveBeenCalledWith(
+        expect(uc.deleteProfessionalServiceLink.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             'lx',
             '',
             undefined,
@@ -630,7 +630,7 @@ describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
         await request(app.getHttpServer()).delete(`${base}/time-offs/t99`).expect(200);
         expect(uc.deleteTimeOff.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             't99',
             '',
             undefined,
@@ -645,7 +645,7 @@ describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
             .expect(201);
         expect(uc.bootstrapWorkingWeek.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             {
                 closedDays: [DayOfWeek.SUNDAY],
                 periods: [{ startTime: '09:00', endTime: '12:00' }],

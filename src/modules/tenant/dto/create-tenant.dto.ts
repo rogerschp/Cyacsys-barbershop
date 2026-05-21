@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsOptional,
@@ -6,7 +7,9 @@ import {
   IsPhoneNumber,
   IsObject,
   Matches,
+  ValidateNested,
 } from 'class-validator';
+import { CreateAddressDto } from 'src/modules/address/dto/create-address.dto';
 
 export class CreateTenantDto {
   @ApiProperty({ example: 'Barbearia do Vitinho' })
@@ -46,4 +49,10 @@ export class CreateTenantDto {
   @IsOptional()
   @IsObject()
   socialMedia?: Record<string, string>;
+
+  @ApiPropertyOptional({ type: CreateAddressDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreateAddressDto)
+  address?: CreateAddressDto;
 }

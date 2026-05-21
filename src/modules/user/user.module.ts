@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PASSWORD_HASHER } from '../../common/interfaces/password-hasher.interface';
 import { PasswordService } from '../../common/services/password.service';
@@ -16,9 +16,14 @@ import { UpdateUserUseCase } from './use-cases/update-user.use-case';
 import { ValidateUserAccessUseCase } from './use-cases/validate-user-access.use-case';
 import { DeleteUserUseCase } from './use-cases/delete-user.use-case';
 import { AddressModule } from '../address/address.module';
+import { AuthModule } from '../auth/auth.module';
 import { CheckUserExistsByEmailUseCase } from './use-cases/check-user-exists-by-email.use-case';
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity]), AddressModule],
+  imports: [
+    TypeOrmModule.forFeature([UserEntity]),
+    AddressModule,
+    forwardRef(() => AuthModule),
+  ],
   controllers: [UserController],
   providers: [
     PasswordService,

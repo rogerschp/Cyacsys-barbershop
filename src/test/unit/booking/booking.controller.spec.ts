@@ -20,15 +20,15 @@ describe('BookingController (HTTP)', () => {
   let cancelBookingDraftUseCase: jest.Mocked<CancelBookingDraftUseCase>;
 
   const tenantId = 'tenant-uuid';
-  const barberProfileId = 'bp-uuid';
+  const tenantProfessionalId = 'tp-uuid';
   const bookingId = 'booking-uuid';
   const serviceId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
-  const basePath = `/tenants/${tenantId}/barber-profiles/${barberProfileId}/bookings`;
+  const basePath = `/tenants/${tenantId}/tenant-professionals/${tenantProfessionalId}/bookings`;
 
   const mockDraftResponse = {
     id: bookingId,
     tenantId,
-    barberProfileId,
+    tenantProfessionalId,
     serviceId,
     startsAt: new Date('2099-06-15T13:00:00.000Z').toISOString(),
     endsAt: new Date('2099-06-15T13:30:00.000Z').toISOString(),
@@ -115,7 +115,7 @@ describe('BookingController (HTTP)', () => {
           expect(res.body.status).toBe(BookingStatus.DRAFT);
           expect(createBookingDraftUseCase.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             {
               serviceId,
               date: '2099-06-15',
@@ -159,7 +159,7 @@ describe('BookingController (HTTP)', () => {
           expect(res.body.status).toBe(BookingStatus.CONFIRMED);
           expect(confirmBookingUseCase.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             bookingId,
             'user-uuid-123',
             TenantUserRole.ADMIN,
@@ -177,7 +177,7 @@ describe('BookingController (HTTP)', () => {
           expect(res.body.status).toBe(BookingStatus.CANCELLED);
           expect(cancelBookingDraftUseCase.run).toHaveBeenCalledWith(
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             bookingId,
             'user-uuid-123',
             TenantUserRole.ADMIN,
@@ -194,10 +194,10 @@ describe('BookingController (HTTP) — user/tenant opcionais', () => {
   let cancelBookingDraftUseCase: jest.Mocked<CancelBookingDraftUseCase>;
 
   const tenantId = 'tenant-uuid';
-  const barberProfileId = 'bp-uuid';
+  const tenantProfessionalId = 'tp-uuid';
   const bookingId = 'booking-uuid';
   const serviceId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
-  const basePath = `/tenants/${tenantId}/barber-profiles/${barberProfileId}/bookings`;
+  const basePath = `/tenants/${tenantId}/tenant-professionals/${tenantProfessionalId}/bookings`;
 
   beforeAll(async () => {
     const mockCreate = { run: jest.fn() };
@@ -267,7 +267,7 @@ describe('BookingController (HTTP) — user/tenant opcionais', () => {
       .expect(() => {
         expect(createBookingDraftUseCase.run).toHaveBeenCalledWith(
           tenantId,
-          barberProfileId,
+          tenantProfessionalId,
           expect.objectContaining({
             serviceId,
             date: '2099-06-15',
@@ -286,7 +286,7 @@ describe('BookingController (HTTP) — user/tenant opcionais', () => {
       .expect(() => {
         expect(confirmBookingUseCase.run).toHaveBeenCalledWith(
           tenantId,
-          barberProfileId,
+          tenantProfessionalId,
           bookingId,
           '',
           undefined,
@@ -301,7 +301,7 @@ describe('BookingController (HTTP) — user/tenant opcionais', () => {
       .expect(() => {
         expect(cancelBookingDraftUseCase.run).toHaveBeenCalledWith(
           tenantId,
-          barberProfileId,
+          tenantProfessionalId,
           bookingId,
           '',
           undefined,

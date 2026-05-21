@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreateWorkingHoursUseCase } from 'src/modules/availability/use-cases/create-working-hours.use-case';
 import { AVAILABILITY_REPOSITORY } from 'src/modules/availability/interfaces/availability-repository.interface';
-import { BARBER_PROFILE_REPOSITORY } from 'src/modules/barber-profile/interfaces/barber-profile-repository.interface';
+import { TENANT_PROFESSIONAL_REPOSITORY } from 'src/modules/tenant-professional/interfaces/tenant-professional-repository.interface';
 import { FindTenantUserByIdAndTenantUseCase } from 'src/modules/tenant-user/use-cases/find-tenant-user-by-id-and-tenant.use-case';
 import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
 import { DayOfWeek } from 'src/modules/availability/entities/day-of-week.enum';
@@ -15,20 +15,20 @@ describe('CreateWorkingHoursUseCase', () => {
     createWorkingHoursPeriod: jest.Mock;
     findWorkingHoursById: jest.Mock;
   };
-  let barberProfileRepository: {
+  let tenantProfessionalRepository: {
     findById: jest.Mock;
   };
   let findTenantUserByIdAndTenantUseCase: {
     run: jest.Mock;
   };
   const tenantId = 'tenant-uuid';
-  const barberProfileId = 'bp-uuid';
+  const tenantProfessionalId = 'bp-uuid';
   const userId = 'user-uuid';
   const whId = 'wh-uuid';
   const mockWh: WorkingHoursEntity = {
     id: whId,
     tenantId,
-    barberProfileId,
+    tenantProfessionalId,
     dayOfWeek: DayOfWeek.MONDAY,
     isActive: true,
     createdAt: new Date(),
@@ -51,8 +51,8 @@ describe('CreateWorkingHoursUseCase', () => {
         ),
       ),
     };
-    barberProfileRepository = {
-      findById: jest.fn().mockResolvedValue({ id: barberProfileId }),
+    tenantProfessionalRepository = {
+      findById: jest.fn().mockResolvedValue({ id: tenantProfessionalId }),
     };
     findTenantUserByIdAndTenantUseCase = {
       run: jest.fn(),
@@ -62,8 +62,8 @@ describe('CreateWorkingHoursUseCase', () => {
         CreateWorkingHoursUseCase,
         { provide: AVAILABILITY_REPOSITORY, useValue: availabilityRepository },
         {
-          provide: BARBER_PROFILE_REPOSITORY,
-          useValue: barberProfileRepository,
+          provide: TENANT_PROFESSIONAL_REPOSITORY,
+          useValue: tenantProfessionalRepository,
         },
         {
           provide: FindTenantUserByIdAndTenantUseCase,
@@ -76,7 +76,7 @@ describe('CreateWorkingHoursUseCase', () => {
   it('cria jornada ativa com períodos', async () => {
     const result = await useCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       {
         dayOfWeek: DayOfWeek.MONDAY,
         isActive: true,
@@ -102,7 +102,7 @@ describe('CreateWorkingHoursUseCase', () => {
     await expect(
       useCase.run(
         tenantId,
-        barberProfileId,
+        tenantProfessionalId,
         {
           dayOfWeek: DayOfWeek.MONDAY,
           isActive: true,
@@ -117,7 +117,7 @@ describe('CreateWorkingHoursUseCase', () => {
     await expect(
       useCase.run(
         tenantId,
-        barberProfileId,
+        tenantProfessionalId,
         { dayOfWeek: DayOfWeek.MONDAY, isActive: true, periods: [] },
         userId,
         TenantUserRole.ADMIN,
@@ -127,7 +127,7 @@ describe('CreateWorkingHoursUseCase', () => {
   it('permite jornada inativa sem períodos', async () => {
     await useCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       { dayOfWeek: DayOfWeek.TUESDAY, isActive: false },
       userId,
       TenantUserRole.ADMIN,
