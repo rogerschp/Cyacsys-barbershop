@@ -14,6 +14,8 @@ import { TenantResolverGuard } from 'src/common/guards/tenant-resolver.guard';
 import { TenantRolesGuard } from 'src/common/guards/tenant-roles.guard';
 import { TenantUserRole } from 'src/modules/tenant-user/entities/tenant-user-role.enum';
 import { TenantProfessionalStatus } from 'src/modules/tenant-professional/entities/tenant-professional-status.enum';
+import { ProfessionalType } from 'src/modules/professional-profile/entities/professional-type.enum';
+import { BookingMode } from 'src/modules/professional-profile/entities/booking-mode.enum';
 
 describe('TenantProfessionalController (HTTP)', () => {
   let app: INestApplication;
@@ -29,6 +31,21 @@ describe('TenantProfessionalController (HTTP)', () => {
     joinedAt: new Date('2021-01-01'),
     leftAt: null,
     createdAt: new Date('2021-01-01'),
+    professionalProfile: {
+      id: 'profile-uuid',
+      userId: 'user-uuid-123',
+      displayName: 'João Silva',
+      bio: null,
+      avatarUrl: 'https://example.com/avatar.jpg',
+      professionalType: ProfessionalType.BARBER,
+      bookingMode: BookingMode.DIRECT_BOOKING,
+      whatsappNumber: null,
+      instagramUsername: null,
+      experienceYears: 5,
+      isActive: true,
+      createdAt: new Date('2021-01-01'),
+      updatedAt: new Date('2021-01-01'),
+    },
   };
 
   beforeAll(async () => {
@@ -85,6 +102,7 @@ describe('TenantProfessionalController (HTTP)', () => {
       .get(`/tenants/${tenantId}/tenant-professionals`)
       .expect(200);
     expect(res.body).toHaveLength(1);
+    expect(res.body[0].professionalProfile.displayName).toBe('João Silva');
     expect(listUseCase.run).toHaveBeenCalledWith(tenantId, {
       activeOnly: false,
     });

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ProfessionalProfileResponseDto } from '../../professional-profile/dto/professional-profile-response.dto';
 import { TenantUserRole } from '../../tenant-user/entities/tenant-user-role.enum';
 import { TenantProfessionalStatus } from '../entities/tenant-professional-status.enum';
 
@@ -26,4 +27,10 @@ export class TenantProfessionalResponseDto {
 
   @ApiProperty()
   createdAt: Date;
+
+  @ApiProperty({
+    type: ProfessionalProfileResponseDto,
+    description: 'Perfil profissional global vinculado a este tenant',
+  })
+  professionalProfile: ProfessionalProfileResponseDto;
 }

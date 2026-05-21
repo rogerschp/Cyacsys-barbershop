@@ -19,9 +19,11 @@ describe('TenantProfessionalRepository', () => {
     joinedAt: new Date(),
     leftAt: null,
     createdAt: new Date(),
+    professionalProfile: { id: 'profile-uuid', displayName: 'João' },
   } as TenantProfessionalEntity;
 
   const mockQueryBuilder = {
+    innerJoinAndSelect: jest.fn().mockReturnThis(),
     leftJoinAndSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     andWhere: jest.fn().mockReturnThis(),
@@ -54,11 +56,12 @@ describe('TenantProfessionalRepository', () => {
     ) as jest.Mocked<Repository<TenantProfessionalEntity>>;
   });
 
-  it('create define status ACTIVE e leftAt null', async () => {
+  it('create define status ACTIVE e leftAt null e recarrega com relações', async () => {
     typeOrmRepo.create.mockReturnValue(mockLink);
     typeOrmRepo.save.mockResolvedValue(mockLink);
+    typeOrmRepo.findOne.mockResolvedValue(mockLink);
 
-    await repository.create({
+    const result = await repository.create({
       tenantId: 'tenant-uuid',
       professionalProfileId: 'profile-uuid',
       role: TenantUserRole.BARBER,
@@ -70,5 +73,7 @@ describe('TenantProfessionalRepository', () => {
         leftAt: null,
       }),
     );
+    expect(typeOrmRepo.findOne).toHaveBeenCalled();
+    expect(result.professionalProfile).toBeDefined();
   });
 });

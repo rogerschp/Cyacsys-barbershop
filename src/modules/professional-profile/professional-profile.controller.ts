@@ -22,6 +22,7 @@ import { CreateProfessionalProfileUseCase } from './use-cases/create-professiona
 import { DeactivateProfessionalProfileUseCase } from './use-cases/deactivate-professional-profile.use-case';
 import { GetProfessionalProfileByUserUseCase } from './use-cases/get-professional-profile-by-user.use-case';
 import { UpdateProfessionalProfileUseCase } from './use-cases/update-professional-profile.use-case';
+import { ProfessionalProfileMapper } from './mappers/professional-profile.mapper';
 
 interface RequestWithUser {
   user?: {
@@ -66,7 +67,8 @@ export class ProfessionalProfileController {
     @Req() req: RequestWithUser,
   ) {
     const userId = req.user?.dbUser?.id ?? '';
-    return this.createProfessionalProfileUseCase.run(userId, dto);
+    const profile = await this.createProfessionalProfileUseCase.run(userId, dto);
+    return ProfessionalProfileMapper.toResponse(profile);
   }
 
   @Get()
@@ -82,7 +84,8 @@ export class ProfessionalProfileController {
   @ApiResponse({ status: 401, description: 'Não autenticado' })
   async getMine(@Req() req: RequestWithUser) {
     const userId = req.user?.dbUser?.id ?? '';
-    return this.getProfessionalProfileByUserUseCase.run(userId);
+    const profile = await this.getProfessionalProfileByUserUseCase.run(userId);
+    return ProfessionalProfileMapper.toResponse(profile);
   }
 
   @Patch()
@@ -107,7 +110,8 @@ export class ProfessionalProfileController {
     @Req() req: RequestWithUser,
   ) {
     const userId = req.user?.dbUser?.id ?? '';
-    return this.updateProfessionalProfileUseCase.run(userId, dto);
+    const profile = await this.updateProfessionalProfileUseCase.run(userId, dto);
+    return ProfessionalProfileMapper.toResponse(profile);
   }
 
   @Patch('deactivate')
@@ -124,6 +128,7 @@ export class ProfessionalProfileController {
   @ApiResponse({ status: 401, description: 'Não autenticado' })
   async deactivate(@Req() req: RequestWithUser) {
     const userId = req.user?.dbUser?.id ?? '';
-    return this.deactivateProfessionalProfileUseCase.run(userId);
+    const profile = await this.deactivateProfessionalProfileUseCase.run(userId);
+    return ProfessionalProfileMapper.toResponse(profile);
   }
 }

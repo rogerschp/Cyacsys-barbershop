@@ -33,6 +33,7 @@ import { LinkMyProfessionalToTenantUseCase } from './use-cases/link-my-professio
 import { LinkProfessionalToTenantUseCase } from './use-cases/link-professional-to-tenant.use-case';
 import { ListTenantProfessionalsUseCase } from './use-cases/list-tenant-professionals.use-case';
 import { UpdateTenantProfessionalStatusUseCase } from './use-cases/update-tenant-professional-status.use-case';
+import { TenantProfessionalMapper } from './mappers/tenant-professional.mapper';
 
 interface RequestWithUserAndMembership {
   user?: {
@@ -86,7 +87,11 @@ export class TenantProfessionalController {
     @Req() req: RequestWithUserAndMembership,
   ) {
     const userId = req.user?.dbUser?.id ?? '';
-    return this.linkMyProfessionalToTenantUseCase.run(tenantId, userId);
+    const entity = await this.linkMyProfessionalToTenantUseCase.run(
+      tenantId,
+      userId,
+    );
+    return TenantProfessionalMapper.toResponse(entity);
   }
 
   @Post()
@@ -109,7 +114,12 @@ export class TenantProfessionalController {
     @Req() req: RequestWithUserAndMembership,
   ) {
     const performedBy = req.user?.dbUser?.id ?? '';
-    return this.linkProfessionalToTenantUseCase.run(tenantId, dto, performedBy);
+    const entity = await this.linkProfessionalToTenantUseCase.run(
+      tenantId,
+      dto,
+      performedBy,
+    );
+    return TenantProfessionalMapper.toResponse(entity);
   }
 
   @Get()
@@ -119,7 +129,11 @@ export class TenantProfessionalController {
     TenantUserRole.STAFF,
     TenantUserRole.BARBER,
   )
-  @ApiOperation({ summary: 'Lista profissionais vinculados ao tenant' })
+  @ApiOperation({
+    summary: 'Lista profissionais vinculados ao tenant',
+    description:
+      'Substitui GET /barber-profiles. Cada item inclui o professionalProfile global aninhado.',
+  })
   @ApiParam({ name: 'tenantId', description: 'UUID do tenant' })
   @ApiQuery({
     name: 'activeOnly',
@@ -136,9 +150,10 @@ export class TenantProfessionalController {
     @Param('tenantId') tenantId: string,
     @Query('activeOnly') activeOnly?: string,
   ) {
-    return this.listTenantProfessionalsUseCase.run(tenantId, {
+    const entities = await this.listTenantProfessionalsUseCase.run(tenantId, {
       activeOnly: activeOnly === 'true',
     });
+    return TenantProfessionalMapper.toResponseList(entities);
   }
 
   @Get(':id')
@@ -159,7 +174,8 @@ export class TenantProfessionalController {
     @Param('tenantId') tenantId: string,
     @Param('id') id: string,
   ) {
-    return this.getTenantProfessionalUseCase.run(tenantId, id);
+    const entity = await this.getTenantProfessionalUseCase.run(tenantId, id);
+    return TenantProfessionalMapper.toResponse(entity);
   }
 
   @Patch(':id/status')
@@ -179,12 +195,13 @@ export class TenantProfessionalController {
     @Req() req: RequestWithUserAndMembership,
   ) {
     const performedBy = req.user?.dbUser?.id ?? '';
-    return this.updateTenantProfessionalStatusUseCase.run(
+    const entity = await this.updateTenantProfessionalStatusUseCase.run(
       tenantId,
       id,
       dto,
       performedBy,
     );
+    return TenantProfessionalMapper.toResponse(entity);
   }
 
   @Patch(':id/leave')
@@ -211,11 +228,12 @@ export class TenantProfessionalController {
   ) {
     const performedBy = req.user?.dbUser?.id ?? '';
     const callerRole = req.tenantMembership?.role;
-    return this.leaveTenantProfessionalUseCase.run(
+    const entity = await this.leaveTenantProfessionalUseCase.run(
       tenantId,
       id,
       performedBy,
       callerRole,
     );
+    return TenantProfessionalMapper.toResponse(entity);
   }
 }

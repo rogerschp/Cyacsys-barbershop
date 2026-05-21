@@ -27,7 +27,12 @@ export class TenantProfessionalRepository implements ITenantProfessionalReposito
       joinedAt: data.joinedAt ?? new Date(),
       leftAt: null,
     });
-    return this.repo.save(entity);
+    const saved = await this.repo.save(entity);
+    const loaded = await this.findById(saved.id, saved.tenantId);
+    if (!loaded) {
+      throw new Error('Tenant professional not found after create');
+    }
+    return loaded;
   }
 
   async findById(
@@ -56,8 +61,9 @@ export class TenantProfessionalRepository implements ITenantProfessionalReposito
   ): Promise<TenantProfessionalEntity[]> {
     const qb = this.repo
       .createQueryBuilder('tp')
-      .leftJoinAndSelect('tp.professionalProfile', 'pp')
+      .innerJoinAndSelect('tp.professionalProfile', 'pp')
       .where('tp.tenant_id = :tenantId', { tenantId })
+      .andWhere('pp.deletedAt IS NULL')
       .orderBy('tp.joined_at', 'DESC');
 
     if (options?.activeOnly) {

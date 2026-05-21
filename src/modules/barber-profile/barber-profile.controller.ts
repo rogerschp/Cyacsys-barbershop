@@ -42,7 +42,7 @@ interface RequestWithUserAndMembership {
     role: string;
   };
 }
-@ApiTags('barber-profiles')
+@ApiTags('barber-profiles (deprecated)')
 @Controller('tenants/:tenantId/barber-profiles')
 @UseGuards(
   BearerAuthGuard,
@@ -62,9 +62,9 @@ export class BarberProfileController {
   @Post()
   @TenantRoles(TenantUserRole.OWNER, TenantUserRole.ADMIN, TenantUserRole.STAFF)
   @ApiOperation({
-    summary: 'Cria um perfil de barbeiro',
+    summary: '[DEPRECATED] Cria um perfil de barbeiro',
     description:
-      'Apenas OWNER, ADMIN ou STAFF. tenantUserId deve existir no tenant e ter role BARBER ou OWNER. Um tenantUserId só pode ter um perfil por tenant.',
+      'Deprecado: use POST /users/me/professional-profile e POST /tenants/:tenantId/tenant-professionals/me. Será removido nas próximas versões.',
   })
   @ApiParam({ name: 'tenantId', description: 'UUID do tenant' })
   @ApiBody({ type: CreateBarberProfileDto })
