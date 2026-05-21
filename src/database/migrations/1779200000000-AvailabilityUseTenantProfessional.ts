@@ -1,4 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
+import { dropForeignKeyOnColumn } from './helpers/drop-fk-on-column';
 
 export class AvailabilityUseTenantProfessional1779200000000
   implements MigrationInterface
@@ -7,16 +8,16 @@ export class AvailabilityUseTenantProfessional1779200000000
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `ALTER TABLE "working_hours" ADD "tenant_professional_id" uuid`,
+      `ALTER TABLE "working_hours" ADD COLUMN IF NOT EXISTS "tenant_professional_id" uuid`,
     );
     await queryRunner.query(
-      `ALTER TABLE "barber_services" ADD "tenant_professional_id" uuid`,
+      `ALTER TABLE "barber_services" ADD COLUMN IF NOT EXISTS "tenant_professional_id" uuid`,
     );
     await queryRunner.query(
-      `ALTER TABLE "barber_time_offs" ADD "tenant_professional_id" uuid`,
+      `ALTER TABLE "barber_time_offs" ADD COLUMN IF NOT EXISTS "tenant_professional_id" uuid`,
     );
     await queryRunner.query(
-      `ALTER TABLE "barber_availability_blocks" ADD "tenant_professional_id" uuid`,
+      `ALTER TABLE "barber_availability_blocks" ADD COLUMN IF NOT EXISTS "tenant_professional_id" uuid`,
     );
 
     const backfill = `
@@ -33,6 +34,7 @@ export class AvailabilityUseTenantProfessional1779200000000
         ON tp."tenant_id" = bp."tenant_id"
         AND tp."professional_profile_id" = pp."id"
       WHERE t."barber_profile_id" = bp."id"
+        AND t."tenant_professional_id" IS NULL
     `;
 
     for (const table of [
@@ -57,17 +59,26 @@ export class AvailabilityUseTenantProfessional1779200000000
       `ALTER TABLE "barber_availability_blocks" ALTER COLUMN "tenant_professional_id" SET NOT NULL`,
     );
 
+    for (const table of [
+      'working_hours',
+      'barber_services',
+      'barber_time_offs',
+      'barber_availability_blocks',
+    ]) {
+      await dropForeignKeyOnColumn(queryRunner, table, 'barber_profile_id');
+    }
+
     await queryRunner.query(
-      `ALTER TABLE "working_hours" DROP CONSTRAINT "FK_working_hours_barber_profile"`,
+      `ALTER TABLE "working_hours" DROP CONSTRAINT IF EXISTS "FK_working_hours_tenant_professional"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "barber_services" DROP CONSTRAINT "FK_barber_services_barber_profile"`,
+      `ALTER TABLE "barber_services" DROP CONSTRAINT IF EXISTS "FK_barber_services_tenant_professional"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "barber_time_offs" DROP CONSTRAINT "FK_barber_time_offs_barber_profile"`,
+      `ALTER TABLE "barber_time_offs" DROP CONSTRAINT IF EXISTS "FK_barber_time_offs_tenant_professional"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "barber_availability_blocks" DROP CONSTRAINT "FK_barber_availability_blocks_barber_profile"`,
+      `ALTER TABLE "barber_availability_blocks" DROP CONSTRAINT IF EXISTS "FK_barber_availability_blocks_tenant_professional"`,
     );
 
     await queryRunner.query(
@@ -84,64 +95,69 @@ export class AvailabilityUseTenantProfessional1779200000000
     );
 
     await queryRunner.query(
-      `DROP INDEX "public"."IDX_working_hours_barber_profile_id"`,
+      `DROP INDEX IF EXISTS "public"."IDX_working_hours_barber_profile_id"`,
     );
     await queryRunner.query(
-      `DROP INDEX "public"."UQ_working_hours_barber_day_active"`,
+      `DROP INDEX IF EXISTS "public"."UQ_working_hours_barber_day_active"`,
     );
     await queryRunner.query(
-      `DROP INDEX "public"."IDX_barber_services_barber_profile_id"`,
+      `DROP INDEX IF EXISTS "public"."IDX_barber_services_barber_profile_id"`,
     );
     await queryRunner.query(
-      `DROP INDEX "public"."UQ_barber_services_barber_service_active"`,
+      `DROP INDEX IF EXISTS "public"."UQ_barber_services_barber_service_active"`,
     );
     await queryRunner.query(
-      `DROP INDEX "public"."IDX_barber_time_offs_barber_date"`,
+      `DROP INDEX IF EXISTS "public"."IDX_barber_time_offs_barber_date"`,
     );
     await queryRunner.query(
-      `DROP INDEX "public"."IDX_barber_availability_blocks_barber_date"`,
-    );
-
-    await queryRunner.query(
-      `ALTER TABLE "working_hours" DROP COLUMN "barber_profile_id"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "barber_services" DROP COLUMN "barber_profile_id"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "barber_time_offs" DROP COLUMN "barber_profile_id"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "barber_availability_blocks" DROP COLUMN "barber_profile_id"`,
+      `DROP INDEX IF EXISTS "public"."IDX_barber_availability_blocks_barber_date"`,
     );
 
     await queryRunner.query(
-      `ALTER TABLE "barber_services" RENAME TO "professional_service_links"`,
+      `ALTER TABLE "working_hours" DROP COLUMN IF EXISTS "barber_profile_id"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "barber_time_offs" RENAME TO "professional_time_offs"`,
+      `ALTER TABLE "barber_services" DROP COLUMN IF EXISTS "barber_profile_id"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "barber_availability_blocks" RENAME TO "professional_availability_blocks"`,
+      `ALTER TABLE "barber_time_offs" DROP COLUMN IF EXISTS "barber_profile_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "barber_availability_blocks" DROP COLUMN IF EXISTS "barber_profile_id"`,
     );
 
+    await queryRunner.query(`
+      DO $$
+      BEGIN
+        IF to_regclass('public.barber_services') IS NOT NULL THEN
+          ALTER TABLE "barber_services" RENAME TO "professional_service_links";
+        END IF;
+        IF to_regclass('public.barber_time_offs') IS NOT NULL THEN
+          ALTER TABLE "barber_time_offs" RENAME TO "professional_time_offs";
+        END IF;
+        IF to_regclass('public.barber_availability_blocks') IS NOT NULL THEN
+          ALTER TABLE "barber_availability_blocks" RENAME TO "professional_availability_blocks";
+        END IF;
+      END $$;
+    `);
+
     await queryRunner.query(
-      `CREATE INDEX "IDX_working_hours_tenant_professional_id" ON "working_hours" ("tenant_professional_id")`,
+      `CREATE INDEX IF NOT EXISTS "IDX_working_hours_tenant_professional_id" ON "working_hours" ("tenant_professional_id")`,
     );
     await queryRunner.query(
-      `CREATE UNIQUE INDEX "UQ_working_hours_tenant_professional_day_active" ON "working_hours" ("tenant_professional_id", "day_of_week") WHERE "deletedAt" IS NULL`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "UQ_working_hours_tenant_professional_day_active" ON "working_hours" ("tenant_professional_id", "day_of_week") WHERE "deletedAt" IS NULL`,
     );
     await queryRunner.query(
-      `CREATE INDEX "IDX_professional_service_links_tenant_professional_id" ON "professional_service_links" ("tenant_professional_id")`,
+      `CREATE INDEX IF NOT EXISTS "IDX_professional_service_links_tenant_professional_id" ON "professional_service_links" ("tenant_professional_id")`,
     );
     await queryRunner.query(
-      `CREATE UNIQUE INDEX "UQ_professional_service_links_tp_service_active" ON "professional_service_links" ("tenant_professional_id", "service_id") WHERE "deletedAt" IS NULL`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "UQ_professional_service_links_tp_service_active" ON "professional_service_links" ("tenant_professional_id", "service_id") WHERE "deletedAt" IS NULL`,
     );
     await queryRunner.query(
-      `CREATE INDEX "IDX_professional_time_offs_tp_date" ON "professional_time_offs" ("tenant_professional_id", "date")`,
+      `CREATE INDEX IF NOT EXISTS "IDX_professional_time_offs_tp_date" ON "professional_time_offs" ("tenant_professional_id", "date")`,
     );
     await queryRunner.query(
-      `CREATE INDEX "IDX_professional_availability_blocks_tp_date" ON "professional_availability_blocks" ("tenant_professional_id", "date")`,
+      `CREATE INDEX IF NOT EXISTS "IDX_professional_availability_blocks_tp_date" ON "professional_availability_blocks" ("tenant_professional_id", "date")`,
     );
   }
 

@@ -13,6 +13,7 @@ import { FindUserByIdUseCase } from './find-user-by-id.use-case';
 import { AddressRepository } from 'src/repository/address/address.repository';
 import { CheckUserExistsByEmailUseCase } from './check-user-exists-by-email.use-case';
 import { UserResponseDto } from '../dto/user-response.dto';
+import { DeleteUserUseCase } from './delete-user.use-case';
 
 @Injectable()
 export class CreateUserUseCase {
@@ -21,6 +22,7 @@ export class CreateUserUseCase {
     private readonly repo: IUserRepository,
     private readonly findUserById: FindUserByIdUseCase,
     private readonly checkUserExistsByEmailUseCase: CheckUserExistsByEmailUseCase,
+    private readonly deleteUserUseCase: DeleteUserUseCase,
     @Inject(PASSWORD_HASHER)
     private readonly passwordService: IPasswordHasher,
     private readonly userSyncService: UserSyncService,
@@ -28,30 +30,27 @@ export class CreateUserUseCase {
   ) {}
   async run(dto: CreateUserDto): Promise<UserResponseDto> {
     const existing = await this.checkUserExistsByEmailUseCase.run(dto.email);
-    console.log('existing', existing);
     if (existing) {
       throw new ConflictException('Email already in use');
     }
-
     let addressId: string | null = null;
-    if (dto.address) {
-      const address = await this.addressRepository.create(dto.address);
-      addressId = address.id;
-      console.log('addressId', addressId);
-    }
-
-    const passwordHash = await this.passwordService.hash(dto.password);
-    console.log(dto.telephone);
-    console.log(dto.name);
-    const user = await this.repo.create({
-      email: dto.email,
-      name: dto.name,
-      telephone: dto.telephone,
-      addressId,
-      passwordHash,
-      role: dto.role,
-    });
+    let user = null;
     try {
+      if (dto.address) {
+        const address = await this.addressRepository.create(dto.address);
+        addressId = address.id;
+      }
+
+      const passwordHash = await this.passwordService.hash(dto.password);
+      user = await this.repo.create({
+        email: dto.email,
+        name: dto.name,
+        telephone: dto.telephone,
+        addressId,
+        passwordHash,
+        role: dto.role,
+      });
+
       const { uid } = await this.userSyncService.createInFirebase({
         email: dto.email,
         password: dto.password,
@@ -60,7 +59,7 @@ export class CreateUserUseCase {
       await this.repo.setFirebaseUid(user.id, uid);
       return this.findUserById.run(user.id);
     } catch (err) {
-      await this.repo.softDelete(user.id);
+      if (user) await this.deleteUserUseCase.run(user.id);
       if (addressId) await this.addressRepository.softDelete(addressId);
       throw err;
     }

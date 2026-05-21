@@ -47,7 +47,7 @@ describe('AvailabilityRepository', () => {
             getMany: jest.fn(),
             getExists: jest.fn(),
         };
-        const mockBarberService = {
+        const mockProfessionalServiceLinkRepo = {
             findOne: jest.fn(),
             find: jest.fn(),
             create: jest.fn(),
@@ -78,7 +78,7 @@ describe('AvailabilityRepository', () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 AvailabilityRepository,
-                { provide: getRepositoryToken(ProfessionalServiceLinkEntity), useValue: mockBarberService },
+                { provide: getRepositoryToken(ProfessionalServiceLinkEntity), useValue: mockProfessionalServiceLinkRepo },
                 { provide: getRepositoryToken(WorkingHoursEntity), useValue: mockWh },
                 { provide: getRepositoryToken(WorkingHoursPeriodEntity), useValue: mockPeriod },
                 { provide: getRepositoryToken(TimeOffEntity), useValue: mockTimeOff },

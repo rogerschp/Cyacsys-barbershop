@@ -1,4 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
+import { dropForeignKeyOnColumn } from './helpers/drop-fk-on-column';
 
 export class BookingUseTenantProfessional1779300000000
   implements MigrationInterface
@@ -7,7 +8,7 @@ export class BookingUseTenantProfessional1779300000000
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `ALTER TABLE "bookings" ADD "tenant_professional_id" uuid`,
+      `ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS "tenant_professional_id" uuid`,
     );
 
     await queryRunner.query(`
@@ -24,45 +25,51 @@ export class BookingUseTenantProfessional1779300000000
         ON tp."tenant_id" = bp."tenant_id"
         AND tp."professional_profile_id" = pp."id"
       WHERE b."barber_profile_id" = bp."id"
+        AND b."tenant_professional_id" IS NULL
     `);
 
     await queryRunner.query(
       `ALTER TABLE "bookings" ALTER COLUMN "tenant_professional_id" SET NOT NULL`,
     );
 
+    await dropForeignKeyOnColumn(queryRunner, 'bookings', 'barber_profile_id');
+
     await queryRunner.query(
-      `ALTER TABLE "bookings" DROP CONSTRAINT "FK_bookings_barber_profile"`,
+      `ALTER TABLE "bookings" DROP CONSTRAINT IF EXISTS "FK_bookings_tenant_professional"`,
     );
     await queryRunner.query(
-      `DROP INDEX "public"."IDX_bookings_barber_starts"`,
+      `DROP INDEX IF EXISTS "public"."IDX_bookings_barber_starts"`,
     );
     await queryRunner.query(
-      `DROP INDEX "public"."UQ_bookings_barber_starts_active"`,
+      `DROP INDEX IF EXISTS "public"."UQ_bookings_barber_starts_active"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "bookings" DROP COLUMN "barber_profile_id"`,
+      `DROP INDEX IF EXISTS "public"."UQ_bookings_barber_starts_active"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "bookings" DROP COLUMN IF EXISTS "barber_profile_id"`,
     );
 
     await queryRunner.query(
       `ALTER TABLE "bookings" ADD CONSTRAINT "FK_bookings_tenant_professional" FOREIGN KEY ("tenant_professional_id") REFERENCES "tenant_professionals"("id") ON DELETE CASCADE`,
     );
     await queryRunner.query(
-      `CREATE INDEX "IDX_bookings_tenant_professional_starts" ON "bookings" ("tenant_professional_id", "starts_at")`,
+      `CREATE INDEX IF NOT EXISTS "IDX_bookings_tenant_professional_starts" ON "bookings" ("tenant_professional_id", "starts_at")`,
     );
     await queryRunner.query(
-      `CREATE UNIQUE INDEX "UQ_bookings_tenant_professional_starts_active" ON "bookings" ("tenant_professional_id", "starts_at") WHERE status IN ('DRAFT','CONFIRMED')`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "UQ_bookings_tenant_professional_starts_active" ON "bookings" ("tenant_professional_id", "starts_at") WHERE status IN ('DRAFT','CONFIRMED')`,
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `DROP INDEX "public"."UQ_bookings_tenant_professional_starts_active"`,
+      `DROP INDEX IF EXISTS "public"."UQ_bookings_tenant_professional_starts_active"`,
     );
     await queryRunner.query(
-      `DROP INDEX "public"."IDX_bookings_tenant_professional_starts"`,
+      `DROP INDEX IF EXISTS "public"."IDX_bookings_tenant_professional_starts"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "bookings" DROP CONSTRAINT "FK_bookings_tenant_professional"`,
+      `ALTER TABLE "bookings" DROP CONSTRAINT IF EXISTS "FK_bookings_tenant_professional"`,
     );
     await queryRunner.query(
       `ALTER TABLE "bookings" ADD "barber_profile_id" uuid`,

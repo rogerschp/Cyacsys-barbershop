@@ -24,6 +24,16 @@ export async function assertTenantProfessionalAgendaAccess(params: {
     tenantProfessionalRepository,
   } = params;
 
+  const link = await tenantProfessionalRepository.findById(
+    tenantProfessionalId,
+    tenantId,
+  );
+  if (!link) {
+    throw new NotFoundException(
+      'Tenant professional not found in this tenant. Use the id from tenant_professionals (POST /tenant-professionals/me or /tenant-professionals), not professional_profiles.id.',
+    );
+  }
+
   if (!callerRole || MANAGER_ROLES.has(callerRole)) {
     return;
   }
@@ -34,14 +44,6 @@ export async function assertTenantProfessionalAgendaAccess(params: {
       'Sem permissão para gerenciar a agenda deste profissional.',
       { tenantId },
     );
-  }
-
-  const link = await tenantProfessionalRepository.findById(
-    tenantProfessionalId,
-    tenantId,
-  );
-  if (!link) {
-    throw new NotFoundException('Tenant professional not found');
   }
 
   if (link.professionalProfile?.userId !== userId) {

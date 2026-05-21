@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AVAILABILITY_REPOSITORY } from '../../../modules/availability/interfaces/availability-repository.interface';
 import { TENANT_PROFESSIONAL_REPOSITORY } from '../../../modules/tenant-professional/interfaces/tenant-professional-repository.interface';
@@ -128,6 +129,27 @@ describe('BootstrapWorkingWeekUseCase', () => {
       availabilityRepository.softDeleteWorkingHoursPeriod,
     ).toHaveBeenCalled();
     expect(result).toEqual({ created: 0, updated: 7, skipped: 0 });
+  });
+
+  it('lança NotFoundException quando tenantProfessionalId não existe no tenant', async () => {
+    tenantProfessionalRepository.findById.mockImplementation(() =>
+      Promise.resolve(null),
+    );
+
+    await expect(
+      useCase.run(
+        tenantId,
+        'wrong-uuid',
+        {
+          closedDays: [DayOfWeek.SUNDAY],
+          periods: [{ startTime: '09:00', endTime: '12:00' }],
+        },
+        userId,
+        TenantUserRole.OWNER,
+      ),
+    ).rejects.toThrow(NotFoundException);
+
+    expect(availabilityRepository.createWorkingHours).not.toHaveBeenCalled();
   });
 
   it('lança erro quando períodos dos dias abertos não são informados', async () => {

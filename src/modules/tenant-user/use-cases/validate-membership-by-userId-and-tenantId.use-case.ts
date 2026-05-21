@@ -18,7 +18,7 @@ export class ValidateMembershipByUserIdAndTenantIdUseCase {
     private readonly repo: ITenantUserRepository,
   ) {}
   async run(userId: string, tenantId: string): Promise<TenantUserEntity> {
-    const link = await this.repo.findByTenantAndUser(userId, tenantId);
+    const link = await this.repo.findByTenantAndUser(tenantId, userId);
     if (!link) {
       throw new NotFoundException('User is not a member of this tenant.');
     }

@@ -1,7 +1,7 @@
 {
   "name": "cyacsys-barbershop",
   "version": "0.0.1",
-  "description": "REST API for Cyacsys Barbershop",
+  "description": "REST API multi-tenant for beauty and wellness professionals (Cyacsys)",
   "author": "Roger Schmidt",
   "private": true,
   "license": "UNLICENSED",

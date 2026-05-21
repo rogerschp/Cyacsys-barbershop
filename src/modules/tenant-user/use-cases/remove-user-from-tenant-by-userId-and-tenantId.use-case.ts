@@ -11,12 +11,12 @@ export class RemoveUserFromTenantByUserIdAndTenantIdUseCase {
     private readonly repo: ITenantUserRepository,
   ) {}
   async run(userId: string, tenantId: string): Promise<void> {
-    const link = await this.repo.findByTenantAndUser(userId, tenantId);
+    const link = await this.repo.findByTenantAndUser(tenantId, userId);
     if (!link) {
       throw new NotFoundException(
         'No membership found for this user in this tenant.',
       );
     }
-    await this.repo.deleteByTenantAndUser(userId, tenantId);
+    await this.repo.deleteByTenantAndUser(tenantId, userId);
   }
 }
