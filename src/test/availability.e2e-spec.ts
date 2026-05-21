@@ -3,9 +3,9 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AvailabilityController } from '../modules/availability/availability.controller';
 import { CreateProfessionalServiceLinkUseCase } from '../modules/availability/use-cases/create-professional-service-link.use-case';
-import { UpdateBarberServiceLinkUseCase } from '../modules/availability/use-cases/update-barber-service-link.use-case';
-import { DeleteBarberServiceLinkUseCase } from '../modules/availability/use-cases/delete-barber-service-link.use-case';
-import { ListBarberServiceLinksUseCase } from '../modules/availability/use-cases/list-barber-service-links.use-case';
+import { UpdateProfessionalServiceLinkUseCase } from '../modules/availability/use-cases/update-professional-service-link.use-case';
+import { DeleteProfessionalServiceLinkUseCase } from '../modules/availability/use-cases/delete-professional-service-link.use-case';
+import { ListProfessionalServiceLinksUseCase } from '../modules/availability/use-cases/list-professional-service-links.use-case';
 import { CreateWorkingHoursUseCase } from '../modules/availability/use-cases/create-working-hours.use-case';
 import { UpdateWorkingHoursUseCase } from '../modules/availability/use-cases/update-working-hours.use-case';
 import { DeleteWorkingHoursUseCase } from '../modules/availability/use-cases/delete-working-hours.use-case';
@@ -23,9 +23,11 @@ import { UpdateBlockUseCase } from '../modules/availability/use-cases/update-blo
 import { DeleteBlockUseCase } from '../modules/availability/use-cases/delete-block.use-case';
 import { ListBlocksUseCase } from '../modules/availability/use-cases/list-blocks.use-case';
 import { GetAvailableSlotsUseCase } from '../modules/availability/use-cases/get-available-slots.use-case';
+import { BootstrapWorkingWeekUseCase } from '../modules/availability/use-cases/bootstrap-working-week.use-case';
 import { BearerAuthGuard } from '../modules/auth/guards/bearer-auth.guard';
 import { TenantInterceptor } from '../common/interceptors/tenant.interceptor';
 import { TenantMembershipGuard } from '../common/guards/tenant-membership.guard';
+import { TenantResolverGuard } from '../common/guards/tenant-resolver.guard';
 import { TenantRolesGuard } from '../common/guards/tenant-roles.guard';
 import { TenantUserRole } from '../modules/tenant-user/entities/tenant-user-role.enum';
 import { DayOfWeek } from '../modules/availability/entities/day-of-week.enum';
@@ -35,7 +37,7 @@ describe('AvailabilityController (e2e)', () => {
     let app: INestApplication;
     let getAvailableSlotsUseCase: jest.Mocked<GetAvailableSlotsUseCase>;
     let createProfessionalServiceLinkUseCase: jest.Mocked<CreateProfessionalServiceLinkUseCase>;
-    let listProfessionalServiceLinksUseCase: jest.Mocked<ListBarberServiceLinksUseCase>;
+    let listProfessionalServiceLinksUseCase: jest.Mocked<ListProfessionalServiceLinksUseCase>;
     let createWorkingHoursUseCase: jest.Mocked<CreateWorkingHoursUseCase>;
     let listWorkingHoursUseCase: jest.Mocked<ListWorkingHoursUseCase>;
     let createBlockUseCase: jest.Mocked<CreateBlockUseCase>;
@@ -46,8 +48,8 @@ describe('AvailabilityController (e2e)', () => {
     beforeAll(async () => {
         const mocks = {
             createProfessionalServiceLink: { run: jest.fn() },
-            updateBarberServiceLink: { run: jest.fn() },
-            deleteBarberServiceLink: { run: jest.fn() },
+            updateProfessionalServiceLink: { run: jest.fn() },
+            deleteProfessionalServiceLink: { run: jest.fn() },
             listProfessionalServiceLinks: { run: jest.fn() },
             createWorkingHours: { run: jest.fn() },
             updateWorkingHours: { run: jest.fn() },
@@ -66,14 +68,15 @@ describe('AvailabilityController (e2e)', () => {
             deleteBlock: { run: jest.fn() },
             listBlocks: { run: jest.fn() },
             getAvailableSlots: { run: jest.fn() },
+            bootstrapWorkingWeek: { run: jest.fn() },
         };
         const moduleFixture: TestingModule = await Test.createTestingModule({
             controllers: [AvailabilityController],
             providers: [
                 { provide: CreateProfessionalServiceLinkUseCase, useValue: mocks.createProfessionalServiceLink },
-                { provide: UpdateBarberServiceLinkUseCase, useValue: mocks.updateBarberServiceLink },
-                { provide: DeleteBarberServiceLinkUseCase, useValue: mocks.deleteBarberServiceLink },
-                { provide: ListBarberServiceLinksUseCase, useValue: mocks.listProfessionalServiceLinks },
+                { provide: UpdateProfessionalServiceLinkUseCase, useValue: mocks.updateProfessionalServiceLink },
+                { provide: DeleteProfessionalServiceLinkUseCase, useValue: mocks.deleteProfessionalServiceLink },
+                { provide: ListProfessionalServiceLinksUseCase, useValue: mocks.listProfessionalServiceLinks },
                 { provide: CreateWorkingHoursUseCase, useValue: mocks.createWorkingHours },
                 { provide: UpdateWorkingHoursUseCase, useValue: mocks.updateWorkingHours },
                 { provide: DeleteWorkingHoursUseCase, useValue: mocks.deleteWorkingHours },
@@ -91,6 +94,7 @@ describe('AvailabilityController (e2e)', () => {
                 { provide: DeleteBlockUseCase, useValue: mocks.deleteBlock },
                 { provide: ListBlocksUseCase, useValue: mocks.listBlocks },
                 { provide: GetAvailableSlotsUseCase, useValue: mocks.getAvailableSlots },
+                { provide: BootstrapWorkingWeekUseCase, useValue: mocks.bootstrapWorkingWeek },
             ],
         })
             .overrideGuard(BearerAuthGuard)
@@ -106,6 +110,8 @@ describe('AvailabilityController (e2e)', () => {
             .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
             .overrideGuard(TenantMembershipGuard)
             .useValue({ canActivate: () => true })
+            .overrideGuard(TenantResolverGuard)
+            .useValue({ canActivate: () => true })
             .overrideGuard(TenantRolesGuard)
             .useValue({ canActivate: () => true })
             .compile();
@@ -117,7 +123,7 @@ describe('AvailabilityController (e2e)', () => {
         await app.init();
         getAvailableSlotsUseCase = moduleFixture.get(GetAvailableSlotsUseCase) as jest.Mocked<GetAvailableSlotsUseCase>;
         createProfessionalServiceLinkUseCase = moduleFixture.get(CreateProfessionalServiceLinkUseCase) as jest.Mocked<CreateProfessionalServiceLinkUseCase>;
-        listProfessionalServiceLinksUseCase = moduleFixture.get(ListBarberServiceLinksUseCase) as jest.Mocked<ListBarberServiceLinksUseCase>;
+        listProfessionalServiceLinksUseCase = moduleFixture.get(ListProfessionalServiceLinksUseCase) as jest.Mocked<ListProfessionalServiceLinksUseCase>;
         createWorkingHoursUseCase = moduleFixture.get(CreateWorkingHoursUseCase) as jest.Mocked<CreateWorkingHoursUseCase>;
         listWorkingHoursUseCase = moduleFixture.get(ListWorkingHoursUseCase) as jest.Mocked<ListWorkingHoursUseCase>;
         createBlockUseCase = moduleFixture.get(CreateBlockUseCase) as jest.Mocked<CreateBlockUseCase>;

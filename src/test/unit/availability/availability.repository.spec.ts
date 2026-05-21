@@ -10,7 +10,7 @@ import { ProfessionalAvailabilityBlockEntity } from 'src/modules/availability/en
 import { DayOfWeek } from 'src/modules/availability/entities/day-of-week.enum';
 describe('AvailabilityRepository', () => {
     let repository: AvailabilityRepository;
-    let barberServiceRepo: jest.Mocked<Repository<ProfessionalServiceLinkEntity>>;
+    let professionalServiceLinkRepo: jest.Mocked<Repository<ProfessionalServiceLinkEntity>>;
     let workingHoursRepo: jest.Mocked<Repository<WorkingHoursEntity>>;
     let periodRepo: jest.Mocked<Repository<WorkingHoursPeriodEntity>>;
     let timeOffRepo: jest.Mocked<Repository<TimeOffEntity>>;
@@ -86,7 +86,7 @@ describe('AvailabilityRepository', () => {
             ],
         }).compile();
         repository = module.get(AvailabilityRepository);
-        barberServiceRepo = module.get(getRepositoryToken(ProfessionalServiceLinkEntity));
+        professionalServiceLinkRepo = module.get(getRepositoryToken(ProfessionalServiceLinkEntity));
         workingHoursRepo = module.get(getRepositoryToken(WorkingHoursEntity));
         periodRepo = module.get(getRepositoryToken(WorkingHoursPeriodEntity));
         timeOffRepo = module.get(getRepositoryToken(TimeOffEntity));
@@ -101,14 +101,14 @@ describe('AvailabilityRepository', () => {
     describe('createProfessionalServiceLink', () => {
         it('cria vínculo com isActive true', async () => {
             const link = { id: 'l1' } as ProfessionalServiceLinkEntity;
-            barberServiceRepo.create.mockReturnValue(link as any);
-            barberServiceRepo.save.mockResolvedValue(link);
+            professionalServiceLinkRepo.create.mockReturnValue(link as any);
+            professionalServiceLinkRepo.save.mockResolvedValue(link);
             const result = await repository.createProfessionalServiceLink({
                 tenantId,
                 tenantProfessionalId,
                 serviceId: 's1',
             });
-            expect(barberServiceRepo.create).toHaveBeenCalledWith(expect.objectContaining({
+            expect(professionalServiceLinkRepo.create).toHaveBeenCalledWith(expect.objectContaining({
                 tenantId,
                 tenantProfessionalId,
                 serviceId: 's1',
@@ -153,51 +153,51 @@ describe('AvailabilityRepository', () => {
         });
     });
 
-    describe('barber service link', () => {
+    describe('professional service link', () => {
         const link = { id: 'l1', tenantId, tenantProfessionalId } as ProfessionalServiceLinkEntity;
 
         it('findProfessionalServiceLinkById', async () => {
-            barberServiceRepo.findOne.mockResolvedValue(link);
+            professionalServiceLinkRepo.findOne.mockResolvedValue(link);
             await expect(repository.findProfessionalServiceLinkById('l1', tenantId)).resolves.toBe(link);
         });
 
         it('findProfessionalServiceLinkByProfessionalAndService', async () => {
-            barberServiceRepo.findOne.mockResolvedValue(link);
+            professionalServiceLinkRepo.findOne.mockResolvedValue(link);
             await expect(
                 repository.findProfessionalServiceLinkByProfessionalAndService(tenantProfessionalId, tenantId, 's1'),
             ).resolves.toBe(link);
         });
 
         it('listProfessionalServiceLinksByProfessional', async () => {
-            barberServiceRepo.find.mockResolvedValue([link]);
+            professionalServiceLinkRepo.find.mockResolvedValue([link]);
             await expect(repository.listProfessionalServiceLinksByProfessional(tenantProfessionalId, tenantId)).resolves.toEqual([
                 link,
             ]);
         });
 
         it('updateProfessionalServiceLink', async () => {
-            barberServiceRepo.update.mockResolvedValue({ affected: 1 } as any);
-            barberServiceRepo.findOne.mockResolvedValue(link);
+            professionalServiceLinkRepo.update.mockResolvedValue({ affected: 1 } as any);
+            professionalServiceLinkRepo.findOne.mockResolvedValue(link);
             const res = await repository.updateProfessionalServiceLink('l1', tenantId, { isActive: false });
             expect(res).toBe(link);
         });
 
         it('updateProfessionalServiceLink lança se não encontrar após update', async () => {
-            barberServiceRepo.update.mockResolvedValue({ affected: 1 } as any);
-            barberServiceRepo.findOne.mockResolvedValue(null);
+            professionalServiceLinkRepo.update.mockResolvedValue({ affected: 1 } as any);
+            professionalServiceLinkRepo.findOne.mockResolvedValue(null);
             await expect(repository.updateProfessionalServiceLink('l1', tenantId, {})).rejects.toThrow(
                 'Professional service link not found after update',
             );
         });
 
         it('softDeleteProfessionalServiceLink', async () => {
-            barberServiceRepo.findOne.mockResolvedValue(link);
-            barberServiceRepo.softDelete.mockResolvedValue({ affected: 1 } as any);
+            professionalServiceLinkRepo.findOne.mockResolvedValue(link);
+            professionalServiceLinkRepo.softDelete.mockResolvedValue({ affected: 1 } as any);
             await expect(repository.softDeleteProfessionalServiceLink('l1', tenantId)).resolves.toBe(link);
         });
 
         it('softDeleteProfessionalServiceLink lança se não existe', async () => {
-            barberServiceRepo.findOne.mockResolvedValue(null);
+            professionalServiceLinkRepo.findOne.mockResolvedValue(null);
             await expect(repository.softDeleteProfessionalServiceLink('l1', tenantId)).rejects.toThrow(
                 'Professional service link not found',
             );
