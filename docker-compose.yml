@@ -1,5 +1,6 @@
 services:
   api:
+    user: "${UID}:${GID}"
     build:
       context: .
       dockerfile: Dockerfile.dev

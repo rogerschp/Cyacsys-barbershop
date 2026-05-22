@@ -1,32 +1,32 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { TenantUserService } from '../../tenant-user/tenant-user.service';
-import { BARBER_PROFILE_REPOSITORY } from '../../barber-profile/interfaces/barber-profile-repository.interface';
-import type { IBarberProfileRepository } from '../../barber-profile/interfaces/barber-profile-repository.interface';
+import { TENANT_PROFESSIONAL_REPOSITORY } from '../../tenant-professional/interfaces/tenant-professional-repository.interface';
+import type { ITenantProfessionalRepository } from '../../tenant-professional/interfaces/tenant-professional-repository.interface';
 import { CreateBlockDto } from '../dto/create-block.dto';
-import { BarberAvailabilityBlockEntity } from '../entities/barber-availability-block.entity';
+import { ProfessionalAvailabilityBlockEntity } from '../entities/professional-availability-block.entity';
 import { AVAILABILITY_REPOSITORY, IAvailabilityRepository, } from '../interfaces/availability-repository.interface';
-import { assertBarberAgendaAccess } from '../utils/assert-barber-agenda-access';
+import { assertTenantProfessionalAgendaAccess } from '../utils/assert-tenant-professional-agenda-access';
 import { assertValidBlockRange } from '../utils/validate-block-range';
 @Injectable()
 export class CreateBlockUseCase {
     constructor(
     @Inject(AVAILABILITY_REPOSITORY)
     private readonly availabilityRepository: IAvailabilityRepository, 
-    @Inject(BARBER_PROFILE_REPOSITORY)
-    private readonly barberProfileRepository: IBarberProfileRepository, private readonly tenantUserService: TenantUserService) { }
-    async run(tenantId: string, barberProfileId: string, dto: CreateBlockDto, userId: string, callerRole?: string): Promise<BarberAvailabilityBlockEntity> {
-        await assertBarberAgendaAccess({
+    @Inject(TENANT_PROFESSIONAL_REPOSITORY)
+    private readonly tenantProfessionalRepository: ITenantProfessionalRepository,
+  ) {}
+
+  async run(tenantId: string, tenantProfessionalId: string, dto: CreateBlockDto, userId: string, callerRole?: string): Promise<ProfessionalAvailabilityBlockEntity> {
+        await assertTenantProfessionalAgendaAccess({
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             userId,
             callerRole,
-            barberProfileRepository: this.barberProfileRepository,
-            tenantUserService: this.tenantUserService,
+            tenantProfessionalRepository: this.tenantProfessionalRepository,
         });
         assertValidBlockRange(dto.startTime, dto.endTime);
         return this.availabilityRepository.createBlock({
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             date: dto.date,
             startTime: dto.startTime,
             endTime: dto.endTime,

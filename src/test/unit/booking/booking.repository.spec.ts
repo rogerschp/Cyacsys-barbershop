@@ -27,7 +27,7 @@ describe('BookingRepository', () => {
   let dataSource: { transaction: jest.Mock };
 
   const tenantId = 'tenant-uuid';
-  const barberProfileId = 'bp-uuid';
+  const tenantProfessionalId = 'tp-uuid';
   const serviceId = 'svc-uuid';
   const startsAt = new Date('2099-06-15T13:00:00.000Z');
   const endsAt = new Date('2099-06-15T13:30:00.000Z');
@@ -82,7 +82,7 @@ describe('BookingRepository', () => {
 
       const result = await repository.createDraft({
         tenantId,
-        barberProfileId,
+        tenantProfessionalId,
         serviceId,
         startsAt,
         endsAt,
@@ -100,7 +100,7 @@ describe('BookingRepository', () => {
       await expect(
         repository.createDraft({
           tenantId,
-          barberProfileId,
+          tenantProfessionalId,
           serviceId,
           startsAt,
           endsAt,
@@ -111,19 +111,19 @@ describe('BookingRepository', () => {
     });
   });
 
-  describe('findByIdForBarber', () => {
+  describe('findByIdForTenantProfessional', () => {
     it('delega ao TypeORM findOne', async () => {
       const row = { id: 'b1' } as BookingEntity;
       rootBookingRepo.findOne.mockResolvedValue(row);
 
-      const out = await repository.findByIdForBarber(
+      const out = await repository.findByIdForTenantProfessional(
         'b1',
         tenantId,
-        barberProfileId,
+        tenantProfessionalId,
       );
 
       expect(rootBookingRepo.findOne).toHaveBeenCalledWith({
-        where: { id: 'b1', tenantId, barberProfileId },
+        where: { id: 'b1', tenantId, tenantProfessionalId },
       });
       expect(out).toBe(row);
     });
@@ -136,7 +136,7 @@ describe('BookingRepository', () => {
       const current = {
         id: bookingId,
         tenantId,
-        barberProfileId,
+        tenantProfessionalId,
         startsAt,
         endsAt,
         status: BookingStatus.DRAFT,
@@ -149,7 +149,7 @@ describe('BookingRepository', () => {
       const out = await repository.updateStatus(
         bookingId,
         tenantId,
-        barberProfileId,
+        tenantProfessionalId,
         BookingStatus.DRAFT,
         BookingStatus.CONFIRMED,
       );
@@ -164,7 +164,7 @@ describe('BookingRepository', () => {
         repository.updateStatus(
           bookingId,
           tenantId,
-          barberProfileId,
+          tenantProfessionalId,
           BookingStatus.DRAFT,
           BookingStatus.CONFIRMED,
         ),
@@ -175,7 +175,7 @@ describe('BookingRepository', () => {
       const current = {
         id: bookingId,
         tenantId,
-        barberProfileId,
+        tenantProfessionalId,
         startsAt,
         endsAt,
         status: BookingStatus.DRAFT,
@@ -188,7 +188,7 @@ describe('BookingRepository', () => {
         repository.updateStatus(
           bookingId,
           tenantId,
-          barberProfileId,
+          tenantProfessionalId,
           BookingStatus.DRAFT,
           BookingStatus.CONFIRMED,
         ),
@@ -199,7 +199,7 @@ describe('BookingRepository', () => {
       const current = {
         id: bookingId,
         tenantId,
-        barberProfileId,
+        tenantProfessionalId,
         startsAt,
         endsAt,
         status: BookingStatus.DRAFT,
@@ -211,7 +211,7 @@ describe('BookingRepository', () => {
       const out = await repository.updateStatus(
         bookingId,
         tenantId,
-        barberProfileId,
+        tenantProfessionalId,
         BookingStatus.DRAFT,
         BookingStatus.CANCELLED,
       );

@@ -29,35 +29,35 @@ import { TenantUserRole } from '../tenant-user/entities/tenant-user-role.enum';
 import { AvailableSlotsResponseDto } from './dto/available-slots-response.dto';
 import { BootstrapWorkingWeekDto } from './dto/bootstrap-working-week.dto';
 import { BootstrapWorkingWeekResponseDto } from './dto/bootstrap-working-week-response.dto';
-import { CreateBarberServiceLinkDto } from './dto/create-barber-service-link.dto';
+import { CreateProfessionalServiceLinkDto } from './dto/create-professional-service-link.dto';
 import { CreateBlockDto } from './dto/create-block.dto';
 import { CreateTimeOffDto } from './dto/create-time-off.dto';
 import { CreateWorkingHoursDto } from './dto/create-working-hours.dto';
 import { CreateWorkingHoursPeriodDto } from './dto/create-working-hours-period.dto';
 import { GetAvailableSlotsQueryDto } from './dto/get-available-slots-query.dto';
-import { UpdateBarberServiceLinkDto } from './dto/update-barber-service-link.dto';
+import { UpdateProfessionalServiceLinkDto } from './dto/update-professional-service-link.dto';
 import { UpdateBlockDto } from './dto/update-block.dto';
 import { UpdateTimeOffDto } from './dto/update-time-off.dto';
 import { UpdateWorkingHoursDto } from './dto/update-working-hours.dto';
 import { UpdateWorkingHoursPeriodDto } from './dto/update-working-hours-period.dto';
-import { CreateBarberServiceLinkUseCase } from './use-cases/create-barber-service-link.use-case';
+import { CreateProfessionalServiceLinkUseCase } from './use-cases/create-professional-service-link.use-case';
 import { BootstrapWorkingWeekUseCase } from './use-cases/bootstrap-working-week.use-case';
 import { CreateBlockUseCase } from './use-cases/create-block.use-case';
 import { CreateTimeOffUseCase } from './use-cases/create-time-off.use-case';
 import { CreateWorkingHoursUseCase } from './use-cases/create-working-hours.use-case';
 import { CreateWorkingHoursPeriodUseCase } from './use-cases/create-working-hours-period.use-case';
-import { DeleteBarberServiceLinkUseCase } from './use-cases/delete-barber-service-link.use-case';
+import { DeleteProfessionalServiceLinkUseCase } from './use-cases/delete-professional-service-link.use-case';
 import { DeleteBlockUseCase } from './use-cases/delete-block.use-case';
 import { DeleteTimeOffUseCase } from './use-cases/delete-time-off.use-case';
 import { DeleteWorkingHoursUseCase } from './use-cases/delete-working-hours.use-case';
 import { DeleteWorkingHoursPeriodUseCase } from './use-cases/delete-working-hours-period.use-case';
 import { GetAvailableSlotsUseCase } from './use-cases/get-available-slots.use-case';
 import { GetWorkingHoursUseCase } from './use-cases/get-working-hours.use-case';
-import { ListBarberServiceLinksUseCase } from './use-cases/list-barber-service-links.use-case';
+import { ListProfessionalServiceLinksUseCase } from './use-cases/list-professional-service-links.use-case';
 import { ListBlocksUseCase } from './use-cases/list-blocks.use-case';
 import { ListTimeOffsUseCase } from './use-cases/list-time-offs.use-case';
 import { ListWorkingHoursUseCase } from './use-cases/list-working-hours.use-case';
-import { UpdateBarberServiceLinkUseCase } from './use-cases/update-barber-service-link.use-case';
+import { UpdateProfessionalServiceLinkUseCase } from './use-cases/update-professional-service-link.use-case';
 import { UpdateBlockUseCase } from './use-cases/update-block.use-case';
 import { UpdateTimeOffUseCase } from './use-cases/update-time-off.use-case';
 import { UpdateWorkingHoursUseCase } from './use-cases/update-working-hours.use-case';
@@ -80,7 +80,7 @@ const AGENDA_ROLES = [
   TenantUserRole.BARBER,
 ] as const;
 @ApiTags('availability')
-@Controller('tenants/:tenantId/barber-profiles/:barberProfileId')
+@Controller('tenants/:tenantId/tenant-professionals/:tenantProfessionalId')
 @UseGuards(
   BearerAuthGuard,
   TenantResolverGuard,
@@ -90,10 +90,10 @@ const AGENDA_ROLES = [
 @ApiBearerAuth('bearer')
 export class AvailabilityController {
   constructor(
-    private readonly createBarberServiceLinkUseCase: CreateBarberServiceLinkUseCase,
-    private readonly updateBarberServiceLinkUseCase: UpdateBarberServiceLinkUseCase,
-    private readonly deleteBarberServiceLinkUseCase: DeleteBarberServiceLinkUseCase,
-    private readonly listBarberServiceLinksUseCase: ListBarberServiceLinksUseCase,
+    private readonly createProfessionalServiceLinkUseCase: CreateProfessionalServiceLinkUseCase,
+    private readonly updateProfessionalServiceLinkUseCase: UpdateProfessionalServiceLinkUseCase,
+    private readonly deleteProfessionalServiceLinkUseCase: DeleteProfessionalServiceLinkUseCase,
+    private readonly listProfessionalServiceLinksUseCase: ListProfessionalServiceLinksUseCase,
     private readonly createWorkingHoursUseCase: CreateWorkingHoursUseCase,
     private readonly bootstrapWorkingWeekUseCase: BootstrapWorkingWeekUseCase,
     private readonly updateWorkingHoursUseCase: UpdateWorkingHoursUseCase,
@@ -117,15 +117,15 @@ export class AvailabilityController {
   @TenantRoles(...AGENDA_ROLES)
   @ApiOperation({ summary: 'Lista horários disponíveis para agendamento' })
   @ApiParam({ name: 'tenantId' })
-  @ApiParam({ name: 'barberProfileId' })
+  @ApiParam({ name: 'tenantProfessionalId' })
   @ApiQuery({ name: 'serviceId', type: String })
   @ApiQuery({ name: 'date', example: '2026-03-21' })
   @ApiResponse({ status: 200, type: AvailableSlotsResponseDto })
   async getAvailableSlots(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Query()
     query: GetAvailableSlotsQueryDto,
     @Req()
@@ -135,7 +135,7 @@ export class AvailabilityController {
     const callerRole = req.tenantMembership?.role;
     return this.getAvailableSlotsUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       query.serviceId,
       query.date,
       userId,
@@ -144,38 +144,38 @@ export class AvailabilityController {
   }
   @Get('offered-services')
   @TenantRoles(...AGENDA_ROLES)
-  @ApiOperation({ summary: 'Lista serviços oferecidos pelo barbeiro' })
+  @ApiOperation({ summary: 'Lista serviços oferecidos pelo profissional' })
   async listOfferedServices(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Req()
     req: RequestWithUserAndMembership,
   ) {
-    return this.listBarberServiceLinksUseCase.run(
+    return this.listProfessionalServiceLinksUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       req.user?.dbUser?.id ?? '',
       req.tenantMembership?.role,
     );
   }
   @Post('offered-services')
   @TenantRoles(...AGENDA_ROLES)
-  @ApiBody({ type: CreateBarberServiceLinkDto })
+  @ApiBody({ type: CreateProfessionalServiceLinkDto })
   async createOfferedService(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Body()
-    dto: CreateBarberServiceLinkDto,
+    dto: CreateProfessionalServiceLinkDto,
     @Req()
     req: RequestWithUserAndMembership,
   ) {
-    return this.createBarberServiceLinkUseCase.run(
+    return this.createProfessionalServiceLinkUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       dto,
       req.user?.dbUser?.id ?? '',
       req.tenantMembership?.role,
@@ -186,18 +186,18 @@ export class AvailabilityController {
   async updateOfferedService(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Param('linkId')
     linkId: string,
     @Body()
-    dto: UpdateBarberServiceLinkDto,
+    dto: UpdateProfessionalServiceLinkDto,
     @Req()
     req: RequestWithUserAndMembership,
   ) {
-    return this.updateBarberServiceLinkUseCase.run(
+    return this.updateProfessionalServiceLinkUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       linkId,
       dto,
       req.user?.dbUser?.id ?? '',
@@ -209,16 +209,16 @@ export class AvailabilityController {
   async deleteOfferedService(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Param('linkId')
     linkId: string,
     @Req()
     req: RequestWithUserAndMembership,
   ) {
-    return this.deleteBarberServiceLinkUseCase.run(
+    return this.deleteProfessionalServiceLinkUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       linkId,
       req.user?.dbUser?.id ?? '',
       req.tenantMembership?.role,
@@ -230,14 +230,14 @@ export class AvailabilityController {
   async listWorkingHours(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Req()
     req: RequestWithUserAndMembership,
   ) {
     return this.listWorkingHoursUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       req.user?.dbUser?.id ?? '',
       req.tenantMembership?.role,
     );
@@ -248,8 +248,8 @@ export class AvailabilityController {
   async createWorkingHours(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Body()
     dto: CreateWorkingHoursDto,
     @Req()
@@ -257,7 +257,7 @@ export class AvailabilityController {
   ) {
     return this.createWorkingHoursUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       dto,
       req.user?.dbUser?.id ?? '',
       req.tenantMembership?.role,
@@ -266,7 +266,7 @@ export class AvailabilityController {
   @Post('working-hours/bootstrap-week')
   @TenantRoles(...AGENDA_ROLES)
   @ApiOperation({
-    summary: 'Configura semana padrão do barbeiro',
+    summary: 'Configura semana padrão do profissional',
     description:
       'Configura automaticamente toda a semana. Informe apenas os dias fechados e os períodos padrão dos dias abertos.',
   })
@@ -275,8 +275,8 @@ export class AvailabilityController {
   async bootstrapWorkingWeek(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Body()
     dto: BootstrapWorkingWeekDto,
     @Req()
@@ -284,7 +284,7 @@ export class AvailabilityController {
   ) {
     return this.bootstrapWorkingWeekUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       dto,
       req.user?.dbUser?.id ?? '',
       req.tenantMembership?.role,
@@ -295,8 +295,8 @@ export class AvailabilityController {
   async getWorkingHours(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Param('workingHoursId')
     workingHoursId: string,
     @Req()
@@ -304,7 +304,7 @@ export class AvailabilityController {
   ) {
     return this.getWorkingHoursUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       workingHoursId,
       req.user?.dbUser?.id ?? '',
       req.tenantMembership?.role,
@@ -315,8 +315,8 @@ export class AvailabilityController {
   async updateWorkingHours(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Param('workingHoursId')
     workingHoursId: string,
     @Body()
@@ -326,7 +326,7 @@ export class AvailabilityController {
   ) {
     return this.updateWorkingHoursUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       workingHoursId,
       dto,
       req.user?.dbUser?.id ?? '',
@@ -338,8 +338,8 @@ export class AvailabilityController {
   async deleteWorkingHours(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Param('workingHoursId')
     workingHoursId: string,
     @Req()
@@ -347,7 +347,7 @@ export class AvailabilityController {
   ) {
     await this.deleteWorkingHoursUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       workingHoursId,
       req.user?.dbUser?.id ?? '',
       req.tenantMembership?.role,
@@ -359,8 +359,8 @@ export class AvailabilityController {
   async createPeriod(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Param('workingHoursId')
     workingHoursId: string,
     @Body()
@@ -370,7 +370,7 @@ export class AvailabilityController {
   ) {
     return this.createWorkingHoursPeriodUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       workingHoursId,
       dto,
       req.user?.dbUser?.id ?? '',
@@ -382,8 +382,8 @@ export class AvailabilityController {
   async updatePeriod(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Param('workingHoursId')
     workingHoursId: string,
     @Param('periodId')
@@ -395,7 +395,7 @@ export class AvailabilityController {
   ) {
     return this.updateWorkingHoursPeriodUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       workingHoursId,
       periodId,
       dto,
@@ -408,8 +408,8 @@ export class AvailabilityController {
   async deletePeriod(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Param('workingHoursId')
     workingHoursId: string,
     @Param('periodId')
@@ -419,7 +419,7 @@ export class AvailabilityController {
   ) {
     await this.deleteWorkingHoursPeriodUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       workingHoursId,
       periodId,
       req.user?.dbUser?.id ?? '',
@@ -431,14 +431,14 @@ export class AvailabilityController {
   async listTimeOffs(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Req()
     req: RequestWithUserAndMembership,
   ) {
     return this.listTimeOffsUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       req.user?.dbUser?.id ?? '',
       req.tenantMembership?.role,
     );
@@ -449,8 +449,8 @@ export class AvailabilityController {
   async createTimeOff(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Body()
     dto: CreateTimeOffDto,
     @Req()
@@ -458,7 +458,7 @@ export class AvailabilityController {
   ) {
     return this.createTimeOffUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       dto,
       req.user?.dbUser?.id ?? '',
       req.tenantMembership?.role,
@@ -469,8 +469,8 @@ export class AvailabilityController {
   async updateTimeOff(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Param('timeOffId')
     timeOffId: string,
     @Body()
@@ -480,7 +480,7 @@ export class AvailabilityController {
   ) {
     return this.updateTimeOffUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       timeOffId,
       dto,
       req.user?.dbUser?.id ?? '',
@@ -492,8 +492,8 @@ export class AvailabilityController {
   async deleteTimeOff(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Param('timeOffId')
     timeOffId: string,
     @Req()
@@ -501,7 +501,7 @@ export class AvailabilityController {
   ) {
     return this.deleteTimeOffUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       timeOffId,
       req.user?.dbUser?.id ?? '',
       req.tenantMembership?.role,
@@ -512,14 +512,14 @@ export class AvailabilityController {
   async listBlocks(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Req()
     req: RequestWithUserAndMembership,
   ) {
     return this.listBlocksUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       req.user?.dbUser?.id ?? '',
       req.tenantMembership?.role,
     );
@@ -530,8 +530,8 @@ export class AvailabilityController {
   async createBlock(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Body()
     dto: CreateBlockDto,
     @Req()
@@ -539,7 +539,7 @@ export class AvailabilityController {
   ) {
     return this.createBlockUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       dto,
       req.user?.dbUser?.id ?? '',
       req.tenantMembership?.role,
@@ -550,8 +550,8 @@ export class AvailabilityController {
   async updateBlock(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Param('blockId')
     blockId: string,
     @Body()
@@ -561,7 +561,7 @@ export class AvailabilityController {
   ) {
     return this.updateBlockUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       blockId,
       dto,
       req.user?.dbUser?.id ?? '',
@@ -573,8 +573,8 @@ export class AvailabilityController {
   async deleteBlock(
     @Param('tenantId')
     tenantId: string,
-    @Param('barberProfileId')
-    barberProfileId: string,
+    @Param('tenantProfessionalId')
+    tenantProfessionalId: string,
     @Param('blockId')
     blockId: string,
     @Req()
@@ -582,7 +582,7 @@ export class AvailabilityController {
   ) {
     return this.deleteBlockUseCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       blockId,
       req.user?.dbUser?.id ?? '',
       req.tenantMembership?.role,

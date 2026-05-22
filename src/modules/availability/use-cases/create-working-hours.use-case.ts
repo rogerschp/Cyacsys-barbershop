@@ -1,31 +1,31 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
-import { TenantUserService } from '../../tenant-user/tenant-user.service';
-import { BARBER_PROFILE_REPOSITORY } from '../../barber-profile/interfaces/barber-profile-repository.interface';
-import type { IBarberProfileRepository } from '../../barber-profile/interfaces/barber-profile-repository.interface';
+import { TENANT_PROFESSIONAL_REPOSITORY } from '../../tenant-professional/interfaces/tenant-professional-repository.interface';
+import type { ITenantProfessionalRepository } from '../../tenant-professional/interfaces/tenant-professional-repository.interface';
 import { CreateWorkingHoursDto } from '../dto/create-working-hours.dto';
 import { WorkingHoursEntity } from '../entities/working-hours.entity';
 import { AVAILABILITY_REPOSITORY, IAvailabilityRepository, } from '../interfaces/availability-repository.interface';
-import { assertBarberAgendaAccess } from '../utils/assert-barber-agenda-access';
+import { assertTenantProfessionalAgendaAccess } from '../utils/assert-tenant-professional-agenda-access';
 import { validatePeriodsNoOverlap } from '../utils/validate-periods-no-overlap';
 @Injectable()
 export class CreateWorkingHoursUseCase {
     constructor(
     @Inject(AVAILABILITY_REPOSITORY)
     private readonly availabilityRepository: IAvailabilityRepository, 
-    @Inject(BARBER_PROFILE_REPOSITORY)
-    private readonly barberProfileRepository: IBarberProfileRepository, private readonly tenantUserService: TenantUserService) { }
-    async run(tenantId: string, barberProfileId: string, dto: CreateWorkingHoursDto, userId: string, callerRole?: string): Promise<WorkingHoursEntity> {
-        await assertBarberAgendaAccess({
+    @Inject(TENANT_PROFESSIONAL_REPOSITORY)
+    private readonly tenantProfessionalRepository: ITenantProfessionalRepository,
+  ) {}
+
+  async run(tenantId: string, tenantProfessionalId: string, dto: CreateWorkingHoursDto, userId: string, callerRole?: string): Promise<WorkingHoursEntity> {
+        await assertTenantProfessionalAgendaAccess({
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             userId,
             callerRole,
-            barberProfileRepository: this.barberProfileRepository,
-            tenantUserService: this.tenantUserService,
+            tenantProfessionalRepository: this.tenantProfessionalRepository,
         });
         const isActive = dto.isActive !== false;
-        const exists = await this.availabilityRepository.existsOtherWorkingHoursForDay(barberProfileId, tenantId, dto.dayOfWeek);
+        const exists = await this.availabilityRepository.existsOtherWorkingHoursForDay(tenantProfessionalId, tenantId, dto.dayOfWeek);
         if (exists) {
             throw new BusinessRuleException('WORKING_HOURS_ALREADY_EXISTS', 'Já existe jornada para este dia da semana.');
         }
@@ -37,7 +37,7 @@ export class CreateWorkingHoursUseCase {
         }
         const wh = await this.availabilityRepository.createWorkingHours({
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             dayOfWeek: dto.dayOfWeek,
             isActive,
         });

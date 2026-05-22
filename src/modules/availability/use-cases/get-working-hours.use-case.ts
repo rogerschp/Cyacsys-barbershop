@@ -1,27 +1,27 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { TenantUserService } from '../../tenant-user/tenant-user.service';
-import { BARBER_PROFILE_REPOSITORY } from '../../barber-profile/interfaces/barber-profile-repository.interface';
-import type { IBarberProfileRepository } from '../../barber-profile/interfaces/barber-profile-repository.interface';
+import { TENANT_PROFESSIONAL_REPOSITORY } from '../../tenant-professional/interfaces/tenant-professional-repository.interface';
+import type { ITenantProfessionalRepository } from '../../tenant-professional/interfaces/tenant-professional-repository.interface';
 import { WorkingHoursEntity } from '../entities/working-hours.entity';
 import { AVAILABILITY_REPOSITORY, IAvailabilityRepository, } from '../interfaces/availability-repository.interface';
-import { assertBarberAgendaAccess } from '../utils/assert-barber-agenda-access';
-import { ensureWorkingHoursForBarber } from '../utils/ensure-working-hours-for-barber';
+import { assertTenantProfessionalAgendaAccess } from '../utils/assert-tenant-professional-agenda-access';
+import { ensureWorkingHoursForTenantProfessional } from '../utils/ensure-working-hours-for-tenant-professional';
 @Injectable()
 export class GetWorkingHoursUseCase {
     constructor(
     @Inject(AVAILABILITY_REPOSITORY)
     private readonly availabilityRepository: IAvailabilityRepository, 
-    @Inject(BARBER_PROFILE_REPOSITORY)
-    private readonly barberProfileRepository: IBarberProfileRepository, private readonly tenantUserService: TenantUserService) { }
-    async run(tenantId: string, barberProfileId: string, workingHoursId: string, userId: string, callerRole?: string): Promise<WorkingHoursEntity> {
-        await assertBarberAgendaAccess({
+    @Inject(TENANT_PROFESSIONAL_REPOSITORY)
+    private readonly tenantProfessionalRepository: ITenantProfessionalRepository,
+  ) {}
+
+  async run(tenantId: string, tenantProfessionalId: string, workingHoursId: string, userId: string, callerRole?: string): Promise<WorkingHoursEntity> {
+        await assertTenantProfessionalAgendaAccess({
             tenantId,
-            barberProfileId,
+            tenantProfessionalId,
             userId,
             callerRole,
-            barberProfileRepository: this.barberProfileRepository,
-            tenantUserService: this.tenantUserService,
+            tenantProfessionalRepository: this.tenantProfessionalRepository,
         });
-        return ensureWorkingHoursForBarber(this.availabilityRepository, workingHoursId, barberProfileId, tenantId, true);
+        return ensureWorkingHoursForTenantProfessional(this.availabilityRepository, workingHoursId, tenantProfessionalId, tenantId, true);
     }
 }

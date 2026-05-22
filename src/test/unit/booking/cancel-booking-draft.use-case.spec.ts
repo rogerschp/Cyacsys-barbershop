@@ -2,8 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { CancelBookingDraftUseCase } from 'src/modules/booking/use-cases/cancel-booking-draft.use-case';
 import { BOOKING_REPOSITORY } from 'src/modules/booking/interfaces/booking-repository.interface';
-import { BARBER_PROFILE_REPOSITORY } from 'src/modules/barber-profile/interfaces/barber-profile-repository.interface';
-import { TenantUserService } from 'src/modules/tenant-user/tenant-user.service';
+import { TENANT_PROFESSIONAL_REPOSITORY } from 'src/modules/tenant-professional/interfaces/tenant-professional-repository.interface';
 import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
 import { BookingEntity } from 'src/modules/booking/entities/booking.entity';
 import { BookingStatus } from 'src/modules/booking/entities/booking-status.enum';
@@ -12,20 +11,19 @@ import { TenantUserRole } from 'src/modules/tenant-user/entities/tenant-user-rol
 describe('CancelBookingDraftUseCase', () => {
   let useCase: CancelBookingDraftUseCase;
   let bookingRepository: {
-    findByIdForBarber: jest.Mock;
+    findByIdForTenantProfessional: jest.Mock;
     updateStatus: jest.Mock;
   };
-  let barberProfileRepository: { findById: jest.Mock };
-  let tenantUserService: { getByIdAndTenant: jest.Mock };
+  let tenantProfessionalRepository: { findById: jest.Mock };
 
   const tenantId = 'tenant-uuid';
-  const barberProfileId = 'bp-uuid';
+  const tenantProfessionalId = 'tp-uuid';
   const userId = 'user-uuid';
   const bookingId = 'booking-uuid';
   const draftBooking: BookingEntity = {
     id: bookingId,
     tenantId,
-    barberProfileId,
+    tenantProfessionalId,
     serviceId: 'svc',
     startsAt: new Date(Date.now() + 86400000),
     endsAt: new Date(Date.now() + 86400000 + 30 * 60000),
@@ -37,17 +35,14 @@ describe('CancelBookingDraftUseCase', () => {
 
   beforeEach(async () => {
     bookingRepository = {
-      findByIdForBarber: jest.fn().mockResolvedValue(draftBooking),
+      findByIdForTenantProfessional: jest.fn().mockResolvedValue(draftBooking),
       updateStatus: jest.fn().mockResolvedValue({
         ...draftBooking,
         status: BookingStatus.CANCELLED,
       }),
     };
-    barberProfileRepository = {
-      findById: jest.fn().mockResolvedValue({ id: barberProfileId }),
-    };
-    tenantUserService = {
-      getByIdAndTenant: jest.fn(),
+    tenantProfessionalRepository = {
+      findById: jest.fn().mockResolvedValue({ id: tenantProfessionalId }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -55,10 +50,9 @@ describe('CancelBookingDraftUseCase', () => {
         CancelBookingDraftUseCase,
         { provide: BOOKING_REPOSITORY, useValue: bookingRepository },
         {
-          provide: BARBER_PROFILE_REPOSITORY,
-          useValue: barberProfileRepository,
+          provide: TENANT_PROFESSIONAL_REPOSITORY,
+          useValue: tenantProfessionalRepository,
         },
-        { provide: TenantUserService, useValue: tenantUserService },
       ],
     }).compile();
 
@@ -68,7 +62,7 @@ describe('CancelBookingDraftUseCase', () => {
   it('cancela rascunho e retorna CANCELLED', async () => {
     const result = await useCase.run(
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       bookingId,
       userId,
       TenantUserRole.ADMIN,
@@ -77,7 +71,7 @@ describe('CancelBookingDraftUseCase', () => {
     expect(bookingRepository.updateStatus).toHaveBeenCalledWith(
       bookingId,
       tenantId,
-      barberProfileId,
+      tenantProfessionalId,
       BookingStatus.DRAFT,
       BookingStatus.CANCELLED,
     );
@@ -85,11 +79,11 @@ describe('CancelBookingDraftUseCase', () => {
   });
 
   it('lança NotFound quando booking não existe', async () => {
-    bookingRepository.findByIdForBarber.mockResolvedValue(null);
+    bookingRepository.findByIdForTenantProfessional.mockResolvedValue(null);
     await expect(
       useCase.run(
         tenantId,
-        barberProfileId,
+        tenantProfessionalId,
         bookingId,
         userId,
         TenantUserRole.ADMIN,
@@ -99,14 +93,14 @@ describe('CancelBookingDraftUseCase', () => {
   });
 
   it('lança quando não é rascunho', async () => {
-    bookingRepository.findByIdForBarber.mockResolvedValue({
+    bookingRepository.findByIdForTenantProfessional.mockResolvedValue({
       ...draftBooking,
       status: BookingStatus.CONFIRMED,
     });
     await expect(
       useCase.run(
         tenantId,
-        barberProfileId,
+        tenantProfessionalId,
         bookingId,
         userId,
         TenantUserRole.ADMIN,

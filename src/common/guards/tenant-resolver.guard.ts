@@ -6,15 +6,19 @@ import {
   ExecutionContext,
   NotFoundException,
 } from '@nestjs/common';
-import { TenantService } from '../../modules/tenant/tenant.service';
 import { TenantStatus } from '../../modules/tenant/entities/tenant-status.enum';
+import { FindTenantByIdUseCase } from 'src/modules/tenant/use-cases/find-tenant-by-id.use-case';
+import { FindTenantBySlugUseCase } from 'src/modules/tenant/use-cases/find-tenant-by-slug.use-case';
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 @Injectable()
 export class TenantResolverGuard implements CanActivate {
-  constructor(private readonly tenantService: TenantService) {}
+  constructor(
+    private readonly findTenantByIdUseCase: FindTenantByIdUseCase,
+    private readonly findTenantBySlugUseCase: FindTenantBySlugUseCase,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest<any>();
@@ -36,8 +40,8 @@ export class TenantResolverGuard implements CanActivate {
     const isUuid = UUID_REGEX.test(String(identifier).trim());
 
     const tenant = isUuid
-      ? await this.tenantService.findById(String(identifier).trim())
-      : await this.tenantService.findBySlug(
+      ? await this.findTenantByIdUseCase.run(String(identifier).trim())
+      : await this.findTenantBySlugUseCase.run(
           String(identifier).toLowerCase().trim(),
         );
 

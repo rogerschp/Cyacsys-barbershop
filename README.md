@@ -1,6 +1,8 @@
-# Cyacsys Barbershop API
+# Cyacsys API — Beauty & wellness professionals (multi-tenant)
 
-API REST multi-tenant para gestão de barbearias: tenants, membros, serviços, perfis de barbeiro, **disponibilidade/agenda**, **agendamentos (booking)** e autenticação via **Firebase + JWT**. Construída com [NestJS](https://nestjs.com/), [TypeORM](https://typeorm.io/) e PostgreSQL.
+REST API for multi-tenant beauty and wellness businesses: tenants, members, **global professional profiles**, per-establishment links, services, **contextual scheduling**, **bookings**, and **Firebase + JWT** authentication.
+
+Built with [NestJS](https://nestjs.com/), [TypeORM](https://typeorm.io/), and PostgreSQL.
 
 [![Node.js](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![NestJS](https://img.shields.io/badge/NestJS-10-E0234E?logo=nestjs&logoColor=white)](https://nestjs.com/)
@@ -9,230 +11,178 @@ API REST multi-tenant para gestão de barbearias: tenants, membros, serviços, p
 
 ---
 
-## Índice
+## Table of contents
 
-- [Funcionalidades](#funcionalidades)
-- [Documentação detalhada (por módulo)](#documentação-detalhada-por-módulo)
-- [Stack tecnológica](#stack-tecnológica)
-- [Pré-requisitos](#pré-requisitos)
-- [Instalação](#instalação)
-- [Configuração](#configuração)
-- [Docker](#docker)
-- [Executando o projeto](#executando-o-projeto)
-- [Documentação da API (Swagger)](#documentação-da-api-swagger)
-- [Testes](#testes)
-- [Estrutura do projeto](#estrutura-do-projeto)
-- [Scripts disponíveis](#scripts-disponíveis)
-- [Licença](#licença)
+- [Features](#features)
+- [Domain model](#domain-model)
+- [Documentation](#documentation)
+- [Tech stack](#tech-stack)
+- [Setup](#setup)
+- [Migrations](#migrations)
+- [Swagger](#api-documentation-swagger)
+- [Tests](#tests)
+- [Project structure](#project-structure)
+- [Breaking changes](#breaking-changes)
 
 ---
 
-## Funcionalidades
+## Features
 
-| Área | Descrição |
-|------|-----------|
-| **Auth** | Login (Firebase), refresh de token, logout com revogação de refresh tokens |
-| **Multi-tenant** | Barbearias (`tenants`) com slug único, timezone IANA e status operacional |
-| **Membros** | Vínculo usuário ↔ tenant com papéis (OWNER, ADMIN, STAFF, BARBER) |
-| **Usuários** | CRUD de usuários globais e busca por e-mail |
-| **Serviços** | Catálogo por tenant (preço, duração, ativo/inativo) |
-| **Barbeiros** | Perfis ligados a `tenant_user` com role efetiva de BARBER (BARBER ou OWNER); desativação bloqueia novos agendamentos |
-| **Disponibilidade** | Jornada semanal, períodos, folgas, bloqueios, serviços oferecidos, **bootstrap semanal** e **slots disponíveis** |
-| **Booking** | Rascunho → confirmação; antecedência mínima; sem sobreposição por barbeiro |
-| **API docs** | Swagger/OpenAPI em `/api` |
-| **Qualidade** | DTOs com `class-validator`; migrations TypeORM; testes unitários e e2e |
+| Area | Description |
+|------|-------------|
+| **Auth** | Firebase login, refresh, logout |
+| **Multi-tenant** | Establishments with slug, IANA timezone, status |
+| **Members** | User ↔ tenant (OWNER, ADMIN, STAFF, BARBER) |
+| **Users** | Global CRUD; optional `professionalProfile` in responses |
+| **Professional profile** | Global identity (type, `bookingMode`, contacts) |
+| **Tenant professional** | Professional ↔ tenant link |
+| **Services** | Catalog per tenant |
+| **Availability** | Working hours, time off, blocks, offered services, **bootstrap week**, slots (`tenantProfessionalId`) |
+| **Booking** | Draft / confirm driven by `bookingMode` |
+| **API docs** | Swagger/OpenAPI at `/api` |
+| **Quality** | DTOs with `class-validator`; TypeORM migrations; unit and e2e tests |
 
 ---
 
-## Stack tecnológica
+## Domain model
 
-| Tecnologia | Uso |
+```
+User
+ └── ProfessionalProfile (global)
+      └── TenantProfessional (per tenant)
+           ├── Availability
+           └── Booking
+```
+
+- Any user can be a client and a professional; there is **no** `isProfessional` flag.
+- Frontend: `GET /users/me` → treat as professional when `professionalProfile !== null`.
+
+---
+
+## Documentation
+
+| Resource | Path |
+|----------|------|
+| Module index (PT) | [docs/README.md](docs/README.md) |
+| Migration from legacy API | [docs/BREAKING-CHANGES.md](docs/BREAKING-CHANGES.md) |
+| Refactor overview | [docs/refactor-professional-profile.md](docs/refactor-professional-profile.md) |
+| RBAC | [docs/RBAC.md](docs/RBAC.md) |
+| Scope / hardening | [docs/HARDENING.md](docs/HARDENING.md) |
+
+---
+
+## Tech stack
+
+| Technology | Use |
 |------------|-----|
-| NestJS | Framework HTTP, módulos, guards, pipes |
-| TypeScript | Linguagem |
-| TypeORM | ORM, entidades, migrations PostgreSQL |
-| Passport JWT | Estratégia Bearer |
-| Firebase Admin | Autenticação e tokens |
-| Swagger | OpenAPI UI |
-| Jest + Supertest | Testes unitários e e2e |
-| Luxon | Datas/agenda com timezone do tenant |
+| NestJS | HTTP, modules, guards |
+| TypeORM | ORM, PostgreSQL migrations |
+| Firebase Admin | Authentication |
+| Swagger | OpenAPI at `/api` |
+| Jest + Supertest | Tests |
+| Luxon | Tenant timezone handling |
 
 ---
 
-## Pré-requisitos
-
-- [Node.js](https://nodejs.org/) 20+ (o repositório também usa imagens Node 22/24 no Docker)
-- [Yarn](https://yarnpkg.com/) classic (v1) — **use Yarn** para scripts e dependências
-- [PostgreSQL](https://www.postgresql.org/) 16+ (compatível com 15+)
-- Projeto [Firebase](https://firebase.google.com/) configurado (Auth + service account)
-
----
-
-## Instalação
+## Setup
 
 ```bash
-# Clone o repositório (se ainda não tiver)
-git clone <url-do-repositorio>
+git clone <repository-url>
 cd cyacsys-barbershop
 yarn install
-```
-
----
-
-## Configuração
-
-1. Copie o arquivo de exemplo:
-
-```bash
 cp .envExample .env
-```
-
-2. Preencha o `.env` (principais variáveis):
-
-| Variável | Descrição |
-|----------|-----------|
-| `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_DATABASE` | Conexão PostgreSQL |
-| `PORT` | Porta HTTP da API (padrão `3000`) |
-| `NODE_ENV` | `development`, `production` ou `test` |
-| `FIREBASE_PROJECT_ID`, `API_KEY`, `FIREBASE_SERVICE_ACCOUNT_BASE64` | Firebase Admin / Auth |
-
----
-
-## Docker
-
-Subir API + PostgreSQL (desenvolvimento):
-
-```bash
-docker compose up
-```
-
-A API usa `Dockerfile.dev`; variáveis vêm do `.env` montado no container.
-
----
-
-## Executando o projeto
-
-### Desenvolvimento (watch)
-
-```bash
+# Set DB_* and FIREBASE_*
+yarn migration:run
 yarn start:dev
 ```
 
-Base URL: `http://localhost:3000` (ou `PORT` do `.env`).
+---
 
-### Produção
-
-```bash
-yarn build
-yarn start:prod
-```
-
-### Migrations
+## Migrations
 
 ```bash
 yarn migration:run
 ```
 
-Gerar nova migration (após alterar entidades):
+Professional-profile refactor order: see [docs/refactor-professional-profile.md](docs/refactor-professional-profile.md).
 
-```bash
-yarn migration:generate src/database/migrations/NomeDescritivo
-```
+| Order | Migration | Purpose |
+|-------|-----------|---------|
+| 1 | `1779000000000` | `professional_profiles` |
+| 2 | `1779100000000` | `tenant_professionals` + backfill from `barber_profiles` |
+| 3 | `1779200000000` | Availability → `tenant_professional_id` |
+| 4 | `1779300000000` | Booking → `tenant_professional_id` |
+| 5 | `1779400000000` | Drop `barber_profiles` |
 
----
-
-## Documentação da API (Swagger)
-
-Com a aplicação rodando:
-
-- **Swagger UI:** [http://localhost:3000/api](http://localhost:3000/api)
-
-Autenticação: **Authorize** → Bearer JWT. Endpoints escopados por `tenantId` exigem que o usuário seja membro ativo do tenant (e papel adequado quando houver `@TenantRoles`).
-
-### Regras de acesso atuais (resumo)
-
-- Pipeline de segurança em rotas de tenant: `BearerAuthGuard` -> `TenantResolverGuard` -> `TenantMembershipGuard` -> `TenantRolesGuard`.
-- `TenantRolesGuard` usa **roles efetivas**:
-  - `OWNER` satisfaz `OWNER`, `ADMIN`, `STAFF` e `BARBER`;
-  - `ADMIN` satisfaz `ADMIN` e `STAFF`;
-  - `STAFF` satisfaz `STAFF`;
-  - `BARBER` satisfaz `BARBER`.
-- Consequência prática: owner pode operar fluxos de barbeiro sem criar usuário duplicado.
+If `AvailabilityUseTenantProfessional` fails on a missing `FK_working_hours_barber_profile`, pull the latest code (FK drop is resolved dynamically) and run `migration:run` again. Migrations `177900` and `177910` are not re-run.
 
 ---
 
-## Testes
+## API documentation (Swagger)
+
+[http://localhost:3000/api](http://localhost:3000/api) — Bearer JWT. Tenant-scoped routes require active membership.
+
+### Access rules (summary)
+
+- Tenant routes: `BearerAuthGuard` → `TenantResolverGuard` (or `TenantInterceptor`) → `TenantMembershipGuard` → `TenantRolesGuard`.
+- Effective roles: OWNER satisfies OWNER/ADMIN/STAFF/BARBER; ADMIN satisfies ADMIN/STAFF; STAFF satisfies STAFF; BARBER satisfies BARBER.
+- BARBER manages only their own `tenantProfessionalId` on availability/booking (see [docs/RBAC.md](docs/RBAC.md)).
+
+---
+
+## Tests
 
 ```bash
-yarn test              # unitários (jest.config.ts)
-yarn test:watch
+yarn test              # unit
+yarn test:e2e          # e2e
 yarn test:cov
-yarn test:e2e          # e2e (jest-e2e.json)
 ```
 
-Threshold global de coverage: **>= 80%** (statements, branches, functions e lines).
-
-Exemplo de escopo:
+Global coverage threshold in CI: **≥ 80%** (statements, branches, functions, lines).
 
 ```bash
-yarn jest src/test/unit/booking --config jest.config.ts
-yarn test:e2e --testPathPattern=booking
+npx jest --config jest.config.ts --testPathPattern="professional-profile|tenant-professional"
+npx jest --config jest-e2e.json --testPathPattern="booking|availability"
 ```
 
 ---
 
-## Estrutura do projeto
+## Project structure
 
 ```
 src/
-├── common/            # Guards, decorators, DTOs paginação, exceções
-├── config/            # TypeORM, etc.
+├── common/
+├── config/
 ├── database/migrations/
 ├── modules/
 │   ├── auth/
 │   ├── availability/
-│   ├── barber-profile/
 │   ├── booking/
+│   ├── professional-profile/
+│   ├── tenant-professional/
 │   ├── firebase/
 │   ├── service/
 │   ├── tenant/
 │   ├── tenant-user/
 │   └── user/
-├── repository/        # Repositórios TypeORM (por agregado)
-├── test/              # e2e (*.e2e-spec.ts)
-├── test/unit/         # testes unitários por pasta
-├── app.module.ts
-└── main.ts
-docs/                    # Documentação por módulo (Markdown)
+├── repository/
+├── test/              # *.e2e-spec.ts
+└── test/unit/
+docs/                  # Per-module documentation
 ```
 
-### Novidades recentes
+### Bootstrap week (availability)
 
-- `POST /tenants/:tenantId/barber-profiles/:barberProfileId/working-hours/bootstrap-week`
-  - Configura a semana inteira do barbeiro informando apenas `closedDays` e `periods`.
-  - `overwriteExisting` (default `true`) decide se sobrescreve agenda já cadastrada.
+`POST /tenants/:tenantId/tenant-professionals/:tenantProfessionalId/working-hours/bootstrap-week` — configure the full week with `closedDays` and `periods`; `overwriteExisting` defaults to `true`.
 
 ---
 
-## Scripts disponíveis
+## Breaking changes
 
-| Script | Descrição |
-|--------|-----------|
-| `yarn start` | Inicia a aplicação |
-| `yarn start:dev` | Desenvolvimento com reload |
-| `yarn start:debug` | Debug |
-| `yarn start:prod` | Produção (`node dist/main`) |
-| `yarn build` | Compila para `dist/` |
-| `yarn lint` | ESLint |
-| `yarn format` | Prettier |
-| `yarn test` | Testes unitários |
-| `yarn test:e2e` | Testes e2e |
-| `yarn test:cov` | Cobertura |
-| `yarn migration:run` | Aplica migrations |
-| `yarn migration:generate` | Gera migration a partir do diff do schema |
+`/tenants/:id/barber-profiles` routes were **removed**. See [docs/BREAKING-CHANGES.md](docs/BREAKING-CHANGES.md).
 
 ---
 
-## Licença
+## License
 
-Projeto proprietário — Cyacsys. Todos os direitos reservados.
+Proprietary — Cyacsys. All rights reserved.

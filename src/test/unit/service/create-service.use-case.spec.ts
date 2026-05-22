@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { CreateServiceUseCase } from 'src/modules/service/use-cases/create-service.use-case';
 import { SERVICE_REPOSITORY } from 'src/modules/service/interfaces/service-repository.interface';
-import { TenantService } from 'src/modules/tenant/tenant.service';
+import { FindTenantByIdUseCase } from 'src/modules/tenant/use-cases/find-tenant-by-id.use-case';
 import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
 import { ServiceEntity } from 'src/modules/service/entities/service.entity';
 import { CreateServiceDto } from 'src/modules/service/dto/create-service.dto';
@@ -12,8 +12,8 @@ describe('CreateServiceUseCase', () => {
         create: jest.Mock;
         findNonDeletedByName: jest.Mock;
     };
-    let tenantService: {
-        findById: jest.Mock;
+    let findTenantByIdUseCase: {
+        run: jest.Mock;
     };
     const tenantId = 'tenant-uuid';
     const createdBy = 'user-uuid';
@@ -40,14 +40,14 @@ describe('CreateServiceUseCase', () => {
             create: jest.fn().mockResolvedValue(mockService),
             findNonDeletedByName: jest.fn().mockResolvedValue(null),
         };
-        tenantService = {
-            findById: jest.fn().mockResolvedValue({ id: tenantId }),
+        findTenantByIdUseCase = {
+            run: jest.fn().mockResolvedValue({ id: tenantId }),
         };
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 CreateServiceUseCase,
                 { provide: SERVICE_REPOSITORY, useValue: serviceRepository },
-                { provide: TenantService, useValue: tenantService },
+                { provide: FindTenantByIdUseCase, useValue: findTenantByIdUseCase },
             ],
         }).compile();
         useCase = module.get<CreateServiceUseCase>(CreateServiceUseCase);
@@ -58,7 +58,7 @@ describe('CreateServiceUseCase', () => {
     describe('run', () => {
         it('deve criar serviço quando tenant existe e nome é único', async () => {
             const result = await useCase.run(tenantId, validDto, createdBy);
-            expect(tenantService.findById).toHaveBeenCalledWith(tenantId);
+            expect(findTenantByIdUseCase.run).toHaveBeenCalledWith(tenantId);
             expect(serviceRepository.findNonDeletedByName).toHaveBeenCalledWith(tenantId, 'Corte masculino');
             expect(serviceRepository.create).toHaveBeenCalledWith({
                 tenantId,
@@ -70,7 +70,9 @@ describe('CreateServiceUseCase', () => {
             expect(result).toEqual(mockService);
         });
         it('deve lançar NotFoundException quando tenant não existe', async () => {
-            tenantService.findById.mockResolvedValue(null);
+            findTenantByIdUseCase.run.mockRejectedValue(
+                new NotFoundException('Tenant not found!'),
+            );
             await expect(useCase.run(tenantId, validDto, createdBy)).rejects.toThrow(NotFoundException);
             expect(serviceRepository.create).not.toHaveBeenCalled();
         });
