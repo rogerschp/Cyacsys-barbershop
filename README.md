@@ -37,8 +37,10 @@ Built with [NestJS](https://nestjs.com/), [TypeORM](https://typeorm.io/), and Po
 | **Professional profile** | Global identity (type, `bookingMode`, contacts) |
 | **Tenant professional** | Professional ↔ tenant link |
 | **Services** | Catalog per tenant |
-| **Availability** | Working hours, time off, blocks, slots (`tenantProfessionalId`) |
+| **Availability** | Working hours, time off, blocks, offered services, **bootstrap week**, slots (`tenantProfessionalId`) |
 | **Booking** | Draft / confirm driven by `bookingMode` |
+| **API docs** | Swagger/OpenAPI at `/api` |
+| **Quality** | DTOs with `class-validator`; TypeORM migrations; unit and e2e tests |
 
 ---
 
@@ -61,7 +63,7 @@ User
 
 | Resource | Path |
 |----------|------|
-| Module index | [docs/README.md](docs/README.md) |
+| Module index (PT) | [docs/README.md](docs/README.md) |
 | Migration from legacy API | [docs/BREAKING-CHANGES.md](docs/BREAKING-CHANGES.md) |
 | Refactor overview | [docs/refactor-professional-profile.md](docs/refactor-professional-profile.md) |
 | RBAC | [docs/RBAC.md](docs/RBAC.md) |
@@ -120,6 +122,12 @@ If `AvailabilityUseTenantProfessional` fails on a missing `FK_working_hours_barb
 
 [http://localhost:3000/api](http://localhost:3000/api) — Bearer JWT. Tenant-scoped routes require active membership.
 
+### Access rules (summary)
+
+- Tenant routes: `BearerAuthGuard` → `TenantResolverGuard` (or `TenantInterceptor`) → `TenantMembershipGuard` → `TenantRolesGuard`.
+- Effective roles: OWNER satisfies OWNER/ADMIN/STAFF/BARBER; ADMIN satisfies ADMIN/STAFF; STAFF satisfies STAFF; BARBER satisfies BARBER.
+- BARBER manages only their own `tenantProfessionalId` on availability/booking (see [docs/RBAC.md](docs/RBAC.md)).
+
 ---
 
 ## Tests
@@ -130,7 +138,7 @@ yarn test:e2e          # e2e
 yarn test:cov
 ```
 
-Examples:
+Global coverage threshold in CI: **≥ 80%** (statements, branches, functions, lines).
 
 ```bash
 npx jest --config jest.config.ts --testPathPattern="professional-profile|tenant-professional"
@@ -162,6 +170,10 @@ src/
 └── test/unit/
 docs/                  # Per-module documentation
 ```
+
+### Bootstrap week (availability)
+
+`POST /tenants/:tenantId/tenant-professionals/:tenantProfessionalId/working-hours/bootstrap-week` — configure the full week with `closedDays` and `periods`; `overwriteExisting` defaults to `true`.
 
 ---
 
