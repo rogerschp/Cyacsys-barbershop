@@ -20,6 +20,9 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Role } from '../../common/enums/role.enum';
+import { UserRoles } from '../../common/decorators/user-roles.decorator';
+import { UserRolesGuard } from '../../common/guards/user-roles.guard';
 import { BearerAuthGuard } from '../auth/guards/bearer-auth.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -31,6 +34,8 @@ import { UpdateUserUseCase } from './use-cases/update-user.use-case';
 import { DeleteUserUseCase } from './use-cases/delete-user.use-case';
 @ApiTags('users')
 @Controller('users')
+@UseGuards(BearerAuthGuard, UserRolesGuard)
+@ApiBearerAuth('bearer')
 export class UserController {
   constructor(
     private readonly createUserUseCase: CreateUserUseCase,
@@ -40,6 +45,7 @@ export class UserController {
     private readonly deleteUserUseCase: DeleteUserUseCase,
   ) {}
   @Get('by-email')
+  @UserRoles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiOperation({ summary: 'Busca usuário por e-mail' })
   @ApiQuery({ name: 'email', required: true, description: 'E-mail do usuário' })
   @ApiResponse({
@@ -58,8 +64,6 @@ export class UserController {
   }
 
   @Get('me')
-  @UseGuards(BearerAuthGuard)
-  @ApiBearerAuth('bearer')
   @ApiOperation({
     summary:
       'Retorna o usuário autenticado (inclui professionalProfile quando existir)',
@@ -88,6 +92,7 @@ export class UserController {
   }
 
   @Post()
+  @UserRoles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiOperation({
     summary: 'Cria um novo usuário (banco primeiro, depois sync Firebase)',
   })
@@ -106,6 +111,7 @@ export class UserController {
     return await this.createUserUseCase.run(dto);
   }
   @Get(':id')
+  @UserRoles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiOperation({ summary: 'Busca usuário por ID' })
   @ApiParam({ name: 'id', description: 'UUID do usuário' })
   @ApiResponse({
@@ -121,6 +127,7 @@ export class UserController {
     return await this.findUserByIdUseCase.run(id);
   }
   @Patch(':id')
+  @UserRoles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiOperation({
     summary: 'Atualiza usuário (alterações sincronizadas no Firebase)',
   })
@@ -141,6 +148,7 @@ export class UserController {
     return await this.updateUserUseCase.run(id, dto);
   }
   @Delete(':id')
+  @UserRoles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiOperation({
     summary: 'Remove usuário (soft delete + desabilita no Firebase)',
   })
