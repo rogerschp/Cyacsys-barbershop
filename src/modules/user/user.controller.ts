@@ -10,7 +10,6 @@ import {
   Query,
   Req,
   UseGuards,
-  ParseEnumPipe,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -35,9 +34,6 @@ import { FindUserByIdUseCase } from './use-cases/find-user-by-id.use-case';
 import { UpdateUserUseCase } from './use-cases/update-user.use-case';
 import { DeleteUserUseCase } from './use-cases/delete-user.use-case';
 import { RequestUser } from '../auth/strategies/bearer-token.strategy';
-import { ListMyBookingsUseCase } from '../booking/use-cases/list-my-bookings.use-case';
-import { MyBookingResponseDto } from '../booking/dto/my-booking-response.dto';
-import { BookingStatus } from '../booking/entities/booking-status.enum';
 
 @ApiTags('users')
 @Controller('users')
@@ -48,7 +44,6 @@ export class UserController {
     private readonly findUserByIdUseCase: FindUserByIdUseCase,
     private readonly updateUserUseCase: UpdateUserUseCase,
     private readonly deleteUserUseCase: DeleteUserUseCase,
-    private readonly listMyBookingsUseCase: ListMyBookingsUseCase,
   ) {}
 
   @Post()
@@ -138,41 +133,6 @@ export class UserController {
       throw new NotFoundException('User not found');
     }
     return this.updateUserUseCase.run(userId, dto);
-  }
-
-  @Get('me/bookings')
-  @UseGuards(BearerAuthGuard)
-  @ApiBearerAuth('bearer')
-  @ApiOperation({
-    summary: 'Lista agendamentos do usuário autenticado',
-    description:
-      'Retorna estabelecimento (nome, telefone, endereço), profissional, serviço, data e horário no fuso do tenant.',
-  })
-  @ApiQuery({
-    name: 'status',
-    required: false,
-    enum: BookingStatus,
-    description: 'Filtrar por status (DRAFT, CONFIRMED, CANCELLED)',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Agendamentos do usuário',
-    type: [MyBookingResponseDto],
-  })
-  @ApiResponse({ status: 401, description: 'Token ausente ou inválido' })
-  async listMyBookings(
-    @Req() req: { user?: RequestUser },
-    @Query(
-      'status',
-      new ParseEnumPipe(BookingStatus, { optional: true }),
-    )
-    status?: BookingStatus,
-  ) {
-    const userId = req.user?.dbUser?.id;
-    if (!userId) {
-      throw new NotFoundException('User not found');
-    }
-    return this.listMyBookingsUseCase.run(userId, status);
   }
 
   @Get(':id')

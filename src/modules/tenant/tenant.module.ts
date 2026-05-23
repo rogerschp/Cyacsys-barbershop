@@ -17,7 +17,7 @@ import { CreateTenantUseCase } from './use-cases/create-tenant.use-case';
 @Module({
   imports: [
     TypeOrmModule.forFeature([TenantEntity]),
-    AuthModule,
+    forwardRef(() => AuthModule),
     AddressModule,
     forwardRef(() => TenantUserModule),
   ],

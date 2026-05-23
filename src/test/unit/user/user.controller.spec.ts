@@ -12,9 +12,6 @@ import { Role } from 'src/common/enums/role.enum';
 import { ConflictException } from '@nestjs/common';
 import { BearerAuthGuard } from 'src/modules/auth/guards/bearer-auth.guard';
 import { UserRolesGuard } from 'src/common/guards/user-roles.guard';
-import { ListMyBookingsUseCase } from 'src/modules/booking/use-cases/list-my-bookings.use-case';
-import { BookingStatus } from 'src/modules/booking/entities/booking-status.enum';
-
 describe('UserController (HTTP)', () => {
   let app: INestApplication;
   let adminApp: INestApplication;
@@ -26,7 +23,6 @@ describe('UserController (HTTP)', () => {
     createUserUseCase: { run: jest.fn() },
     updateUserUseCase: { run: jest.fn() },
     deleteUserUseCase: { run: jest.fn() },
-    listMyBookingsUseCase: { run: jest.fn() },
   };
 
   const mockUserResponse = {
@@ -63,10 +59,6 @@ describe('UserController (HTTP)', () => {
       { provide: CreateUserUseCase, useValue: useCases.createUserUseCase },
       { provide: UpdateUserUseCase, useValue: useCases.updateUserUseCase },
       { provide: DeleteUserUseCase, useValue: useCases.deleteUserUseCase },
-      {
-        provide: ListMyBookingsUseCase,
-        useValue: useCases.listMyBookingsUseCase,
-      },
     ];
 
     const publicModule = await Test.createTestingModule({
@@ -204,54 +196,6 @@ describe('UserController (HTTP)', () => {
           });
           expect(useCases.findUserByIdUseCase.run).toHaveBeenCalledWith(
             'uuid-123',
-          );
-        });
-    });
-  });
-
-  describe('GET /users/me/bookings', () => {
-    it('deve retornar 200 com agendamentos do usuario', () => {
-      const bookings = [
-        {
-          id: 'booking-1',
-          status: BookingStatus.CONFIRMED,
-          tenant: {
-            id: 'tenant-1',
-            name: 'Barbearia do Vitinho',
-            slug: 'barbearia-do-vitinho',
-            telephone: '5511992834085',
-            timezone: 'America/Sao_Paulo',
-            address: null,
-          },
-          professional: {
-            tenantProfessionalId: 'tp-1',
-            displayName: 'João Pro',
-          },
-          service: {
-            id: 'svc-1',
-            name: 'Corte',
-            durationInMinutes: 30,
-          },
-          date: '2026-04-06',
-          startTime: '14:00',
-          endTime: '14:30',
-          startsAt: '2026-04-06T17:00:00.000Z',
-          endsAt: '2026-04-06T17:30:00.000Z',
-        },
-      ];
-      useCases.listMyBookingsUseCase.run.mockResolvedValue(bookings);
-
-      return request(meApp.getHttpServer())
-        .get('/users/me/bookings')
-        .expect(200)
-        .expect((res) => {
-          expect(res.body).toHaveLength(1);
-          expect(res.body[0].tenant.name).toBe('Barbearia do Vitinho');
-          expect(res.body[0].date).toBe('2026-04-06');
-          expect(res.body[0].startTime).toBe('14:00');
-          expect(useCases.listMyBookingsUseCase.run).toHaveBeenCalledWith(
-            'uuid-123',
-            undefined,
           );
         });
     });
