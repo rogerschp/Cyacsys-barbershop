@@ -22,7 +22,7 @@ describe('FirebaseTokenVerifier', () => {
     const decoded = { uid: 'u1', email: 'a@b.com' };
     verifyIdToken.mockResolvedValue(decoded);
     await expect(verifier.verifyIdToken('tok')).resolves.toEqual(decoded);
-    expect(verifyIdToken).toHaveBeenCalledWith('tok');
+    expect(verifyIdToken).toHaveBeenCalledWith('tok', true);
   });
 
   it('lança UnauthorizedException quando Firebase falha', async () => {
