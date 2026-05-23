@@ -1,3 +1,3 @@
 export interface ITenant extends Request {
-    tenantId: string;
+  tenantId: string;
 }

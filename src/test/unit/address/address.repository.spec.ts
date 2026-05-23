@@ -26,9 +26,9 @@ describe('AddressRepository', () => {
     }).compile();
 
     repository = module.get(AddressRepository);
-    typeOrmRepo = module.get(
-      getRepositoryToken(AddressEntity),
-    ) as jest.Mocked<Repository<AddressEntity>>;
+    typeOrmRepo = module.get(getRepositoryToken(AddressEntity)) as jest.Mocked<
+      Repository<AddressEntity>
+    >;
   });
 
   it('create persiste endereço', async () => {

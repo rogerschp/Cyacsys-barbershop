@@ -54,7 +54,9 @@ describe('ProfessionalProfileController (HTTP)', () => {
     })
       .overrideGuard(BearerAuthGuard)
       .useValue({
-        canActivate: (context: { switchToHttp: () => { getRequest: () => object } }) => {
+        canActivate: (context: {
+          switchToHttp: () => { getRequest: () => object };
+        }) => {
           const req = context.switchToHttp().getRequest() as {
             user?: { dbUser: { id: string } };
           };
@@ -111,7 +113,10 @@ describe('ProfessionalProfileController (HTTP)', () => {
     });
     const res = await request(app.getHttpServer())
       .patch('/users/me/professional-profile')
-      .send({ displayName: 'Atualizado', bookingMode: BookingMode.WHATSAPP_ONLY })
+      .send({
+        displayName: 'Atualizado',
+        bookingMode: BookingMode.WHATSAPP_ONLY,
+      })
       .expect(200);
     expect(res.body.displayName).toBe('Atualizado');
     expect(updateUseCase.run).toHaveBeenCalledWith('user-uuid-123', {

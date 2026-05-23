@@ -170,17 +170,16 @@ export class TenantProfessionalController {
     status: 200,
     type: TenantProfessionalResponseDto,
   })
-  async getOne(
-    @Param('tenantId') tenantId: string,
-    @Param('id') id: string,
-  ) {
+  async getOne(@Param('tenantId') tenantId: string, @Param('id') id: string) {
     const entity = await this.getTenantProfessionalUseCase.run(tenantId, id);
     return TenantProfessionalMapper.toResponse(entity);
   }
 
   @Patch(':id/status')
   @TenantRoles(TenantUserRole.OWNER, TenantUserRole.ADMIN)
-  @ApiOperation({ summary: 'Atualiza status do vínculo profissional no tenant' })
+  @ApiOperation({
+    summary: 'Atualiza status do vínculo profissional no tenant',
+  })
   @ApiParam({ name: 'tenantId', description: 'UUID do tenant' })
   @ApiParam({ name: 'id', description: 'UUID do tenant_professional' })
   @ApiBody({ type: UpdateTenantProfessionalStatusDto })

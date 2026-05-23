@@ -60,15 +60,27 @@ describe('TenantProfessionalController (e2e)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [TenantProfessionalController],
       providers: [
-        { provide: LinkProfessionalToTenantUseCase, useValue: { run: jest.fn() } },
-        { provide: LinkMyProfessionalToTenantUseCase, useValue: { run: jest.fn() } },
-        { provide: ListTenantProfessionalsUseCase, useValue: { run: jest.fn() } },
+        {
+          provide: LinkProfessionalToTenantUseCase,
+          useValue: { run: jest.fn() },
+        },
+        {
+          provide: LinkMyProfessionalToTenantUseCase,
+          useValue: { run: jest.fn() },
+        },
+        {
+          provide: ListTenantProfessionalsUseCase,
+          useValue: { run: jest.fn() },
+        },
         { provide: GetTenantProfessionalUseCase, useValue: { run: jest.fn() } },
         {
           provide: UpdateTenantProfessionalStatusUseCase,
           useValue: { run: jest.fn() },
         },
-        { provide: LeaveTenantProfessionalUseCase, useValue: { run: jest.fn() } },
+        {
+          provide: LeaveTenantProfessionalUseCase,
+          useValue: { run: jest.fn() },
+        },
       ],
     })
       .overrideGuard(BearerAuthGuard)

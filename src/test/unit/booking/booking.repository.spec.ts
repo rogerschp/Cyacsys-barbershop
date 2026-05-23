@@ -52,8 +52,9 @@ describe('BookingRepository', () => {
     };
 
     dataSource = {
-      transaction: jest.fn(async (cb: (m: typeof mockManager) => Promise<unknown>) =>
-        cb(mockManager),
+      transaction: jest.fn(
+        async (cb: (m: typeof mockManager) => Promise<unknown>) =>
+          cb(mockManager),
       ),
     };
 
@@ -64,7 +65,10 @@ describe('BookingRepository', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BookingRepository,
-        { provide: getRepositoryToken(BookingEntity), useValue: rootBookingRepo },
+        {
+          provide: getRepositoryToken(BookingEntity),
+          useValue: rootBookingRepo,
+        },
         { provide: getDataSourceToken(), useValue: dataSource },
       ],
     }).compile();

@@ -57,15 +57,27 @@ describe('TenantProfessionalController (HTTP)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [TenantProfessionalController],
       providers: [
-        { provide: LinkProfessionalToTenantUseCase, useValue: { run: jest.fn() } },
-        { provide: LinkMyProfessionalToTenantUseCase, useValue: { run: jest.fn() } },
-        { provide: ListTenantProfessionalsUseCase, useValue: { run: jest.fn() } },
+        {
+          provide: LinkProfessionalToTenantUseCase,
+          useValue: { run: jest.fn() },
+        },
+        {
+          provide: LinkMyProfessionalToTenantUseCase,
+          useValue: { run: jest.fn() },
+        },
+        {
+          provide: ListTenantProfessionalsUseCase,
+          useValue: { run: jest.fn() },
+        },
         { provide: GetTenantProfessionalUseCase, useValue: { run: jest.fn() } },
         {
           provide: UpdateTenantProfessionalStatusUseCase,
           useValue: { run: jest.fn() },
         },
-        { provide: LeaveTenantProfessionalUseCase, useValue: { run: jest.fn() } },
+        {
+          provide: LeaveTenantProfessionalUseCase,
+          useValue: { run: jest.fn() },
+        },
       ],
     })
       .overrideGuard(BearerAuthGuard)
@@ -96,7 +108,9 @@ describe('TenantProfessionalController (HTTP)', () => {
     linkUseCase = moduleFixture.get(LinkProfessionalToTenantUseCase);
     linkMineUseCase = moduleFixture.get(LinkMyProfessionalToTenantUseCase);
     getUseCase = moduleFixture.get(GetTenantProfessionalUseCase);
-    updateStatusUseCase = moduleFixture.get(UpdateTenantProfessionalStatusUseCase);
+    updateStatusUseCase = moduleFixture.get(
+      UpdateTenantProfessionalStatusUseCase,
+    );
     leaveUseCase = moduleFixture.get(LeaveTenantProfessionalUseCase);
   });
 
@@ -122,7 +136,9 @@ describe('TenantProfessionalController (HTTP)', () => {
       .get(`/tenants/${tenantId}/tenant-professionals`)
       .query({ activeOnly: 'true' })
       .expect(200);
-    expect(listUseCase.run).toHaveBeenCalledWith(tenantId, { activeOnly: true });
+    expect(listUseCase.run).toHaveBeenCalledWith(tenantId, {
+      activeOnly: true,
+    });
   });
 
   it('POST /tenants/:tenantId/tenant-professionals/me', async () => {
@@ -138,7 +154,10 @@ describe('TenantProfessionalController (HTTP)', () => {
     linkUseCase.run.mockResolvedValue(mockLink as never);
     const res = await request(app.getHttpServer())
       .post(`/tenants/${tenantId}/tenant-professionals`)
-      .send({ professionalProfileId: 'profile-uuid', role: TenantUserRole.BARBER })
+      .send({
+        professionalProfileId: 'profile-uuid',
+        role: TenantUserRole.BARBER,
+      })
       .expect(201);
     expect(res.body.id).toBe('tp-uuid');
     expect(linkUseCase.run).toHaveBeenCalledWith(

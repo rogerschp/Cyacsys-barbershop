@@ -67,7 +67,9 @@ describe('UpdateProfessionalProfileUseCase', () => {
   });
 
   it('lança NotFoundException quando não há perfil', async () => {
-    professionalProfileRepository.findByUserIdNonDeleted.mockResolvedValue(null);
+    professionalProfileRepository.findByUserIdNonDeleted.mockResolvedValue(
+      null,
+    );
     await expect(useCase.run(userId, { displayName: 'X' })).rejects.toThrow(
       NotFoundException,
     );

@@ -4,7 +4,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsPhoneNumber,
   IsObject,
   Matches,
   ValidateNested,
@@ -27,10 +26,14 @@ export class CreateTenantDto {
 
   @ApiProperty({
     example: '5511992834085',
-    description: 'Telefone com DDI e DDD (formato E.164)',
+    description: 'Telefone com DDI e DDD (somente dígitos, 10–15 caracteres)',
   })
+  @IsString()
   @IsNotEmpty()
-  @IsPhoneNumber() // Valida automaticamente formatos internacionais
+  @Matches(/^\+?\d{10,15}$/, {
+    message:
+      'Telephone must contain 10 to 15 digits with country code, e.g. 5511992834085',
+  })
   telephone: string;
 
   @ApiPropertyOptional({

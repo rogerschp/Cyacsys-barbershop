@@ -69,7 +69,12 @@ export class ProfessionalProfileEntity {
   @ApiProperty({ enum: BookingMode, default: BookingMode.DIRECT_BOOKING })
   bookingMode: BookingMode;
 
-  @Column({ name: 'whatsapp_number', type: 'varchar', length: 20, nullable: true })
+  @Column({
+    name: 'whatsapp_number',
+    type: 'varchar',
+    length: 20,
+    nullable: true,
+  })
   @ApiProperty({
     nullable: true,
     example: '5511999999999',

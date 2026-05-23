@@ -234,7 +234,9 @@ describe('TenantController (HTTP)', () => {
   describe('DELETE /tenants/:id', () => {
     it('deve retornar 200 ao remover o tenant', async () => {
       deleteTenantByIdUseCase.run.mockResolvedValue({ affected: 1 } as any);
-      await request(app.getHttpServer()).delete('/tenants/uuid-123').expect(200);
+      await request(app.getHttpServer())
+        .delete('/tenants/uuid-123')
+        .expect(200);
       expect(deleteTenantByIdUseCase.run).toHaveBeenCalledWith('uuid-123');
     });
     it('deve retornar 404 quando o id não existe', () => {

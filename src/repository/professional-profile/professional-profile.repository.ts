@@ -10,9 +10,7 @@ import {
 } from '../../modules/professional-profile/interfaces/professional-profile-repository.interface';
 
 @Injectable()
-export class ProfessionalProfileRepository
-  implements IProfessionalProfileRepository
-{
+export class ProfessionalProfileRepository implements IProfessionalProfileRepository {
   constructor(
     @InjectRepository(ProfessionalProfileEntity)
     private readonly repo: Repository<ProfessionalProfileEntity>,

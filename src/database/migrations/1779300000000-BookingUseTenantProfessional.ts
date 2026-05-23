@@ -1,9 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { dropForeignKeyOnColumn } from './helpers/drop-fk-on-column';
 
-export class BookingUseTenantProfessional1779300000000
-  implements MigrationInterface
-{
+export class BookingUseTenantProfessional1779300000000 implements MigrationInterface {
   name = 'BookingUseTenantProfessional1779300000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

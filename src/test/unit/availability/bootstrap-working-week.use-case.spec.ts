@@ -24,15 +24,13 @@ describe('BootstrapWorkingWeekUseCase', () => {
       findWorkingHoursByProfessionalAndDay: jest
         .fn()
         .mockImplementation(() => Promise.resolve(null)),
-      createWorkingHours: jest
-        .fn()
-        .mockImplementation((data: any) =>
-          Promise.resolve({
-            id: `wh-${data.dayOfWeek}`,
-            dayOfWeek: data.dayOfWeek,
-            isActive: data.isActive,
-          }),
-        ),
+      createWorkingHours: jest.fn().mockImplementation((data: any) =>
+        Promise.resolve({
+          id: `wh-${data.dayOfWeek}`,
+          dayOfWeek: data.dayOfWeek,
+          isActive: data.isActive,
+        }),
+      ),
       createWorkingHoursPeriod: jest
         .fn()
         .mockImplementation(() => Promise.resolve({})),
@@ -50,7 +48,9 @@ describe('BootstrapWorkingWeekUseCase', () => {
     tenantProfessionalRepository = {
       findById: jest
         .fn()
-        .mockImplementation(() => Promise.resolve({ id: tenantProfessionalId })),
+        .mockImplementation(() =>
+          Promise.resolve({ id: tenantProfessionalId }),
+        ),
     };
 
     findTenantUserByIdAndTenantUseCase = {
@@ -94,9 +94,9 @@ describe('BootstrapWorkingWeekUseCase', () => {
         isActive: false,
       }),
     );
-    expect(availabilityRepository.createWorkingHoursPeriod).toHaveBeenCalledTimes(
-      6,
-    );
+    expect(
+      availabilityRepository.createWorkingHoursPeriod,
+    ).toHaveBeenCalledTimes(6);
     expect(result).toEqual({ created: 7, updated: 0, skipped: 0 });
   });
 
