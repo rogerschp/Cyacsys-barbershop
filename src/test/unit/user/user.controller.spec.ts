@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { INestApplication, NotFoundException } from '@nestjs/common';
 import request = require('supertest');
 import { UserController } from 'src/modules/user/user.controller';

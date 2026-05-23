@@ -1,8 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 export class CreateBarberProfileTable1772150000000 implements MigrationInterface {
-    name = 'CreateBarberProfileTable1772150000000';
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`CREATE TABLE "barber_profiles" (
+  name = 'CreateBarberProfileTable1772150000000';
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`CREATE TABLE "barber_profiles" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
         "tenant_id" uuid NOT NULL,
         "tenant_user_id" uuid NOT NULL,
@@ -19,12 +19,20 @@ export class CreateBarberProfileTable1772150000000 implements MigrationInterface
         CONSTRAINT "FK_barber_profiles_tenant_user" FOREIGN KEY ("tenant_user_id") REFERENCES "tenant_users"("id") ON DELETE CASCADE,
         CONSTRAINT "CHK_barber_profiles_experience_years" CHECK ("experience_years" >= 0)
       )`);
-        await queryRunner.query(`CREATE INDEX "IDX_barber_profiles_tenant_id" ON "barber_profiles" ("tenant_id")`);
-        await queryRunner.query(`CREATE UNIQUE INDEX "UQ_barber_profiles_tenant_user_id_active" ON "barber_profiles" ("tenant_user_id") WHERE "deletedAt" IS NULL`);
-    }
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP INDEX "public"."UQ_barber_profiles_tenant_user_id_active"`);
-        await queryRunner.query(`DROP INDEX "public"."IDX_barber_profiles_tenant_id"`);
-        await queryRunner.query(`DROP TABLE "barber_profiles"`);
-    }
+    await queryRunner.query(
+      `CREATE INDEX "IDX_barber_profiles_tenant_id" ON "barber_profiles" ("tenant_id")`,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "UQ_barber_profiles_tenant_user_id_active" ON "barber_profiles" ("tenant_user_id") WHERE "deletedAt" IS NULL`,
+    );
+  }
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `DROP INDEX "public"."UQ_barber_profiles_tenant_user_id_active"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_barber_profiles_tenant_id"`,
+    );
+    await queryRunner.query(`DROP TABLE "barber_profiles"`);
+  }
 }

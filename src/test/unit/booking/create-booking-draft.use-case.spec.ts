@@ -98,7 +98,10 @@ describe('CreateBookingDraftUseCase', () => {
           useValue: validateMembershipByUserIdAndTenantIdUseCase,
         },
         { provide: FindTenantByIdUseCase, useValue: findTenantByIdUseCase },
-        { provide: GetAvailableSlotsUseCase, useValue: getAvailableSlotsUseCase },
+        {
+          provide: GetAvailableSlotsUseCase,
+          useValue: getAvailableSlotsUseCase,
+        },
       ],
     }).compile();
 
@@ -271,12 +274,14 @@ describe('CreateBookingDraftUseCase', () => {
   });
 
   it('lança BOOKING_IN_THE_PAST quando o slot já passou', async () => {
-    jest.spyOn(DateTime, 'now').mockReturnValue(
-      DateTime.fromObject(
-        { year: 2099, month: 6, day: 15, hour: 11, minute: 0, second: 0 },
-        { zone: 'America/Sao_Paulo' },
-      ) as any,
-    );
+    jest
+      .spyOn(DateTime, 'now')
+      .mockReturnValue(
+        DateTime.fromObject(
+          { year: 2099, month: 6, day: 15, hour: 11, minute: 0, second: 0 },
+          { zone: 'America/Sao_Paulo' },
+        ) as any,
+      );
     try {
       await useCase.run(
         tenantId,
@@ -295,12 +300,14 @@ describe('CreateBookingDraftUseCase', () => {
   });
 
   it('lança BOOKING_MIN_LEAD_NOT_MET quando falta antecedência de 15 minutos', async () => {
-    jest.spyOn(DateTime, 'now').mockReturnValue(
-      DateTime.fromObject(
-        { year: 2099, month: 6, day: 15, hour: 9, minute: 50, second: 0 },
-        { zone: 'America/Sao_Paulo' },
-      ) as any,
-    );
+    jest
+      .spyOn(DateTime, 'now')
+      .mockReturnValue(
+        DateTime.fromObject(
+          { year: 2099, month: 6, day: 15, hour: 9, minute: 50, second: 0 },
+          { zone: 'America/Sao_Paulo' },
+        ) as any,
+      );
     try {
       await useCase.run(
         tenantId,

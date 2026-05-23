@@ -38,7 +38,9 @@ describe('TenantProfessionalMapper', () => {
     const dto = TenantProfessionalMapper.toResponse(entity);
     expect(dto.id).toBe('tp-uuid');
     expect(dto.professionalProfile.displayName).toBe('Maria');
-    expect(dto.professionalProfile.professionalType).toBe(ProfessionalType.MANICURE);
+    expect(dto.professionalProfile.professionalType).toBe(
+      ProfessionalType.MANICURE,
+    );
   });
 
   it('toResponseList mapeia todos os itens', () => {
@@ -50,7 +52,9 @@ describe('TenantProfessionalMapper', () => {
   it('toResponse falha sem relação professionalProfile', () => {
     const withoutRelation = { ...entity, professionalProfile: undefined };
     expect(() =>
-      TenantProfessionalMapper.toResponse(withoutRelation as TenantProfessionalEntity),
+      TenantProfessionalMapper.toResponse(
+        withoutRelation as TenantProfessionalEntity,
+      ),
     ).toThrow(/professionalProfile relation/);
   });
 });

@@ -53,7 +53,9 @@ describe('ProfessionalProfileRepository', () => {
   });
 
   it('create persiste com isActive true e bookingMode default', async () => {
-    typeOrmRepo.create.mockReturnValue(mockProfile as ProfessionalProfileEntity);
+    typeOrmRepo.create.mockReturnValue(
+      mockProfile as ProfessionalProfileEntity,
+    );
     typeOrmRepo.save.mockResolvedValue(mockProfile);
 
     await repository.create({
@@ -77,7 +79,9 @@ describe('ProfessionalProfileRepository', () => {
   });
 
   it('create persiste bookingMode e contatos quando informados', async () => {
-    typeOrmRepo.create.mockReturnValue(mockProfile as ProfessionalProfileEntity);
+    typeOrmRepo.create.mockReturnValue(
+      mockProfile as ProfessionalProfileEntity,
+    );
     typeOrmRepo.save.mockResolvedValue(mockProfile);
 
     await repository.create({
@@ -115,9 +119,12 @@ describe('ProfessionalProfileRepository', () => {
   it('findByUserIdNonDeleted usa query builder', async () => {
     mockQueryBuilder.getOne.mockResolvedValue(mockProfile);
     const result = await repository.findByUserIdNonDeleted(userId);
-    expect(mockQueryBuilder.where).toHaveBeenCalledWith('pp.user_id = :userId', {
-      userId,
-    });
+    expect(mockQueryBuilder.where).toHaveBeenCalledWith(
+      'pp.user_id = :userId',
+      {
+        userId,
+      },
+    );
     expect(result).toBe(mockProfile);
   });
 

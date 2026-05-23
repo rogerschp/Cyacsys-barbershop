@@ -12,8 +12,7 @@ export class LinkProfessionalToTenantDto {
 
   @ApiProperty({
     enum: TenantUserRole,
-    description:
-      'Papel operacional neste tenant (tipicamente BARBER ou OWNER)',
+    description: 'Papel operacional neste tenant (tipicamente BARBER ou OWNER)',
     example: TenantUserRole.BARBER,
   })
   @IsEnum(TenantUserRole)

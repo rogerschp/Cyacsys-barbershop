@@ -44,7 +44,9 @@ const BOOKING_ROLES = [
 ] as const;
 
 @ApiTags('booking')
-@Controller('tenants/:tenantId/tenant-professionals/:tenantProfessionalId/bookings')
+@Controller(
+  'tenants/:tenantId/tenant-professionals/:tenantProfessionalId/bookings',
+)
 @UseGuards(
   BearerAuthGuard,
   TenantResolverGuard,

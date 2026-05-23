@@ -25,8 +25,10 @@ export class LinkMyProfessionalToTenantUseCase {
     userId: string,
     role?: TenantUserRole,
   ): Promise<TenantProfessionalEntity> {
-    const membership =
-      await this.findMembershipByTenantIdAndUserIdUseCase.run(userId, tenantId);
+    const membership = await this.findMembershipByTenantIdAndUserIdUseCase.run(
+      userId,
+      tenantId,
+    );
 
     if (
       !hasEffectiveTenantRole(membership.role, TenantUserRole.BARBER) &&

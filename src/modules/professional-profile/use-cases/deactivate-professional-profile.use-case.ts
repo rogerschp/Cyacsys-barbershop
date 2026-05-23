@@ -7,7 +7,9 @@ import {
 
 @Injectable()
 export class DeactivateProfessionalProfileUseCase {
-  private readonly logger = new Logger(DeactivateProfessionalProfileUseCase.name);
+  private readonly logger = new Logger(
+    DeactivateProfessionalProfileUseCase.name,
+  );
 
   constructor(
     @Inject(PROFESSIONAL_PROFILE_REPOSITORY)

@@ -41,13 +41,22 @@ describe('ProfessionalProfileController (e2e)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [ProfessionalProfileController],
       providers: [
-        { provide: CreateProfessionalProfileUseCase, useValue: { run: jest.fn() } },
-        { provide: UpdateProfessionalProfileUseCase, useValue: { run: jest.fn() } },
+        {
+          provide: CreateProfessionalProfileUseCase,
+          useValue: { run: jest.fn() },
+        },
+        {
+          provide: UpdateProfessionalProfileUseCase,
+          useValue: { run: jest.fn() },
+        },
         {
           provide: DeactivateProfessionalProfileUseCase,
           useValue: { run: jest.fn() },
         },
-        { provide: GetProfessionalProfileByUserUseCase, useValue: { run: jest.fn() } },
+        {
+          provide: GetProfessionalProfileByUserUseCase,
+          useValue: { run: jest.fn() },
+        },
       ],
     })
       .overrideGuard(BearerAuthGuard)
@@ -91,8 +100,14 @@ describe('ProfessionalProfileController (e2e)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     createUseCase.run.mockResolvedValue(mockProfile);
-    updateUseCase.run.mockResolvedValue({ ...mockProfile, displayName: 'Nome Atualizado' });
-    deactivateUseCase.run.mockResolvedValue({ ...mockProfile, isActive: false });
+    updateUseCase.run.mockResolvedValue({
+      ...mockProfile,
+      displayName: 'Nome Atualizado',
+    });
+    deactivateUseCase.run.mockResolvedValue({
+      ...mockProfile,
+      isActive: false,
+    });
     getUseCase.run.mockResolvedValue(mockProfile);
   });
 
@@ -152,10 +167,9 @@ describe('ProfessionalProfileController (e2e)', () => {
         .expect(200)
         .expect((res) => {
           expect(res.body.displayName).toBe('Nome Atualizado');
-          expect(updateUseCase.run).toHaveBeenCalledWith(
-            userId,
-            { displayName: 'Nome Atualizado' },
-          );
+          expect(updateUseCase.run).toHaveBeenCalledWith(userId, {
+            displayName: 'Nome Atualizado',
+          });
         });
     });
   });

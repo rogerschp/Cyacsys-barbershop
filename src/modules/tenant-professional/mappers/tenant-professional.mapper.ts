@@ -29,6 +29,8 @@ export class TenantProfessionalMapper {
   static toResponseList(
     entities: TenantProfessionalEntity[],
   ): TenantProfessionalResponseDto[] {
-    return entities.map((entity) => TenantProfessionalMapper.toResponse(entity));
+    return entities.map((entity) =>
+      TenantProfessionalMapper.toResponse(entity),
+    );
   }
 }

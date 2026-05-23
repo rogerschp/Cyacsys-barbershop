@@ -35,623 +35,682 @@ import { UpdateWorkingHoursUseCase } from 'src/modules/availability/use-cases/up
 import { TenantUserRole } from 'src/modules/tenant-user/entities/tenant-user-role.enum';
 
 function mockUseCase() {
-    return { run: jest.fn().mockResolvedValue({ ok: true }) };
+  return { run: jest.fn().mockResolvedValue({ ok: true }) };
 }
 
 describe('AvailabilityController (HTTP)', () => {
-    let app: INestApplication;
-    const tenantId = 'tenant-uuid';
-    const tenantProfessionalId = 'bp-uuid';
-    const serviceId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
-    const base = `/tenants/${tenantId}/tenant-professionals/${tenantProfessionalId}`;
-    const userId = 'user-uuid-123';
-    const role = TenantUserRole.STAFF;
+  let app: INestApplication;
+  const tenantId = 'tenant-uuid';
+  const tenantProfessionalId = 'bp-uuid';
+  const serviceId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const base = `/tenants/${tenantId}/tenant-professionals/${tenantProfessionalId}`;
+  const userId = 'user-uuid-123';
+  const role = TenantUserRole.STAFF;
 
-    const uc = {
-        createProfessionalServiceLink: mockUseCase(),
-        updateProfessionalServiceLink: mockUseCase(),
-        deleteProfessionalServiceLink: mockUseCase(),
-        listProfessionalServiceLinks: mockUseCase(),
-        createWorkingHours: mockUseCase(),
-        bootstrapWorkingWeek: mockUseCase(),
-        updateWorkingHours: mockUseCase(),
-        deleteWorkingHours: mockUseCase(),
-        listWorkingHours: mockUseCase(),
-        getWorkingHours: mockUseCase(),
-        createWorkingHoursPeriod: mockUseCase(),
-        updateWorkingHoursPeriod: mockUseCase(),
-        deleteWorkingHoursPeriod: mockUseCase(),
-        createTimeOff: mockUseCase(),
-        updateTimeOff: mockUseCase(),
-        deleteTimeOff: mockUseCase(),
-        listTimeOffs: mockUseCase(),
-        createBlock: mockUseCase(),
-        updateBlock: mockUseCase(),
-        deleteBlock: mockUseCase(),
-        listBlocks: mockUseCase(),
-        getAvailableSlots: mockUseCase(),
-    };
+  const uc = {
+    createProfessionalServiceLink: mockUseCase(),
+    updateProfessionalServiceLink: mockUseCase(),
+    deleteProfessionalServiceLink: mockUseCase(),
+    listProfessionalServiceLinks: mockUseCase(),
+    createWorkingHours: mockUseCase(),
+    bootstrapWorkingWeek: mockUseCase(),
+    updateWorkingHours: mockUseCase(),
+    deleteWorkingHours: mockUseCase(),
+    listWorkingHours: mockUseCase(),
+    getWorkingHours: mockUseCase(),
+    createWorkingHoursPeriod: mockUseCase(),
+    updateWorkingHoursPeriod: mockUseCase(),
+    deleteWorkingHoursPeriod: mockUseCase(),
+    createTimeOff: mockUseCase(),
+    updateTimeOff: mockUseCase(),
+    deleteTimeOff: mockUseCase(),
+    listTimeOffs: mockUseCase(),
+    createBlock: mockUseCase(),
+    updateBlock: mockUseCase(),
+    deleteBlock: mockUseCase(),
+    listBlocks: mockUseCase(),
+    getAvailableSlots: mockUseCase(),
+  };
 
-    beforeAll(async () => {
-        const moduleFixture: TestingModule = await Test.createTestingModule({
-            controllers: [AvailabilityController],
-            providers: [
-                { provide: CreateProfessionalServiceLinkUseCase, useValue: uc.createProfessionalServiceLink },
-                { provide: UpdateProfessionalServiceLinkUseCase, useValue: uc.updateProfessionalServiceLink },
-                { provide: DeleteProfessionalServiceLinkUseCase, useValue: uc.deleteProfessionalServiceLink },
-                { provide: ListProfessionalServiceLinksUseCase, useValue: uc.listProfessionalServiceLinks },
-                { provide: CreateWorkingHoursUseCase, useValue: uc.createWorkingHours },
-                { provide: BootstrapWorkingWeekUseCase, useValue: uc.bootstrapWorkingWeek },
-                { provide: UpdateWorkingHoursUseCase, useValue: uc.updateWorkingHours },
-                { provide: DeleteWorkingHoursUseCase, useValue: uc.deleteWorkingHours },
-                { provide: ListWorkingHoursUseCase, useValue: uc.listWorkingHours },
-                { provide: GetWorkingHoursUseCase, useValue: uc.getWorkingHours },
-                { provide: CreateWorkingHoursPeriodUseCase, useValue: uc.createWorkingHoursPeriod },
-                { provide: UpdateWorkingHoursPeriodUseCase, useValue: uc.updateWorkingHoursPeriod },
-                { provide: DeleteWorkingHoursPeriodUseCase, useValue: uc.deleteWorkingHoursPeriod },
-                { provide: CreateTimeOffUseCase, useValue: uc.createTimeOff },
-                { provide: UpdateTimeOffUseCase, useValue: uc.updateTimeOff },
-                { provide: DeleteTimeOffUseCase, useValue: uc.deleteTimeOff },
-                { provide: ListTimeOffsUseCase, useValue: uc.listTimeOffs },
-                { provide: CreateBlockUseCase, useValue: uc.createBlock },
-                { provide: UpdateBlockUseCase, useValue: uc.updateBlock },
-                { provide: DeleteBlockUseCase, useValue: uc.deleteBlock },
-                { provide: ListBlocksUseCase, useValue: uc.listBlocks },
-                { provide: GetAvailableSlotsUseCase, useValue: uc.getAvailableSlots },
-            ],
-        })
-            .overrideGuard(BearerAuthGuard)
-            .useValue({
-                canActivate: (context: any) => {
-                    const req = context.switchToHttp().getRequest();
-                    req.user = { dbUser: { id: userId }, uid: 'firebase-uid' };
-                    req.tenantMembership = { role };
-                    return true;
-                },
-            })
-            .overrideInterceptor(TenantInterceptor)
-            .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
-            .overrideGuard(TenantMembershipGuard)
-            .useValue({ canActivate: () => true })
-            .overrideGuard(TenantResolverGuard)
-            .useValue({ canActivate: () => true })
-            .overrideGuard(TenantRolesGuard)
-            .useValue({ canActivate: () => true })
-            .compile();
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      controllers: [AvailabilityController],
+      providers: [
+        {
+          provide: CreateProfessionalServiceLinkUseCase,
+          useValue: uc.createProfessionalServiceLink,
+        },
+        {
+          provide: UpdateProfessionalServiceLinkUseCase,
+          useValue: uc.updateProfessionalServiceLink,
+        },
+        {
+          provide: DeleteProfessionalServiceLinkUseCase,
+          useValue: uc.deleteProfessionalServiceLink,
+        },
+        {
+          provide: ListProfessionalServiceLinksUseCase,
+          useValue: uc.listProfessionalServiceLinks,
+        },
+        { provide: CreateWorkingHoursUseCase, useValue: uc.createWorkingHours },
+        {
+          provide: BootstrapWorkingWeekUseCase,
+          useValue: uc.bootstrapWorkingWeek,
+        },
+        { provide: UpdateWorkingHoursUseCase, useValue: uc.updateWorkingHours },
+        { provide: DeleteWorkingHoursUseCase, useValue: uc.deleteWorkingHours },
+        { provide: ListWorkingHoursUseCase, useValue: uc.listWorkingHours },
+        { provide: GetWorkingHoursUseCase, useValue: uc.getWorkingHours },
+        {
+          provide: CreateWorkingHoursPeriodUseCase,
+          useValue: uc.createWorkingHoursPeriod,
+        },
+        {
+          provide: UpdateWorkingHoursPeriodUseCase,
+          useValue: uc.updateWorkingHoursPeriod,
+        },
+        {
+          provide: DeleteWorkingHoursPeriodUseCase,
+          useValue: uc.deleteWorkingHoursPeriod,
+        },
+        { provide: CreateTimeOffUseCase, useValue: uc.createTimeOff },
+        { provide: UpdateTimeOffUseCase, useValue: uc.updateTimeOff },
+        { provide: DeleteTimeOffUseCase, useValue: uc.deleteTimeOff },
+        { provide: ListTimeOffsUseCase, useValue: uc.listTimeOffs },
+        { provide: CreateBlockUseCase, useValue: uc.createBlock },
+        { provide: UpdateBlockUseCase, useValue: uc.updateBlock },
+        { provide: DeleteBlockUseCase, useValue: uc.deleteBlock },
+        { provide: ListBlocksUseCase, useValue: uc.listBlocks },
+        { provide: GetAvailableSlotsUseCase, useValue: uc.getAvailableSlots },
+      ],
+    })
+      .overrideGuard(BearerAuthGuard)
+      .useValue({
+        canActivate: (context: any) => {
+          const req = context.switchToHttp().getRequest();
+          req.user = { dbUser: { id: userId }, uid: 'firebase-uid' };
+          req.tenantMembership = { role };
+          return true;
+        },
+      })
+      .overrideInterceptor(TenantInterceptor)
+      .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
+      .overrideGuard(TenantMembershipGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(TenantResolverGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(TenantRolesGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
-        app = moduleFixture.createNestApplication();
-        app.useGlobalPipes(
-            new ValidationPipe({
-                whitelist: true,
-                transform: true,
-            }),
+    app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        transform: true,
+      }),
+    );
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    Object.values(uc).forEach((m) => m.run.mockResolvedValue({ ok: true }));
+  });
+
+  it('GET available-slots chama use case com query', () => {
+    return request(app.getHttpServer())
+      .get(`${base}/available-slots`)
+      .query({ serviceId, date: '2026-06-15' })
+      .expect(200)
+      .expect(() => {
+        expect(uc.getAvailableSlots.run).toHaveBeenCalledWith(
+          tenantId,
+          tenantProfessionalId,
+          serviceId,
+          '2026-06-15',
+          userId,
+          role,
         );
-        await app.init();
-    });
+      });
+  });
 
-    afterAll(async () => {
-        await app.close();
-    });
+  it('GET offered-services', () => {
+    return request(app.getHttpServer())
+      .get(`${base}/offered-services`)
+      .expect(200)
+      .expect(() => {
+        expect(uc.listProfessionalServiceLinks.run).toHaveBeenCalledWith(
+          tenantId,
+          tenantProfessionalId,
+          userId,
+          role,
+        );
+      });
+  });
 
-    beforeEach(() => {
-        jest.clearAllMocks();
-        Object.values(uc).forEach((m) => m.run.mockResolvedValue({ ok: true }));
-    });
+  it('POST offered-services', () => {
+    return request(app.getHttpServer())
+      .post(`${base}/offered-services`)
+      .send({ serviceId })
+      .expect(201)
+      .expect(() => {
+        expect(uc.createProfessionalServiceLink.run).toHaveBeenCalledWith(
+          tenantId,
+          tenantProfessionalId,
+          { serviceId },
+          userId,
+          role,
+        );
+      });
+  });
 
-    it('GET available-slots chama use case com query', () => {
-        return request(app.getHttpServer())
-            .get(`${base}/available-slots`)
-            .query({ serviceId, date: '2026-06-15' })
-            .expect(200)
-            .expect(() => {
-                expect(uc.getAvailableSlots.run).toHaveBeenCalledWith(
-                    tenantId,
-                    tenantProfessionalId,
-                    serviceId,
-                    '2026-06-15',
-                    userId,
-                    role,
-                );
-            });
-    });
+  it('PATCH offered-services/:linkId', () => {
+    return request(app.getHttpServer())
+      .patch(`${base}/offered-services/link-1`)
+      .send({ isActive: false })
+      .expect(200)
+      .expect(() => {
+        expect(uc.updateProfessionalServiceLink.run).toHaveBeenCalledWith(
+          tenantId,
+          tenantProfessionalId,
+          'link-1',
+          { isActive: false },
+          userId,
+          role,
+        );
+      });
+  });
 
-    it('GET offered-services', () => {
-        return request(app.getHttpServer())
-            .get(`${base}/offered-services`)
-            .expect(200)
-            .expect(() => {
-                expect(uc.listProfessionalServiceLinks.run).toHaveBeenCalledWith(
-                    tenantId,
-                    tenantProfessionalId,
-                    userId,
-                    role,
-                );
-            });
-    });
+  it('DELETE offered-services/:linkId', () => {
+    return request(app.getHttpServer())
+      .delete(`${base}/offered-services/link-1`)
+      .expect(200)
+      .expect(() => {
+        expect(uc.deleteProfessionalServiceLink.run).toHaveBeenCalledWith(
+          tenantId,
+          tenantProfessionalId,
+          'link-1',
+          userId,
+          role,
+        );
+      });
+  });
 
-    it('POST offered-services', () => {
-        return request(app.getHttpServer())
-            .post(`${base}/offered-services`)
-            .send({ serviceId })
-            .expect(201)
-            .expect(() => {
-                expect(uc.createProfessionalServiceLink.run).toHaveBeenCalledWith(
-                    tenantId,
-                    tenantProfessionalId,
-                    { serviceId },
-                    userId,
-                    role,
-                );
-            });
-    });
+  it('GET working-hours', () => {
+    return request(app.getHttpServer())
+      .get(`${base}/working-hours`)
+      .expect(200)
+      .expect(() => {
+        expect(uc.listWorkingHours.run).toHaveBeenCalledWith(
+          tenantId,
+          tenantProfessionalId,
+          userId,
+          role,
+        );
+      });
+  });
 
-    it('PATCH offered-services/:linkId', () => {
-        return request(app.getHttpServer())
-            .patch(`${base}/offered-services/link-1`)
-            .send({ isActive: false })
-            .expect(200)
-            .expect(() => {
-                expect(uc.updateProfessionalServiceLink.run).toHaveBeenCalledWith(
-                    tenantId,
-                    tenantProfessionalId,
-                    'link-1',
-                    { isActive: false },
-                    userId,
-                    role,
-                );
-            });
-    });
+  it('POST working-hours', () => {
+    return request(app.getHttpServer())
+      .post(`${base}/working-hours`)
+      .send({
+        dayOfWeek: DayOfWeek.MONDAY,
+        isActive: true,
+        periods: [{ startTime: '09:00', endTime: '12:00' }],
+      })
+      .expect(201)
+      .expect(() => {
+        expect(uc.createWorkingHours.run).toHaveBeenCalled();
+      });
+  });
 
-    it('DELETE offered-services/:linkId', () => {
-        return request(app.getHttpServer())
-            .delete(`${base}/offered-services/link-1`)
-            .expect(200)
-            .expect(() => {
-                expect(uc.deleteProfessionalServiceLink.run).toHaveBeenCalledWith(
-                    tenantId,
-                    tenantProfessionalId,
-                    'link-1',
-                    userId,
-                    role,
-                );
-            });
-    });
+  it('POST working-hours/bootstrap-week', () => {
+    return request(app.getHttpServer())
+      .post(`${base}/working-hours/bootstrap-week`)
+      .send({
+        closedDays: [DayOfWeek.SUNDAY],
+        periods: [{ startTime: '09:00', endTime: '12:00' }],
+      })
+      .expect(201)
+      .expect(() => {
+        expect(uc.bootstrapWorkingWeek.run).toHaveBeenCalledWith(
+          tenantId,
+          tenantProfessionalId,
+          {
+            closedDays: [DayOfWeek.SUNDAY],
+            periods: [{ startTime: '09:00', endTime: '12:00' }],
+          },
+          userId,
+          role,
+        );
+      });
+  });
 
-    it('GET working-hours', () => {
-        return request(app.getHttpServer())
-            .get(`${base}/working-hours`)
-            .expect(200)
-            .expect(() => {
-                expect(uc.listWorkingHours.run).toHaveBeenCalledWith(
-                    tenantId,
-                    tenantProfessionalId,
-                    userId,
-                    role,
-                );
-            });
-    });
+  it('GET working-hours/:id', () => {
+    return request(app.getHttpServer())
+      .get(`${base}/working-hours/wh-1`)
+      .expect(200)
+      .expect(() => {
+        expect(uc.getWorkingHours.run).toHaveBeenCalledWith(
+          tenantId,
+          tenantProfessionalId,
+          'wh-1',
+          userId,
+          role,
+        );
+      });
+  });
 
-    it('POST working-hours', () => {
-        return request(app.getHttpServer())
-            .post(`${base}/working-hours`)
-            .send({
-                dayOfWeek: DayOfWeek.MONDAY,
-                isActive: true,
-                periods: [{ startTime: '09:00', endTime: '12:00' }],
-            })
-            .expect(201)
-            .expect(() => {
-                expect(uc.createWorkingHours.run).toHaveBeenCalled();
-            });
-    });
+  it('PATCH working-hours/:id', () => {
+    return request(app.getHttpServer())
+      .patch(`${base}/working-hours/wh-1`)
+      .send({ isActive: false })
+      .expect(200)
+      .expect(() => {
+        expect(uc.updateWorkingHours.run).toHaveBeenCalled();
+      });
+  });
 
-    it('POST working-hours/bootstrap-week', () => {
-        return request(app.getHttpServer())
-            .post(`${base}/working-hours/bootstrap-week`)
-            .send({
-                closedDays: [DayOfWeek.SUNDAY],
-                periods: [{ startTime: '09:00', endTime: '12:00' }],
-            })
-            .expect(201)
-            .expect(() => {
-                expect(uc.bootstrapWorkingWeek.run).toHaveBeenCalledWith(
-                    tenantId,
-                    tenantProfessionalId,
-                    {
-                        closedDays: [DayOfWeek.SUNDAY],
-                        periods: [{ startTime: '09:00', endTime: '12:00' }],
-                    },
-                    userId,
-                    role,
-                );
-            });
-    });
+  it('DELETE working-hours/:id', () => {
+    uc.deleteWorkingHours.run.mockResolvedValue(undefined);
+    return request(app.getHttpServer())
+      .delete(`${base}/working-hours/wh-1`)
+      .expect(200)
+      .expect(() => {
+        expect(uc.deleteWorkingHours.run).toHaveBeenCalledWith(
+          tenantId,
+          tenantProfessionalId,
+          'wh-1',
+          userId,
+          role,
+        );
+      });
+  });
 
-    it('GET working-hours/:id', () => {
-        return request(app.getHttpServer())
-            .get(`${base}/working-hours/wh-1`)
-            .expect(200)
-            .expect(() => {
-                expect(uc.getWorkingHours.run).toHaveBeenCalledWith(
-                    tenantId,
-                    tenantProfessionalId,
-                    'wh-1',
-                    userId,
-                    role,
-                );
-            });
-    });
+  it('POST working-hours/:id/periods', () => {
+    return request(app.getHttpServer())
+      .post(`${base}/working-hours/wh-1/periods`)
+      .send({ startTime: '14:00', endTime: '18:00' })
+      .expect(201)
+      .expect(() => {
+        expect(uc.createWorkingHoursPeriod.run).toHaveBeenCalled();
+      });
+  });
 
-    it('PATCH working-hours/:id', () => {
-        return request(app.getHttpServer())
-            .patch(`${base}/working-hours/wh-1`)
-            .send({ isActive: false })
-            .expect(200)
-            .expect(() => {
-                expect(uc.updateWorkingHours.run).toHaveBeenCalled();
-            });
-    });
+  it('PATCH working-hours/:id/periods/:periodId', () => {
+    return request(app.getHttpServer())
+      .patch(`${base}/working-hours/wh-1/periods/p1`)
+      .send({ startTime: '15:00' })
+      .expect(200)
+      .expect(() => {
+        expect(uc.updateWorkingHoursPeriod.run).toHaveBeenCalled();
+      });
+  });
 
-    it('DELETE working-hours/:id', () => {
-        uc.deleteWorkingHours.run.mockResolvedValue(undefined);
-        return request(app.getHttpServer())
-            .delete(`${base}/working-hours/wh-1`)
-            .expect(200)
-            .expect(() => {
-                expect(uc.deleteWorkingHours.run).toHaveBeenCalledWith(
-                    tenantId,
-                    tenantProfessionalId,
-                    'wh-1',
-                    userId,
-                    role,
-                );
-            });
-    });
+  it('DELETE working-hours/:id/periods/:periodId', () => {
+    uc.deleteWorkingHoursPeriod.run.mockResolvedValue(undefined);
+    return request(app.getHttpServer())
+      .delete(`${base}/working-hours/wh-1/periods/p1`)
+      .expect(200)
+      .expect(() => {
+        expect(uc.deleteWorkingHoursPeriod.run).toHaveBeenCalled();
+      });
+  });
 
-    it('POST working-hours/:id/periods', () => {
-        return request(app.getHttpServer())
-            .post(`${base}/working-hours/wh-1/periods`)
-            .send({ startTime: '14:00', endTime: '18:00' })
-            .expect(201)
-            .expect(() => {
-                expect(uc.createWorkingHoursPeriod.run).toHaveBeenCalled();
-            });
-    });
+  it('GET time-offs', () => {
+    return request(app.getHttpServer())
+      .get(`${base}/time-offs`)
+      .expect(200)
+      .expect(() => {
+        expect(uc.listTimeOffs.run).toHaveBeenCalledWith(
+          tenantId,
+          tenantProfessionalId,
+          userId,
+          role,
+        );
+      });
+  });
 
-    it('PATCH working-hours/:id/periods/:periodId', () => {
-        return request(app.getHttpServer())
-            .patch(`${base}/working-hours/wh-1/periods/p1`)
-            .send({ startTime: '15:00' })
-            .expect(200)
-            .expect(() => {
-                expect(uc.updateWorkingHoursPeriod.run).toHaveBeenCalled();
-            });
-    });
+  it('POST time-offs', () => {
+    return request(app.getHttpServer())
+      .post(`${base}/time-offs`)
+      .send({
+        date: '2026-12-25',
+        startTime: '09:00',
+        endTime: '12:00',
+        reason: TimeOffReason.HOLIDAY,
+      })
+      .expect(201)
+      .expect(() => {
+        expect(uc.createTimeOff.run).toHaveBeenCalled();
+      });
+  });
 
-    it('DELETE working-hours/:id/periods/:periodId', () => {
-        uc.deleteWorkingHoursPeriod.run.mockResolvedValue(undefined);
-        return request(app.getHttpServer())
-            .delete(`${base}/working-hours/wh-1/periods/p1`)
-            .expect(200)
-            .expect(() => {
-                expect(uc.deleteWorkingHoursPeriod.run).toHaveBeenCalled();
-            });
-    });
+  it('PATCH time-offs/:id', () => {
+    return request(app.getHttpServer())
+      .patch(`${base}/time-offs/t1`)
+      .send({ reason: TimeOffReason.SICK })
+      .expect(200)
+      .expect(() => {
+        expect(uc.updateTimeOff.run).toHaveBeenCalled();
+      });
+  });
 
-    it('GET time-offs', () => {
-        return request(app.getHttpServer())
-            .get(`${base}/time-offs`)
-            .expect(200)
-            .expect(() => {
-                expect(uc.listTimeOffs.run).toHaveBeenCalledWith(
-                    tenantId,
-                    tenantProfessionalId,
-                    userId,
-                    role,
-                );
-            });
-    });
+  it('DELETE time-offs/:id', () => {
+    return request(app.getHttpServer())
+      .delete(`${base}/time-offs/t1`)
+      .expect(200)
+      .expect(() => {
+        expect(uc.deleteTimeOff.run).toHaveBeenCalledWith(
+          tenantId,
+          tenantProfessionalId,
+          't1',
+          userId,
+          role,
+        );
+      });
+  });
 
-    it('POST time-offs', () => {
-        return request(app.getHttpServer())
-            .post(`${base}/time-offs`)
-            .send({
-                date: '2026-12-25',
-                startTime: '09:00',
-                endTime: '12:00',
-                reason: TimeOffReason.HOLIDAY,
-            })
-            .expect(201)
-            .expect(() => {
-                expect(uc.createTimeOff.run).toHaveBeenCalled();
-            });
-    });
+  it('GET blocks', () => {
+    return request(app.getHttpServer())
+      .get(`${base}/blocks`)
+      .expect(200)
+      .expect(() => {
+        expect(uc.listBlocks.run).toHaveBeenCalledWith(
+          tenantId,
+          tenantProfessionalId,
+          userId,
+          role,
+        );
+      });
+  });
 
-    it('PATCH time-offs/:id', () => {
-        return request(app.getHttpServer())
-            .patch(`${base}/time-offs/t1`)
-            .send({ reason: TimeOffReason.SICK })
-            .expect(200)
-            .expect(() => {
-                expect(uc.updateTimeOff.run).toHaveBeenCalled();
-            });
-    });
+  it('POST blocks', () => {
+    return request(app.getHttpServer())
+      .post(`${base}/blocks`)
+      .send({
+        date: '2026-03-21',
+        startTime: '12:00',
+        endTime: '14:00',
+        reason: BlockReason.LUNCH,
+      })
+      .expect(201)
+      .expect(() => {
+        expect(uc.createBlock.run).toHaveBeenCalled();
+      });
+  });
 
-    it('DELETE time-offs/:id', () => {
-        return request(app.getHttpServer())
-            .delete(`${base}/time-offs/t1`)
-            .expect(200)
-            .expect(() => {
-                expect(uc.deleteTimeOff.run).toHaveBeenCalledWith(
-                    tenantId,
-                    tenantProfessionalId,
-                    't1',
-                    userId,
-                    role,
-                );
-            });
-    });
+  it('PATCH blocks/:id', () => {
+    return request(app.getHttpServer())
+      .patch(`${base}/blocks/b1`)
+      .send({ startTime: '13:00' })
+      .expect(200)
+      .expect(() => {
+        expect(uc.updateBlock.run).toHaveBeenCalled();
+      });
+  });
 
-    it('GET blocks', () => {
-        return request(app.getHttpServer())
-            .get(`${base}/blocks`)
-            .expect(200)
-            .expect(() => {
-                expect(uc.listBlocks.run).toHaveBeenCalledWith(
-                    tenantId,
-                    tenantProfessionalId,
-                    userId,
-                    role,
-                );
-            });
-    });
-
-    it('POST blocks', () => {
-        return request(app.getHttpServer())
-            .post(`${base}/blocks`)
-            .send({
-                date: '2026-03-21',
-                startTime: '12:00',
-                endTime: '14:00',
-                reason: BlockReason.LUNCH,
-            })
-            .expect(201)
-            .expect(() => {
-                expect(uc.createBlock.run).toHaveBeenCalled();
-            });
-    });
-
-    it('PATCH blocks/:id', () => {
-        return request(app.getHttpServer())
-            .patch(`${base}/blocks/b1`)
-            .send({ startTime: '13:00' })
-            .expect(200)
-            .expect(() => {
-                expect(uc.updateBlock.run).toHaveBeenCalled();
-            });
-    });
-
-    it('DELETE blocks/:id', () => {
-        return request(app.getHttpServer())
-            .delete(`${base}/blocks/b1`)
-            .expect(200)
-            .expect(() => {
-                expect(uc.deleteBlock.run).toHaveBeenCalledWith(
-                    tenantId,
-                    tenantProfessionalId,
-                    'b1',
-                    userId,
-                    role,
-                );
-            });
-    });
+  it('DELETE blocks/:id', () => {
+    return request(app.getHttpServer())
+      .delete(`${base}/blocks/b1`)
+      .expect(200)
+      .expect(() => {
+        expect(uc.deleteBlock.run).toHaveBeenCalledWith(
+          tenantId,
+          tenantProfessionalId,
+          'b1',
+          userId,
+          role,
+        );
+      });
+  });
 });
 
 describe('AvailabilityController (HTTP) — req.user/tenant opcionais', () => {
-    let app: INestApplication;
-    const tenantId = 'tenant-uuid';
-    const tenantProfessionalId = 'bp-uuid';
-    const serviceId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
-    const base = `/tenants/${tenantId}/tenant-professionals/${tenantProfessionalId}`;
+  let app: INestApplication;
+  const tenantId = 'tenant-uuid';
+  const tenantProfessionalId = 'bp-uuid';
+  const serviceId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const base = `/tenants/${tenantId}/tenant-professionals/${tenantProfessionalId}`;
 
-    const uc = {
-        createProfessionalServiceLink: mockUseCase(),
-        updateProfessionalServiceLink: mockUseCase(),
-        deleteProfessionalServiceLink: mockUseCase(),
-        listProfessionalServiceLinks: mockUseCase(),
-        createWorkingHours: mockUseCase(),
-        bootstrapWorkingWeek: mockUseCase(),
-        updateWorkingHours: mockUseCase(),
-        deleteWorkingHours: mockUseCase(),
-        listWorkingHours: mockUseCase(),
-        getWorkingHours: mockUseCase(),
-        createWorkingHoursPeriod: mockUseCase(),
-        updateWorkingHoursPeriod: mockUseCase(),
-        deleteWorkingHoursPeriod: mockUseCase(),
-        createTimeOff: mockUseCase(),
-        updateTimeOff: mockUseCase(),
-        deleteTimeOff: mockUseCase(),
-        listTimeOffs: mockUseCase(),
-        createBlock: mockUseCase(),
-        updateBlock: mockUseCase(),
-        deleteBlock: mockUseCase(),
-        listBlocks: mockUseCase(),
-        getAvailableSlots: mockUseCase(),
-    };
+  const uc = {
+    createProfessionalServiceLink: mockUseCase(),
+    updateProfessionalServiceLink: mockUseCase(),
+    deleteProfessionalServiceLink: mockUseCase(),
+    listProfessionalServiceLinks: mockUseCase(),
+    createWorkingHours: mockUseCase(),
+    bootstrapWorkingWeek: mockUseCase(),
+    updateWorkingHours: mockUseCase(),
+    deleteWorkingHours: mockUseCase(),
+    listWorkingHours: mockUseCase(),
+    getWorkingHours: mockUseCase(),
+    createWorkingHoursPeriod: mockUseCase(),
+    updateWorkingHoursPeriod: mockUseCase(),
+    deleteWorkingHoursPeriod: mockUseCase(),
+    createTimeOff: mockUseCase(),
+    updateTimeOff: mockUseCase(),
+    deleteTimeOff: mockUseCase(),
+    listTimeOffs: mockUseCase(),
+    createBlock: mockUseCase(),
+    updateBlock: mockUseCase(),
+    deleteBlock: mockUseCase(),
+    listBlocks: mockUseCase(),
+    getAvailableSlots: mockUseCase(),
+  };
 
-    beforeAll(async () => {
-        const moduleFixture: TestingModule = await Test.createTestingModule({
-            controllers: [AvailabilityController],
-            providers: [
-                { provide: CreateProfessionalServiceLinkUseCase, useValue: uc.createProfessionalServiceLink },
-                { provide: UpdateProfessionalServiceLinkUseCase, useValue: uc.updateProfessionalServiceLink },
-                { provide: DeleteProfessionalServiceLinkUseCase, useValue: uc.deleteProfessionalServiceLink },
-                { provide: ListProfessionalServiceLinksUseCase, useValue: uc.listProfessionalServiceLinks },
-                { provide: CreateWorkingHoursUseCase, useValue: uc.createWorkingHours },
-                { provide: BootstrapWorkingWeekUseCase, useValue: uc.bootstrapWorkingWeek },
-                { provide: UpdateWorkingHoursUseCase, useValue: uc.updateWorkingHours },
-                { provide: DeleteWorkingHoursUseCase, useValue: uc.deleteWorkingHours },
-                { provide: ListWorkingHoursUseCase, useValue: uc.listWorkingHours },
-                { provide: GetWorkingHoursUseCase, useValue: uc.getWorkingHours },
-                { provide: CreateWorkingHoursPeriodUseCase, useValue: uc.createWorkingHoursPeriod },
-                { provide: UpdateWorkingHoursPeriodUseCase, useValue: uc.updateWorkingHoursPeriod },
-                { provide: DeleteWorkingHoursPeriodUseCase, useValue: uc.deleteWorkingHoursPeriod },
-                { provide: CreateTimeOffUseCase, useValue: uc.createTimeOff },
-                { provide: UpdateTimeOffUseCase, useValue: uc.updateTimeOff },
-                { provide: DeleteTimeOffUseCase, useValue: uc.deleteTimeOff },
-                { provide: ListTimeOffsUseCase, useValue: uc.listTimeOffs },
-                { provide: CreateBlockUseCase, useValue: uc.createBlock },
-                { provide: UpdateBlockUseCase, useValue: uc.updateBlock },
-                { provide: DeleteBlockUseCase, useValue: uc.deleteBlock },
-                { provide: ListBlocksUseCase, useValue: uc.listBlocks },
-                { provide: GetAvailableSlotsUseCase, useValue: uc.getAvailableSlots },
-            ],
-        })
-            .overrideGuard(BearerAuthGuard)
-            .useValue({
-                canActivate: (context: any) => {
-                    const req = context.switchToHttp().getRequest();
-                    req.user = {};
-                    req.tenantMembership = undefined;
-                    return true;
-                },
-            })
-            .overrideInterceptor(TenantInterceptor)
-            .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
-            .overrideGuard(TenantMembershipGuard)
-            .useValue({ canActivate: () => true })
-            .overrideGuard(TenantResolverGuard)
-            .useValue({ canActivate: () => true })
-            .overrideGuard(TenantRolesGuard)
-            .useValue({ canActivate: () => true })
-            .compile();
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      controllers: [AvailabilityController],
+      providers: [
+        {
+          provide: CreateProfessionalServiceLinkUseCase,
+          useValue: uc.createProfessionalServiceLink,
+        },
+        {
+          provide: UpdateProfessionalServiceLinkUseCase,
+          useValue: uc.updateProfessionalServiceLink,
+        },
+        {
+          provide: DeleteProfessionalServiceLinkUseCase,
+          useValue: uc.deleteProfessionalServiceLink,
+        },
+        {
+          provide: ListProfessionalServiceLinksUseCase,
+          useValue: uc.listProfessionalServiceLinks,
+        },
+        { provide: CreateWorkingHoursUseCase, useValue: uc.createWorkingHours },
+        {
+          provide: BootstrapWorkingWeekUseCase,
+          useValue: uc.bootstrapWorkingWeek,
+        },
+        { provide: UpdateWorkingHoursUseCase, useValue: uc.updateWorkingHours },
+        { provide: DeleteWorkingHoursUseCase, useValue: uc.deleteWorkingHours },
+        { provide: ListWorkingHoursUseCase, useValue: uc.listWorkingHours },
+        { provide: GetWorkingHoursUseCase, useValue: uc.getWorkingHours },
+        {
+          provide: CreateWorkingHoursPeriodUseCase,
+          useValue: uc.createWorkingHoursPeriod,
+        },
+        {
+          provide: UpdateWorkingHoursPeriodUseCase,
+          useValue: uc.updateWorkingHoursPeriod,
+        },
+        {
+          provide: DeleteWorkingHoursPeriodUseCase,
+          useValue: uc.deleteWorkingHoursPeriod,
+        },
+        { provide: CreateTimeOffUseCase, useValue: uc.createTimeOff },
+        { provide: UpdateTimeOffUseCase, useValue: uc.updateTimeOff },
+        { provide: DeleteTimeOffUseCase, useValue: uc.deleteTimeOff },
+        { provide: ListTimeOffsUseCase, useValue: uc.listTimeOffs },
+        { provide: CreateBlockUseCase, useValue: uc.createBlock },
+        { provide: UpdateBlockUseCase, useValue: uc.updateBlock },
+        { provide: DeleteBlockUseCase, useValue: uc.deleteBlock },
+        { provide: ListBlocksUseCase, useValue: uc.listBlocks },
+        { provide: GetAvailableSlotsUseCase, useValue: uc.getAvailableSlots },
+      ],
+    })
+      .overrideGuard(BearerAuthGuard)
+      .useValue({
+        canActivate: (context: any) => {
+          const req = context.switchToHttp().getRequest();
+          req.user = {};
+          req.tenantMembership = undefined;
+          return true;
+        },
+      })
+      .overrideInterceptor(TenantInterceptor)
+      .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
+      .overrideGuard(TenantMembershipGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(TenantResolverGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(TenantRolesGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
-        app = moduleFixture.createNestApplication();
-        app.useGlobalPipes(
-            new ValidationPipe({
-                whitelist: true,
-                transform: true,
-            }),
-        );
-        await app.init();
-    });
+    app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        transform: true,
+      }),
+    );
+    await app.init();
+  });
 
-    afterAll(async () => {
-        await app.close();
-    });
+  afterAll(async () => {
+    await app.close();
+  });
 
-    beforeEach(() => {
-        jest.clearAllMocks();
-        Object.values(uc).forEach((m) => m.run.mockResolvedValue({ ok: true }));
-    });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    Object.values(uc).forEach((m) => m.run.mockResolvedValue({ ok: true }));
+  });
 
-    it('várias rotas passam userId vazio e role undefined', async () => {
-        await request(app.getHttpServer())
-            .get(`${base}/available-slots`)
-            .query({ serviceId, date: '2026-06-15' })
-            .expect(200);
-        expect(uc.getAvailableSlots.run).toHaveBeenCalledWith(
-            tenantId,
-            tenantProfessionalId,
-            serviceId,
-            '2026-06-15',
-            '',
-            undefined,
-        );
+  it('várias rotas passam userId vazio e role undefined', async () => {
+    await request(app.getHttpServer())
+      .get(`${base}/available-slots`)
+      .query({ serviceId, date: '2026-06-15' })
+      .expect(200);
+    expect(uc.getAvailableSlots.run).toHaveBeenCalledWith(
+      tenantId,
+      tenantProfessionalId,
+      serviceId,
+      '2026-06-15',
+      '',
+      undefined,
+    );
 
-        await request(app.getHttpServer()).get(`${base}/offered-services`).expect(200);
-        expect(uc.listProfessionalServiceLinks.run).toHaveBeenCalledWith(
-            tenantId,
-            tenantProfessionalId,
-            '',
-            undefined,
-        );
+    await request(app.getHttpServer())
+      .get(`${base}/offered-services`)
+      .expect(200);
+    expect(uc.listProfessionalServiceLinks.run).toHaveBeenCalledWith(
+      tenantId,
+      tenantProfessionalId,
+      '',
+      undefined,
+    );
 
-        await request(app.getHttpServer()).get(`${base}/working-hours`).expect(200);
-        expect(uc.listWorkingHours.run).toHaveBeenCalledWith(
-            tenantId,
-            tenantProfessionalId,
-            '',
-            undefined,
-        );
+    await request(app.getHttpServer()).get(`${base}/working-hours`).expect(200);
+    expect(uc.listWorkingHours.run).toHaveBeenCalledWith(
+      tenantId,
+      tenantProfessionalId,
+      '',
+      undefined,
+    );
 
-        await request(app.getHttpServer()).get(`${base}/working-hours/wh-1`).expect(200);
-        expect(uc.getWorkingHours.run).toHaveBeenCalledWith(
-            tenantId,
-            tenantProfessionalId,
-            'wh-1',
-            '',
-            undefined,
-        );
+    await request(app.getHttpServer())
+      .get(`${base}/working-hours/wh-1`)
+      .expect(200);
+    expect(uc.getWorkingHours.run).toHaveBeenCalledWith(
+      tenantId,
+      tenantProfessionalId,
+      'wh-1',
+      '',
+      undefined,
+    );
 
-        await request(app.getHttpServer()).get(`${base}/time-offs`).expect(200);
-        expect(uc.listTimeOffs.run).toHaveBeenCalledWith(
-            tenantId,
-            tenantProfessionalId,
-            '',
-            undefined,
-        );
+    await request(app.getHttpServer()).get(`${base}/time-offs`).expect(200);
+    expect(uc.listTimeOffs.run).toHaveBeenCalledWith(
+      tenantId,
+      tenantProfessionalId,
+      '',
+      undefined,
+    );
 
-        await request(app.getHttpServer()).get(`${base}/blocks`).expect(200);
-        expect(uc.listBlocks.run).toHaveBeenCalledWith(
-            tenantId,
-            tenantProfessionalId,
-            '',
-            undefined,
-        );
+    await request(app.getHttpServer()).get(`${base}/blocks`).expect(200);
+    expect(uc.listBlocks.run).toHaveBeenCalledWith(
+      tenantId,
+      tenantProfessionalId,
+      '',
+      undefined,
+    );
 
-        await request(app.getHttpServer()).post(`${base}/offered-services`).send({ serviceId }).expect(201);
-        expect(uc.createProfessionalServiceLink.run).toHaveBeenCalledWith(
-            tenantId,
-            tenantProfessionalId,
-            { serviceId },
-            '',
-            undefined,
-        );
+    await request(app.getHttpServer())
+      .post(`${base}/offered-services`)
+      .send({ serviceId })
+      .expect(201);
+    expect(uc.createProfessionalServiceLink.run).toHaveBeenCalledWith(
+      tenantId,
+      tenantProfessionalId,
+      { serviceId },
+      '',
+      undefined,
+    );
 
-        await request(app.getHttpServer()).delete(`${base}/offered-services/lx`).expect(200);
-        expect(uc.deleteProfessionalServiceLink.run).toHaveBeenCalledWith(
-            tenantId,
-            tenantProfessionalId,
-            'lx',
-            '',
-            undefined,
-        );
+    await request(app.getHttpServer())
+      .delete(`${base}/offered-services/lx`)
+      .expect(200);
+    expect(uc.deleteProfessionalServiceLink.run).toHaveBeenCalledWith(
+      tenantId,
+      tenantProfessionalId,
+      'lx',
+      '',
+      undefined,
+    );
 
-        await request(app.getHttpServer())
-            .post(`${base}/time-offs`)
-            .send({
-                date: '2026-12-25',
-                reason: TimeOffReason.DAY_OFF,
-            })
-            .expect(201);
-        expect(uc.createTimeOff.run).toHaveBeenCalled();
+    await request(app.getHttpServer())
+      .post(`${base}/time-offs`)
+      .send({
+        date: '2026-12-25',
+        reason: TimeOffReason.DAY_OFF,
+      })
+      .expect(201);
+    expect(uc.createTimeOff.run).toHaveBeenCalled();
 
-        await request(app.getHttpServer()).delete(`${base}/time-offs/t99`).expect(200);
-        expect(uc.deleteTimeOff.run).toHaveBeenCalledWith(
-            tenantId,
-            tenantProfessionalId,
-            't99',
-            '',
-            undefined,
-        );
+    await request(app.getHttpServer())
+      .delete(`${base}/time-offs/t99`)
+      .expect(200);
+    expect(uc.deleteTimeOff.run).toHaveBeenCalledWith(
+      tenantId,
+      tenantProfessionalId,
+      't99',
+      '',
+      undefined,
+    );
 
-        await request(app.getHttpServer())
-            .post(`${base}/working-hours/bootstrap-week`)
-            .send({
-                closedDays: [DayOfWeek.SUNDAY],
-                periods: [{ startTime: '09:00', endTime: '12:00' }],
-            })
-            .expect(201);
-        expect(uc.bootstrapWorkingWeek.run).toHaveBeenCalledWith(
-            tenantId,
-            tenantProfessionalId,
-            {
-                closedDays: [DayOfWeek.SUNDAY],
-                periods: [{ startTime: '09:00', endTime: '12:00' }],
-            },
-            '',
-            undefined,
-        );
-    });
+    await request(app.getHttpServer())
+      .post(`${base}/working-hours/bootstrap-week`)
+      .send({
+        closedDays: [DayOfWeek.SUNDAY],
+        periods: [{ startTime: '09:00', endTime: '12:00' }],
+      })
+      .expect(201);
+    expect(uc.bootstrapWorkingWeek.run).toHaveBeenCalledWith(
+      tenantId,
+      tenantProfessionalId,
+      {
+        closedDays: [DayOfWeek.SUNDAY],
+        periods: [{ startTime: '09:00', endTime: '12:00' }],
+      },
+      '',
+      undefined,
+    );
+  });
 });

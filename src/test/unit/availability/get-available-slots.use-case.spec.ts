@@ -185,7 +185,9 @@ describe('GetAvailableSlotsUseCase', () => {
       updatedAt: new Date(),
       deletedAt: undefined,
     } as WorkingHoursEntity;
-    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue(wh);
+    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue(
+      wh,
+    );
     jest
       .spyOn(DateTime, 'now')
       .mockReturnValue(
@@ -205,16 +207,18 @@ describe('GetAvailableSlotsUseCase', () => {
     expect(result.slots).toEqual(['09:00', '10:00', '11:00']);
   });
   it('retorna slots vazios quando jornada existe mas está inativa', async () => {
-    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue({
-      ...({
-        id: 'wh-1',
-        tenantId,
-        tenantProfessionalId,
-        dayOfWeek: DayOfWeek.MONDAY,
-        isActive: false,
-        periods: [{ startTime: '09:00', endTime: '12:00' }],
-      } as WorkingHoursEntity),
-    });
+    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue(
+      {
+        ...({
+          id: 'wh-1',
+          tenantId,
+          tenantProfessionalId,
+          dayOfWeek: DayOfWeek.MONDAY,
+          isActive: false,
+          periods: [{ startTime: '09:00', endTime: '12:00' }],
+        } as WorkingHoursEntity),
+      },
+    );
     const result = await useCase.run(
       tenantId,
       tenantProfessionalId,
@@ -238,7 +242,9 @@ describe('GetAvailableSlotsUseCase', () => {
       updatedAt: new Date(),
       deletedAt: undefined,
     } as WorkingHoursEntity;
-    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue(wh);
+    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue(
+      wh,
+    );
     availabilityRepository.listTimeOffsOnDate.mockResolvedValue([
       { startTime: null, endTime: null } as any,
     ]);
@@ -273,7 +279,9 @@ describe('GetAvailableSlotsUseCase', () => {
       updatedAt: new Date(),
       deletedAt: undefined,
     } as WorkingHoursEntity;
-    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue(wh);
+    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue(
+      wh,
+    );
     availabilityRepository.listBlocksOnDate.mockResolvedValue([
       { startTime: '10:00', endTime: '11:00' } as any,
     ]);
@@ -308,7 +316,9 @@ describe('GetAvailableSlotsUseCase', () => {
       updatedAt: new Date(),
       deletedAt: undefined,
     } as WorkingHoursEntity;
-    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue(wh);
+    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue(
+      wh,
+    );
     jest
       .spyOn(DateTime, 'now')
       .mockReturnValue(
