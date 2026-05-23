@@ -34,7 +34,15 @@ export async function assertTenantProfessionalAgendaAccess(params: {
     );
   }
 
-  if (!callerRole || MANAGER_ROLES.has(callerRole)) {
+  if (!callerRole) {
+    throw new TenantForbiddenException(
+      'FORBIDDEN',
+      'Sem papel de membership válido para gerenciar agenda.',
+      { tenantId },
+    );
+  }
+
+  if (MANAGER_ROLES.has(callerRole)) {
     return;
   }
 
