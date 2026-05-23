@@ -14,7 +14,6 @@ import { FindUserByIdUseCase } from './find-user-by-id.use-case';
 import { AddressRepository } from 'src/repository/address/address.repository';
 import { CheckUserExistsByEmailUseCase } from './check-user-exists-by-email.use-case';
 import { UserResponseDto } from '../dto/user-response.dto';
-import { DeleteUserUseCase } from './delete-user.use-case';
 
 @Injectable()
 export class CreateUserUseCase {
@@ -23,7 +22,6 @@ export class CreateUserUseCase {
     private readonly repo: IUserRepository,
     private readonly findUserById: FindUserByIdUseCase,
     private readonly checkUserExistsByEmailUseCase: CheckUserExistsByEmailUseCase,
-    private readonly deleteUserUseCase: DeleteUserUseCase,
     @Inject(PASSWORD_HASHER)
     private readonly passwordService: IPasswordHasher,
     private readonly userSyncService: UserSyncService,
@@ -60,7 +58,7 @@ export class CreateUserUseCase {
       await this.repo.setFirebaseUid(user.id, uid);
       return this.findUserById.run(user.id);
     } catch (err) {
-      if (user) await this.deleteUserUseCase.run(user.id);
+      if (user) await this.repo.softDelete(user.id);
       if (addressId) await this.addressRepository.softDelete(addressId);
       throw err;
     }

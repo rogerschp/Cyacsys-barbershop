@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TenantProfessionalRepository } from '../../repository/tenant-professional/tenant-professional.repository';
 import { AuthModule } from '../auth/auth.module';
@@ -18,10 +18,10 @@ import { UpdateTenantProfessionalStatusUseCase } from './use-cases/update-tenant
 @Module({
   imports: [
     TypeOrmModule.forFeature([TenantProfessionalEntity]),
-    AuthModule,
-    TenantModule,
-    TenantUserModule,
-    ProfessionalProfileModule,
+    forwardRef(() => AuthModule),
+    forwardRef(() => TenantModule),
+    forwardRef(() => TenantUserModule),
+    forwardRef(() => ProfessionalProfileModule),
   ],
   controllers: [TenantProfessionalController],
   providers: [

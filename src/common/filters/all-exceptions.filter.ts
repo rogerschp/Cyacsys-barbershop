@@ -29,7 +29,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         requestId,
         method: request.method,
         path: request.url,
-        exception,
+        ...this.serializeException(exception),
       });
     }
 
@@ -65,6 +65,24 @@ export class AllExceptionsFilter implements ExceptionFilter {
     return statusCode >= HttpStatus.INTERNAL_SERVER_ERROR
       ? { message: 'Internal server error' }
       : { message: 'Unexpected error' };
+  }
+
+  private serializeException(exception: unknown): Record<string, unknown> {
+    if (exception instanceof Error) {
+      const firebaseCode =
+        typeof exception === 'object' &&
+        exception !== null &&
+        'code' in exception
+          ? String((exception as { code?: string }).code)
+          : undefined;
+      return {
+        errorName: exception.name,
+        errorMessage: exception.message,
+        ...(firebaseCode ? { firebaseCode } : {}),
+        stack: exception.stack,
+      };
+    }
+    return { exception: String(exception) };
   }
 
   private readHeaderAsString(

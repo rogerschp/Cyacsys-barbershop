@@ -11,3 +11,7 @@ NODE_ENV=development
 FIREBASE_PROJECT_ID=
 API_KEY=
 FIREBASE_SERVICE_ACCOUNT_BASE64=
+
+#CORS — comma-separated; must match browser Origin exactly (scheme + host + port)
+# Dev: front on 3001 → include both hostnames if you alternate localhost / 127.0.0.1
+CORS_ORIGINS=http://localhost:3001,http://127.0.0.1:3001

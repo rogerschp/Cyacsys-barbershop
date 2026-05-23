@@ -91,6 +91,7 @@ describe('BookingRepository', () => {
         startsAt,
         endsAt,
         createdByTenantUserId: 'tu-1',
+        clientUserId: 'user-1',
       });
 
       expect(dataSource.transaction).toHaveBeenCalled();
@@ -109,6 +110,7 @@ describe('BookingRepository', () => {
           startsAt,
           endsAt,
           createdByTenantUserId: 'tu-1',
+          clientUserId: 'user-1',
         }),
       ).rejects.toThrow('BOOKING_SLOT_CONFLICT');
       expect(txRepo.save).not.toHaveBeenCalled();

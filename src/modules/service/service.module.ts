@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServiceRepository } from '../../repository/service/service.repository';
 import { AuthModule } from '../auth/auth.module';
@@ -15,9 +15,9 @@ import { UpdateServiceUseCase } from './use-cases/update-service.use-case';
 @Module({
   imports: [
     TypeOrmModule.forFeature([ServiceEntity]),
-    AuthModule,
-    TenantModule,
-    TenantUserModule,
+    forwardRef(() => AuthModule),
+    forwardRef(() => TenantModule),
+    forwardRef(() => TenantUserModule),
   ],
   controllers: [ServiceController],
   providers: [

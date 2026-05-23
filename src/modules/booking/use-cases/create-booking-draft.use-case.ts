@@ -143,6 +143,7 @@ export class CreateBookingDraftUseCase {
         startsAt: slotStartUtc.toJSDate(),
         endsAt: endsAtUtc.toJSDate(),
         createdByTenantUserId,
+        clientUserId: userId,
       });
     } catch (e: unknown) {
       if (e instanceof Error && e.message === 'BOOKING_SLOT_CONFLICT') {

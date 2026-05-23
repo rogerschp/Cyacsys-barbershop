@@ -12,7 +12,6 @@ import { Role } from 'src/common/enums/role.enum';
 import { ConflictException } from '@nestjs/common';
 import { BearerAuthGuard } from 'src/modules/auth/guards/bearer-auth.guard';
 import { UserRolesGuard } from 'src/common/guards/user-roles.guard';
-
 describe('UserController (HTTP)', () => {
   let app: INestApplication;
   let adminApp: INestApplication;

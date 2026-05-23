@@ -1,4 +1,10 @@
-import { ConflictException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import {
   IFirebaseUserSync,
@@ -30,16 +36,28 @@ export class FirebaseUserSyncService implements IFirebaseUserSync {
       const message = error instanceof Error ? error.message : String(error);
       const isEmailExists =
         code === 'auth/email-already-exists' ||
+        code === 'auth/email-already-in-use' ||
         message?.includes('email already exists') ||
         message?.includes('already in use');
       if (isEmailExists) {
         this.logger.warn(`Firebase user already exists for ${input.email}`);
         throw new ConflictException(
-          'Email already registered in Firebase. User must be created through the system (DB first, then sync).',
+          'Email already registered in Firebase. Delete the user in Firebase Console or use another email.',
+        );
+      }
+      if (
+        code === 'auth/weak-password' ||
+        code === 'auth/invalid-password' ||
+        code === 'auth/invalid-email'
+      ) {
+        throw new BadRequestException(
+          message || 'Invalid email or password for Firebase',
         );
       }
       this.logger.error('Firebase createUser failed', error);
-      throw error;
+      throw new InternalServerErrorException(
+        message || 'Failed to create user in Firebase',
+      );
     }
   }
   async getUser(uid: string): Promise<{

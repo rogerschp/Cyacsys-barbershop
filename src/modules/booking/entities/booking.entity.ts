@@ -13,6 +13,7 @@ import { TenantEntity } from '../../tenant/entities/tenant.entity';
 import { TenantProfessionalEntity } from '../../tenant-professional/entities/tenant-professional.entity';
 import { ServiceEntity } from '../../service/entities/service.entity';
 import { TenantUserEntity } from '../../tenant-user/entities/tenant-user.entity';
+import { UserEntity } from '../../user/entities/user.entity';
 import { BookingStatus } from './booking-status.enum';
 
 @Entity('bookings')
@@ -77,6 +78,17 @@ export class BookingEntity {
   @ManyToOne(() => TenantUserEntity, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'created_by_tenant_user_id' })
   createdByTenantUser?: TenantUserEntity | null;
+
+  @Column({ name: 'client_user_id', type: 'uuid', nullable: true })
+  @ApiProperty({
+    nullable: true,
+    description: 'Usuário global para quem o agendamento foi feito',
+  })
+  clientUserId: string | null;
+
+  @ManyToOne(() => UserEntity, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'client_user_id' })
+  clientUser?: UserEntity | null;
 
   @CreateDateColumn()
   @ApiProperty()

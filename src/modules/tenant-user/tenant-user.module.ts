@@ -20,9 +20,9 @@ import { ValidateMembershipByUserIdAndTenantIdUseCase } from './use-cases/valida
 @Module({
   imports: [
     TypeOrmModule.forFeature([TenantUserEntity]),
-    AuthModule,
+    forwardRef(() => AuthModule),
     forwardRef(() => TenantModule),
-    UserModule,
+    forwardRef(() => UserModule),
   ],
   controllers: [TenantUserController],
   providers: [
