@@ -8,6 +8,7 @@ import { BearerAuthGuard } from 'src/modules/auth/guards/bearer-auth.guard';
 
 describe('UserBookingsController (HTTP)', () => {
   let app: INestApplication;
+  let attachUser = true;
   const listMyBookingsUseCase = { run: jest.fn() };
 
   beforeAll(async () => {
@@ -25,10 +26,12 @@ describe('UserBookingsController (HTTP)', () => {
         canActivate: (context: {
           switchToHttp: () => { getRequest: () => object };
         }) => {
-          const req = context.switchToHttp().getRequest() as {
-            user?: { dbUser: { id: string } };
-          };
-          req.user = { dbUser: { id: 'uuid-123' } };
+          if (attachUser) {
+            const req = context.switchToHttp().getRequest() as {
+              user?: { dbUser: { id: string } };
+            };
+            req.user = { dbUser: { id: 'uuid-123' } };
+          }
           return true;
         },
       })
@@ -84,5 +87,11 @@ describe('UserBookingsController (HTTP)', () => {
           undefined,
         );
       });
+  });
+
+  it('GET /users/me/bookings retorna 404 quando usuario nao esta no request', async () => {
+    attachUser = false;
+    await request(app.getHttpServer()).get('/users/me/bookings').expect(404);
+    attachUser = true;
   });
 });

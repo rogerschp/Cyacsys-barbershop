@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -55,6 +56,13 @@ describe('FirebaseUserSyncService', () => {
       await expect(
         service.createUser({ email: 'a@b.com', password: 'x' }),
       ).rejects.toBeInstanceOf(ConflictException);
+    });
+
+    it('lança BadRequestException quando Firebase rejeita senha ou e-mail', async () => {
+      createUser.mockRejectedValue({ code: 'auth/weak-password' });
+      await expect(
+        service.createUser({ email: 'a@b.com', password: 'x' }),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('lança InternalServerErrorException para erro desconhecido', async () => {
