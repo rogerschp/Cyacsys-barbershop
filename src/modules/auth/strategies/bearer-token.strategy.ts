@@ -28,9 +28,12 @@ export class BearerTokenStrategy extends PassportStrategy(Strategy, 'bearer') {
     if (!authHeader) {
       throw new UnauthorizedException('No authorization header provided');
     }
-    const token = authHeader.startsWith(BEARER_PREFIX)
-      ? authHeader.slice(BEARER_PREFIX.length).trim()
-      : authHeader.trim();
+    if (!authHeader.startsWith(BEARER_PREFIX)) {
+      throw new UnauthorizedException(
+        'Invalid authorization header format. Use Bearer token',
+      );
+    }
+    const token = authHeader.slice(BEARER_PREFIX.length).trim();
     if (!token) {
       throw new UnauthorizedException('Invalid token format');
     }

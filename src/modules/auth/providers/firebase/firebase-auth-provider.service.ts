@@ -14,6 +14,8 @@ const FIREBASE_SIGN_IN_URL =
 const FIREBASE_TOKEN_URL = 'https://securetoken.googleapis.com/v1/token';
 const DEFAULT_EXPIRES_IN_SECONDS = 3600;
 const FALLBACK_ERROR_MESSAGE = 'Authentication failed';
+const GENERIC_INVALID_CREDENTIALS_MESSAGE = 'Credenciais inválidas';
+const GENERIC_INVALID_REFRESH_MESSAGE = 'Refresh token inválido ou expirado';
 @Injectable()
 export class FirebaseAuthProvider implements IAuthProvider {
   private readonly logger = new Logger(FirebaseAuthProvider.name);
@@ -66,7 +68,7 @@ export class FirebaseAuthProvider implements IAuthProvider {
     } catch (error) {
       const errorMsg = this.getFirebaseErrorMessage(error);
       this.logger.warn(`Login failed: ${errorMsg}`);
-      throw new UnauthorizedException(errorMsg);
+      throw new UnauthorizedException(GENERIC_INVALID_CREDENTIALS_MESSAGE);
     }
   }
   async refreshToken(
@@ -100,7 +102,7 @@ export class FirebaseAuthProvider implements IAuthProvider {
       }
       const errorMsg = this.getFirebaseErrorMessage(error);
       this.logger.warn(`Refresh failed: ${errorMsg}`);
-      throw new UnauthorizedException(errorMsg);
+      throw new UnauthorizedException(GENERIC_INVALID_REFRESH_MESSAGE);
     }
   }
   async revokeRefreshTokens(uid: string): Promise<void> {
