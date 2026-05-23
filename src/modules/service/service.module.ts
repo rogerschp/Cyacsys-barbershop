@@ -13,23 +13,22 @@ import { GetServiceUseCase } from './use-cases/get-service.use-case';
 import { ListServicesByTenantUseCase } from './use-cases/list-services.use-case';
 import { UpdateServiceUseCase } from './use-cases/update-service.use-case';
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([ServiceEntity]),
-        AuthModule,
-        TenantModule,
-        TenantUserModule,
-    ],
-    controllers: [ServiceController],
-    providers: [
-        ServiceRepository,
-        { provide: SERVICE_REPOSITORY, useClass: ServiceRepository },
-        CreateServiceUseCase,
-        UpdateServiceUseCase,
-        DeactivateServiceUseCase,
-        ListServicesByTenantUseCase,
-        GetServiceUseCase,
-    ],
-    exports: [SERVICE_REPOSITORY],
+  imports: [
+    TypeOrmModule.forFeature([ServiceEntity]),
+    AuthModule,
+    TenantModule,
+    TenantUserModule,
+  ],
+  controllers: [ServiceController],
+  providers: [
+    ServiceRepository,
+    { provide: SERVICE_REPOSITORY, useClass: ServiceRepository },
+    CreateServiceUseCase,
+    UpdateServiceUseCase,
+    DeactivateServiceUseCase,
+    ListServicesByTenantUseCase,
+    GetServiceUseCase,
+  ],
+  exports: [SERVICE_REPOSITORY],
 })
-export class ServiceModule {
-}
+export class ServiceModule {}

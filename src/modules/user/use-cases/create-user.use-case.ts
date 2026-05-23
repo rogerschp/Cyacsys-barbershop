@@ -8,7 +8,8 @@ import {
   PASSWORD_HASHER,
 } from 'src/common/interfaces/password-hasher.interface';
 import { UserSyncService } from '../infrastructure/user-sync.service';
-import { CreateUserDto } from '../dto/create-user.dto';
+import { RegisterUserDto } from '../dto/register-user.dto';
+import { Role } from 'src/common/enums/role.enum';
 import { FindUserByIdUseCase } from './find-user-by-id.use-case';
 import { AddressRepository } from 'src/repository/address/address.repository';
 import { CheckUserExistsByEmailUseCase } from './check-user-exists-by-email.use-case';
@@ -28,7 +29,7 @@ export class CreateUserUseCase {
     private readonly userSyncService: UserSyncService,
     private readonly addressRepository: AddressRepository,
   ) {}
-  async run(dto: CreateUserDto): Promise<UserResponseDto> {
+  async run(dto: RegisterUserDto): Promise<UserResponseDto> {
     const existing = await this.checkUserExistsByEmailUseCase.run(dto.email);
     if (existing) {
       throw new ConflictException('Email already in use');
@@ -48,7 +49,7 @@ export class CreateUserUseCase {
         telephone: dto.telephone,
         addressId,
         passwordHash,
-        role: dto.role,
+        role: Role.CLIENT,
       });
 
       const { uid } = await this.userSyncService.createInFirebase({

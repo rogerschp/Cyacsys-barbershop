@@ -11,17 +11,16 @@ import { FirebaseAuthProvider } from './providers/firebase/firebase-auth-provide
 import { FirebaseTokenVerifier } from './providers/firebase/firebase-token-verifier.service';
 import { BearerTokenStrategy } from './strategies/bearer-token.strategy';
 @Module({
-    imports: [PassportModule, forwardRef(() => UserModule)],
-    controllers: [AuthController],
-    providers: [
-        { provide: TOKEN_VERIFIER, useClass: FirebaseTokenVerifier },
-        { provide: AUTH_PROVIDER, useClass: FirebaseAuthProvider },
-        AuthService,
-        BearerTokenStrategy,
-        BearerAuthGuard,
-        UserRolesGuard,
-    ],
-    exports: [AuthService, UserRolesGuard, BearerAuthGuard],
+  imports: [PassportModule, forwardRef(() => UserModule)],
+  controllers: [AuthController],
+  providers: [
+    { provide: TOKEN_VERIFIER, useClass: FirebaseTokenVerifier },
+    { provide: AUTH_PROVIDER, useClass: FirebaseAuthProvider },
+    AuthService,
+    BearerTokenStrategy,
+    BearerAuthGuard,
+    UserRolesGuard,
+  ],
+  exports: [AuthService, UserRolesGuard, BearerAuthGuard],
 })
-export class AuthModule {
-}
+export class AuthModule {}

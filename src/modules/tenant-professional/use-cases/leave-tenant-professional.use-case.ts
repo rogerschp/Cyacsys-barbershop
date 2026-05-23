@@ -47,8 +47,7 @@ export class LeaveTenantProfessionalUseCase {
     const isAdmin =
       callerRole === TenantUserRole.OWNER ||
       callerRole === TenantUserRole.ADMIN;
-    const isSelf =
-      existing.professionalProfile?.userId === performedBy;
+    const isSelf = existing.professionalProfile?.userId === performedBy;
 
     if (!isAdmin && !isSelf) {
       throw new ForbiddenException(

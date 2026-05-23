@@ -11,6 +11,7 @@ import {
 } from 'src/common/interfaces/password-hasher.interface';
 import { UserSyncService } from '../infrastructure/user-sync.service';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { UpdateMyUserDto } from '../dto/update-my-user.dto';
 import { Role } from 'src/common/enums/role.enum';
 import { UserStatus } from '../entities/user-status.enum';
 import { UserResponseDto } from '../dto/user-response.dto';
@@ -26,7 +27,10 @@ export class UpdateUserUseCase {
     private readonly repo: IUserRepository,
     private readonly userSyncService: UserSyncService,
   ) {}
-  async run(id: string, dto: UpdateUserDto): Promise<UserResponseDto> {
+  async run(
+    id: string,
+    dto: UpdateUserDto | UpdateMyUserDto,
+  ): Promise<UserResponseDto> {
     const user = await this.findUserById.run(id);
     if (!user) throw new NotFoundException('User not found');
     const data: {
@@ -37,10 +41,10 @@ export class UpdateUserUseCase {
       passwordHash?: string;
     } = {};
     if (dto.name !== undefined) data.name = dto.name;
-    if (dto.status !== undefined) data.status = dto.status;
+    if ('status' in dto && dto.status !== undefined) data.status = dto.status;
     if (dto.telephone !== undefined) data.telephone = dto.telephone;
 
-    if (dto.role !== undefined) data.role = dto.role;
+    if ('role' in dto && dto.role !== undefined) data.role = dto.role;
     if (dto.password) {
       data.passwordHash = await this.passwordService.hash(dto.password);
     }
@@ -51,7 +55,7 @@ export class UpdateUserUseCase {
         displayName?: string;
         password?: string;
       } = {};
-      if (dto.status !== undefined) {
+      if ('status' in dto && dto.status !== undefined) {
         firebaseUpdate.disabled = dto.status !== UserStatus.ACTIVE;
       }
       if (dto.name !== undefined) firebaseUpdate.displayName = dto.name;

@@ -1,5 +1,5 @@
 export interface IDecodedToken {
-    uid: string;
-    email?: string | null;
-    [key: string]: unknown;
+  uid: string;
+  email?: string | null;
+  [key: string]: unknown;
 }

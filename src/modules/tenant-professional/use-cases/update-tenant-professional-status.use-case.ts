@@ -10,7 +10,9 @@ import {
 
 @Injectable()
 export class UpdateTenantProfessionalStatusUseCase {
-  private readonly logger = new Logger(UpdateTenantProfessionalStatusUseCase.name);
+  private readonly logger = new Logger(
+    UpdateTenantProfessionalStatusUseCase.name,
+  );
 
   constructor(
     @Inject(TENANT_PROFESSIONAL_REPOSITORY)

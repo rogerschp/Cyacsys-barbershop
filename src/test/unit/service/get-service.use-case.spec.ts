@@ -4,48 +4,53 @@ import { GetServiceUseCase } from 'src/modules/service/use-cases/get-service.use
 import { SERVICE_REPOSITORY } from 'src/modules/service/interfaces/service-repository.interface';
 import { ServiceEntity } from 'src/modules/service/entities/service.entity';
 describe('GetServiceUseCase', () => {
-    let useCase: GetServiceUseCase;
-    let serviceRepository: {
-        findById: jest.Mock;
+  let useCase: GetServiceUseCase;
+  let serviceRepository: {
+    findById: jest.Mock;
+  };
+  const tenantId = 'tenant-uuid';
+  const serviceId = 'service-uuid';
+  const mockService: ServiceEntity = {
+    id: serviceId,
+    tenantId,
+    name: 'Corte masculino',
+    description: null,
+    price: '45.00',
+    durationInMinutes: 30,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    deletedAt: undefined,
+  } as ServiceEntity;
+  beforeEach(async () => {
+    serviceRepository = {
+      findById: jest.fn().mockResolvedValue(mockService),
     };
-    const tenantId = 'tenant-uuid';
-    const serviceId = 'service-uuid';
-    const mockService: ServiceEntity = {
-        id: serviceId,
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        GetServiceUseCase,
+        { provide: SERVICE_REPOSITORY, useValue: serviceRepository },
+      ],
+    }).compile();
+    useCase = module.get<GetServiceUseCase>(GetServiceUseCase);
+  });
+  it('deve estar definido', () => {
+    expect(useCase).toBeDefined();
+  });
+  describe('run', () => {
+    it('deve retornar serviço quando existe no tenant', async () => {
+      const result = await useCase.run(tenantId, serviceId);
+      expect(serviceRepository.findById).toHaveBeenCalledWith(
+        serviceId,
         tenantId,
-        name: 'Corte masculino',
-        description: null,
-        price: '45.00',
-        durationInMinutes: 30,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        deletedAt: undefined,
-    } as ServiceEntity;
-    beforeEach(async () => {
-        serviceRepository = {
-            findById: jest.fn().mockResolvedValue(mockService),
-        };
-        const module: TestingModule = await Test.createTestingModule({
-            providers: [
-                GetServiceUseCase,
-                { provide: SERVICE_REPOSITORY, useValue: serviceRepository },
-            ],
-        }).compile();
-        useCase = module.get<GetServiceUseCase>(GetServiceUseCase);
+      );
+      expect(result).toEqual(mockService);
     });
-    it('deve estar definido', () => {
-        expect(useCase).toBeDefined();
+    it('deve lançar NotFoundException quando serviço não existe', async () => {
+      serviceRepository.findById.mockResolvedValue(null);
+      await expect(useCase.run(tenantId, serviceId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
-    describe('run', () => {
-        it('deve retornar serviço quando existe no tenant', async () => {
-            const result = await useCase.run(tenantId, serviceId);
-            expect(serviceRepository.findById).toHaveBeenCalledWith(serviceId, tenantId);
-            expect(result).toEqual(mockService);
-        });
-        it('deve lançar NotFoundException quando serviço não existe', async () => {
-            serviceRepository.findById.mockResolvedValue(null);
-            await expect(useCase.run(tenantId, serviceId)).rejects.toThrow(NotFoundException);
-        });
-    });
+  });
 });

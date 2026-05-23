@@ -1,4 +1,4 @@
 export enum TenantUserStatus {
-    ACTIVE = 'ACTIVE',
-    INACTIVE = 'INACTIVE'
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
 }

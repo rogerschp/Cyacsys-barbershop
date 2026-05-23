@@ -3,7 +3,6 @@ import {
   IsEnum,
   IsObject,
   IsOptional,
-  IsPhoneNumber,
   IsString,
   Matches,
   MaxLength,
@@ -41,10 +40,14 @@ export class UpdateTenantDto {
 
   @ApiPropertyOptional({
     example: '5511992834085',
-    description: 'Telefone para contato',
+    description: 'Telefone com DDI e DDD (somente dígitos, 10–15 caracteres)',
   })
   @IsOptional()
-  @IsPhoneNumber() // Removido IsNotEmpty para permitir updates parciais
+  @IsString()
+  @Matches(/^\+?\d{10,15}$/, {
+    message:
+      'Telephone must contain 10 to 15 digits with country code, e.g. 5511992834085',
+  })
   telephone?: string;
 
   @ApiPropertyOptional({

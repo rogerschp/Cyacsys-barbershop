@@ -65,7 +65,9 @@ export class UpdateProfessionalProfileUseCase {
       updates.whatsappNumber = whatsappNumber;
     }
     if (dto.instagramUsername !== undefined) {
-      const instagramUsername = normalizeInstagramUsername(dto.instagramUsername);
+      const instagramUsername = normalizeInstagramUsername(
+        dto.instagramUsername,
+      );
       assertValidInstagramUsername(instagramUsername);
       updates.instagramUsername = instagramUsername;
     }

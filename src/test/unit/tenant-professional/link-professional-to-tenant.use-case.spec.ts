@@ -43,7 +43,9 @@ describe('LinkProfessionalToTenantUseCase', () => {
       update: jest.fn(),
     };
     professionalProfileRepository = {
-      findById: jest.fn<() => Promise<typeof mockProfile>>().mockResolvedValue(mockProfile),
+      findById: jest
+        .fn<() => Promise<typeof mockProfile>>()
+        .mockResolvedValue(mockProfile),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -59,7 +61,9 @@ describe('LinkProfessionalToTenantUseCase', () => {
         },
         {
           provide: FindTenantByIdUseCase,
-          useValue: { run: jest.fn<() => Promise<object>>().mockResolvedValue({}) },
+          useValue: {
+            run: jest.fn<() => Promise<object>>().mockResolvedValue({}),
+          },
         },
       ],
     }).compile();

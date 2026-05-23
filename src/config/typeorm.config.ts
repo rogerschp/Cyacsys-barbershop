@@ -20,7 +20,10 @@ export const getTypeOrmConfig = (
   migrations: [join(__dirname, '..', 'database', 'migrations', '*.{ts,js}')],
   subscribers: [join(__dirname, '..', '**', '*.subscriber.{ts,js}')],
   migrationsRun: false,
-  logging: true,
+  logging:
+    configService.get<string>('NODE_ENV') === 'production'
+      ? ['error', 'warn', 'migration']
+      : true,
   extra: {
     max: 20,
   },

@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayUnique, IsArray, IsBoolean, IsEnum, IsOptional, ValidateNested } from 'class-validator';
+import {
+  ArrayUnique,
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
 import { DayOfWeek } from '../entities/day-of-week.enum';
 import { WorkingHoursPeriodInputDto } from './working-hours-period-input.dto';
 

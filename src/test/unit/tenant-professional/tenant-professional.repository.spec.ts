@@ -117,10 +117,15 @@ describe('TenantProfessionalRepository', () => {
 
   it('listByTenant com activeOnly aplica filtros', async () => {
     await repository.listByTenant('tenant-uuid', { activeOnly: true });
-    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('tp.status = :status', {
-      status: TenantProfessionalStatus.ACTIVE,
-    });
-    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('pp.is_active = true');
+    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+      'tp.status = :status',
+      {
+        status: TenantProfessionalStatus.ACTIVE,
+      },
+    );
+    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+      'pp.is_active = true',
+    );
   });
 
   it('update aplica apenas campos informados e recarrega', async () => {
@@ -147,7 +152,9 @@ describe('TenantProfessionalRepository', () => {
     typeOrmRepo.findOne.mockResolvedValue(null);
 
     await expect(
-      repository.update('tp-uuid', 'tenant-uuid', { status: TenantProfessionalStatus.LEFT }),
+      repository.update('tp-uuid', 'tenant-uuid', {
+        status: TenantProfessionalStatus.LEFT,
+      }),
     ).rejects.toThrow('Tenant professional not found after update');
   });
 });

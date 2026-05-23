@@ -131,10 +131,14 @@ export interface IAvailabilityRepository {
   updateTimeOff(
     id: string,
     tenantId: string,
-    data: Partial<Pick<TimeOffEntity, 'date' | 'startTime' | 'endTime' | 'reason'>>,
+    data: Partial<
+      Pick<TimeOffEntity, 'date' | 'startTime' | 'endTime' | 'reason'>
+    >,
   ): Promise<TimeOffEntity>;
   softDeleteTimeOff(id: string, tenantId: string): Promise<TimeOffEntity>;
-  createBlock(data: CreateBlockData): Promise<ProfessionalAvailabilityBlockEntity>;
+  createBlock(
+    data: CreateBlockData,
+  ): Promise<ProfessionalAvailabilityBlockEntity>;
   findBlockById(
     id: string,
     tenantId: string,

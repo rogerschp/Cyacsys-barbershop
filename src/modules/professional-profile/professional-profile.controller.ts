@@ -67,7 +67,10 @@ export class ProfessionalProfileController {
     @Req() req: RequestWithUser,
   ) {
     const userId = req.user?.dbUser?.id ?? '';
-    const profile = await this.createProfessionalProfileUseCase.run(userId, dto);
+    const profile = await this.createProfessionalProfileUseCase.run(
+      userId,
+      dto,
+    );
     return ProfessionalProfileMapper.toResponse(profile);
   }
 
@@ -110,7 +113,10 @@ export class ProfessionalProfileController {
     @Req() req: RequestWithUser,
   ) {
     const userId = req.user?.dbUser?.id ?? '';
-    const profile = await this.updateProfessionalProfileUseCase.run(userId, dto);
+    const profile = await this.updateProfessionalProfileUseCase.run(
+      userId,
+      dto,
+    );
     return ProfessionalProfileMapper.toResponse(profile);
   }
 
