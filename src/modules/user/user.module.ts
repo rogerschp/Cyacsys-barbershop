@@ -49,8 +49,6 @@ import { CheckUserExistsByEmailUseCase } from './use-cases/check-user-exists-by-
     ValidateUserAccessUseCase,
     SyncUserWithFirebaseUseCase,
     FindUserByEmailUseCase,
-    FindUserByFirebaseUidUseCase,
-    FindUserByIdUseCase,
   ],
 })
 export class UserModule {}

@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-export class AuthLoginResponseDto {
-  @ApiProperty({ description: 'Firebase ID token (JWT)' })
-  idToken: string;
-  @ApiProperty({ description: 'Refresh token para obter novo idToken' })
-  refreshToken: string;
-  @ApiProperty({ description: 'Tempo de expiração do idToken em segundos' })
-  expiresIn: number;
+import { AuthTokensDto } from './auth-tokens.dto';
+
+export class AuthLoginResponseDto extends AuthTokensDto {
+  @ApiProperty({
+    description: 'Nome de exibição do usuário (campo name no cadastro)',
+    example: 'João Silva',
+  })
+  username: string;
 }

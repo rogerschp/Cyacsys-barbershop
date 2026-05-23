@@ -3,7 +3,6 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   MinLength,
@@ -26,7 +25,7 @@ export class CreateUserDto {
   @MinLength(6, { message: 'Password must be at least 6 characters' })
   password: string;
   @ApiProperty({ example: '5511992834085' })
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
   telephone: string;
   @ApiProperty({ enum: Role, required: false })

@@ -1,12 +1,18 @@
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
+function isLocalDevOrigin(origin: string): boolean {
+  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const logger = new Logger('CORS');
+  const isDev = process.env.NODE_ENV !== 'production';
   const corsOrigins = (process.env.CORS_ORIGINS ?? '')
     .split(',')
     .map((origin) => origin.trim())
@@ -19,7 +25,15 @@ async function bootstrap() {
             if (!origin || corsOrigins.includes(origin)) {
               return callback(null, true);
             }
-            return callback(new Error('Origin not allowed by CORS'));
+            if (isDev && isLocalDevOrigin(origin)) {
+              return callback(null, true);
+            }
+            if (isDev) {
+              logger.warn(
+                `Origin rejected: ${origin}. Set CORS_ORIGINS or use localhost/127.0.0.1.`,
+              );
+            }
+            return callback(null, false);
           }
         : false,
     credentials: true,

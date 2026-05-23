@@ -9,10 +9,14 @@ import { ForbiddenException } from '@nestjs/common';
 describe('AuthController (HTTP)', () => {
   let app: INestApplication;
   let authService: jest.Mocked<AuthService>;
-  const mockLoginResponse = {
+  const mockTokens = {
     idToken: 'id-token-123',
     refreshToken: 'refresh-token-123',
     expiresIn: 3600,
+  };
+  const mockLoginResponse = {
+    ...mockTokens,
+    username: 'João Silva',
   };
   beforeAll(async () => {
     const mockService = {
@@ -62,6 +66,10 @@ describe('AuthController (HTTP)', () => {
             'refreshToken',
             mockLoginResponse.refreshToken,
           );
+          expect(res.body).toHaveProperty(
+            'username',
+            mockLoginResponse.username,
+          );
           expect(
             authService.authenticateWithUserCredentials,
           ).toHaveBeenCalledWith(dto);
@@ -79,7 +87,7 @@ describe('AuthController (HTTP)', () => {
   });
   describe('POST /auth/refresh', () => {
     it('deve retornar 200 e novos tokens', () => {
-      authService.refreshToken.mockResolvedValue(mockLoginResponse);
+      authService.refreshToken.mockResolvedValue(mockTokens);
       return request(app.getHttpServer())
         .post('/auth/refresh')
         .send({ refreshToken: 'refresh-123' })

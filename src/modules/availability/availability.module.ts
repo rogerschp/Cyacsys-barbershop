@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AvailabilityRepository } from '../../repository/availability/availability.repository';
 import { AuthModule } from '../auth/auth.module';
@@ -45,11 +45,11 @@ import { UpdateWorkingHoursPeriodUseCase } from './use-cases/update-working-hour
       TimeOffEntity,
       ProfessionalAvailabilityBlockEntity,
     ]),
-    AuthModule,
-    TenantModule,
-    TenantUserModule,
-    TenantProfessionalModule,
-    ServiceModule,
+    forwardRef(() => AuthModule),
+    forwardRef(() => TenantModule),
+    forwardRef(() => TenantUserModule),
+    forwardRef(() => TenantProfessionalModule),
+    forwardRef(() => ServiceModule),
   ],
   controllers: [AvailabilityController],
   providers: [

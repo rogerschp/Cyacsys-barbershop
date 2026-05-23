@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProfessionalProfileRepository } from '../../repository/professional-profile/professional-profile.repository';
 import { AuthModule } from '../auth/auth.module';
@@ -15,8 +15,8 @@ import { UpdateProfessionalProfileUseCase } from './use-cases/update-professiona
 @Module({
   imports: [
     TypeOrmModule.forFeature([ProfessionalProfileEntity]),
-    AuthModule,
-    UserModule,
+    forwardRef(() => AuthModule),
+    forwardRef(() => UserModule),
   ],
   controllers: [ProfessionalProfileController],
   providers: [
