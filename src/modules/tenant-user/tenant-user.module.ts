@@ -43,6 +43,7 @@ import { ValidateMembershipByUserIdAndTenantIdUseCase } from './use-cases/valida
     TenantRolesGuard,
   ],
   exports: [
+    TENANT_USER_REPOSITORY,
     AddUserToTenantUseCase,
     FindTenantUserByIdAndTenantUseCase,
     FindMembershipByTenantIdAndUserIdUseCase,
