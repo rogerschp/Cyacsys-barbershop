@@ -29,9 +29,12 @@ export class AuthService {
     const tokens =
       await this.authProvider.authenticateWithCredentials(authLoginDto);
     const decoded = await this.tokenVerifier.verifyIdToken(tokens.idToken);
-    await this.validateUserAccessUseCase.run(decoded.uid);
+    const user = await this.validateUserAccessUseCase.run(decoded.uid);
     await this.syncUserWithFirebaseUseCase.run(decoded.uid);
-    return tokens;
+    return {
+      ...tokens,
+      username: user.name,
+    };
   }
   async refreshToken(
     refreshTokenDto: AuthRefreshDto,

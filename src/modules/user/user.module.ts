@@ -17,12 +17,14 @@ import { ValidateUserAccessUseCase } from './use-cases/validate-user-access.use-
 import { DeleteUserUseCase } from './use-cases/delete-user.use-case';
 import { AddressModule } from '../address/address.module';
 import { AuthModule } from '../auth/auth.module';
+import { BookingModule } from '../booking/booking.module';
 import { CheckUserExistsByEmailUseCase } from './use-cases/check-user-exists-by-email.use-case';
 @Module({
   imports: [
     TypeOrmModule.forFeature([UserEntity]),
     AddressModule,
     forwardRef(() => AuthModule),
+    BookingModule,
   ],
   controllers: [UserController],
   providers: [

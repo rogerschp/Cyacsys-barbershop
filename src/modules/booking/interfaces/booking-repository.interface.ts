@@ -8,10 +8,19 @@ export interface CreateBookingDraftData {
   startsAt: Date;
   endsAt: Date;
   createdByTenantUserId: string | null;
+  clientUserId: string;
+}
+
+export interface ListBookingsByClientUserOptions {
+  status?: BookingStatus;
 }
 
 export interface IBookingRepository {
   createDraft(data: CreateBookingDraftData): Promise<BookingEntity>;
+  findByClientUserId(
+    clientUserId: string,
+    options?: ListBookingsByClientUserOptions,
+  ): Promise<BookingEntity[]>;
   findByIdForTenantProfessional(
     id: string,
     tenantId: string,

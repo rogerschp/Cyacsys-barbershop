@@ -26,6 +26,11 @@ describe('AuthService', () => {
     refreshToken: 'refresh-token-123',
     expiresIn: 3600,
   };
+  const mockUser = {
+    id: 'user-uuid',
+    name: 'João Silva',
+    email: 'user@email.com',
+  };
   const mockDecoded = { uid: 'firebase-uid-1', email: 'user@email.com' };
   beforeEach(async () => {
     authProvider = {
@@ -37,7 +42,7 @@ describe('AuthService', () => {
       verifyIdToken: jest.fn().mockResolvedValue(mockDecoded),
     };
     validateUserAccessUseCase = {
-      run: jest.fn().mockResolvedValue({ id: 'user-uuid' }),
+      run: jest.fn().mockResolvedValue(mockUser),
     };
     syncUserWithFirebaseUseCase = {
       run: jest.fn().mockResolvedValue(undefined),
@@ -78,7 +83,10 @@ describe('AuthService', () => {
       expect(syncUserWithFirebaseUseCase.run).toHaveBeenCalledWith(
         mockDecoded.uid,
       );
-      expect(result).toEqual(mockTokens);
+      expect(result).toEqual({
+        ...mockTokens,
+        username: 'João Silva',
+      });
     });
     it('deve propagar ForbiddenException quando usuario nao existe no banco', async () => {
       validateUserAccessUseCase.run.mockRejectedValue(

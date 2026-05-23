@@ -5,7 +5,7 @@ import { FirebaseSignInResponse } from '../../../../common/interfaces/firebaseSi
 import axios from 'axios';
 import * as admin from 'firebase-admin';
 import { AuthLoginDto } from '../../dto/auth-login.dto';
-import { AuthLoginResponseDto } from '../../dto/auth-login-response.dto';
+import { AuthTokensDto } from '../../dto/auth-tokens.dto';
 import { AuthRefreshDto } from '../../dto/auth-refresh.dto';
 import { AuthRefreshResponseDto } from '../../dto/auth-refresh-response.dto';
 import { IAuthProvider } from '../../interfaces/auth-provider.interface';
@@ -50,7 +50,7 @@ export class FirebaseAuthProvider implements IAuthProvider {
   }
   async authenticateWithCredentials(
     authLoginDto: AuthLoginDto,
-  ): Promise<AuthLoginResponseDto> {
+  ): Promise<AuthTokensDto> {
     const apiKey = this.getApiKey();
     const { email, password } = authLoginDto;
     try {

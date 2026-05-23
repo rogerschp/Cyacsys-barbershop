@@ -49,9 +49,35 @@ export class BookingRepository implements IBookingRepository {
         endsAt: data.endsAt,
         status: BookingStatus.DRAFT,
         createdByTenantUserId: data.createdByTenantUserId,
+        clientUserId: data.clientUserId,
       });
       return manager.getRepository(BookingEntity).save(e);
     });
+  }
+
+  async findByClientUserId(
+    clientUserId: string,
+    options?: { status?: BookingStatus },
+  ): Promise<BookingEntity[]> {
+    const qb = this.bookingRepo
+      .createQueryBuilder('b')
+      .leftJoinAndSelect('b.tenant', 'tenant')
+      .leftJoinAndSelect('tenant.address', 'tenantAddress')
+      .leftJoinAndSelect('b.tenantProfessional', 'tp')
+      .leftJoinAndSelect('tp.professionalProfile', 'pp')
+      .leftJoinAndSelect('b.service', 'service')
+      .leftJoin('b.createdByTenantUser', 'creator')
+      .where(
+        '(b.client_user_id = :clientUserId OR creator.user_id = :clientUserId)',
+        { clientUserId },
+      )
+      .orderBy('b.starts_at', 'DESC');
+
+    if (options?.status) {
+      qb.andWhere('b.status = :status', { status: options.status });
+    }
+
+    return qb.getMany();
   }
 
   async findByIdForTenantProfessional(

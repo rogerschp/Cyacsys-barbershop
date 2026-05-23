@@ -13,6 +13,7 @@ import { BookingController } from './booking.controller';
 import { CancelBookingDraftUseCase } from './use-cases/cancel-booking-draft.use-case';
 import { ConfirmBookingUseCase } from './use-cases/confirm-booking.use-case';
 import { CreateBookingDraftUseCase } from './use-cases/create-booking-draft.use-case';
+import { ListMyBookingsUseCase } from './use-cases/list-my-bookings.use-case';
 
 @Module({
   imports: [
@@ -31,7 +32,8 @@ import { CreateBookingDraftUseCase } from './use-cases/create-booking-draft.use-
     CreateBookingDraftUseCase,
     ConfirmBookingUseCase,
     CancelBookingDraftUseCase,
+    ListMyBookingsUseCase,
   ],
-  exports: [BOOKING_REPOSITORY],
+  exports: [BOOKING_REPOSITORY, ListMyBookingsUseCase],
 })
 export class BookingModule {}

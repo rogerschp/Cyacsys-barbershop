@@ -1,9 +1,9 @@
 import { AuthLoginDto } from '../dto/auth-login.dto';
-import { AuthLoginResponseDto } from '../dto/auth-login-response.dto';
+import { AuthTokensDto } from '../dto/auth-tokens.dto';
 import { AuthRefreshDto } from '../dto/auth-refresh.dto';
 import { AuthRefreshResponseDto } from '../dto/auth-refresh-response.dto';
 export interface IAuthProvider {
-  authenticateWithCredentials(dto: AuthLoginDto): Promise<AuthLoginResponseDto>;
+  authenticateWithCredentials(dto: AuthLoginDto): Promise<AuthTokensDto>;
   refreshToken(dto: AuthRefreshDto): Promise<AuthRefreshResponseDto>;
   revokeRefreshTokens(uid: string): Promise<void>;
 }
