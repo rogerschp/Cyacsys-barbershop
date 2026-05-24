@@ -5,7 +5,7 @@ import { REVIEW_REPOSITORY } from 'src/modules/review/interfaces/review-reposito
 import { ReviewTargetType } from 'src/modules/review/entities/review-target-type.enum';
 import { FindTenantByIdUseCase } from 'src/modules/tenant/use-cases/find-tenant-by-id.use-case';
 import { PROFESSIONAL_PROFILE_REPOSITORY } from 'src/modules/professional-profile/interfaces/professional-profile-repository.interface';
-import { TENANT_USER_REPOSITORY } from 'src/modules/tenant-user/interfaces/tenant-user-repository.interface';
+import { FindOptionalMembershipByTenantAndUserUseCase } from 'src/modules/tenant-user/use-cases/find-optional-membership-by-tenant-and-user.use-case';
 import { TenantUserRole } from 'src/modules/tenant-user/entities/tenant-user-role.enum';
 
 describe('CreateReviewUseCase', () => {
@@ -17,7 +17,7 @@ describe('CreateReviewUseCase', () => {
   };
   const findTenantById = { run: jest.fn() };
   const profRepo = { findById: jest.fn() };
-  const tenantUserRepo = { findByTenantAndUser: jest.fn() };
+  const findOptionalMembership = { run: jest.fn() };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -26,13 +26,16 @@ describe('CreateReviewUseCase', () => {
         { provide: REVIEW_REPOSITORY, useValue: reviewRepo },
         { provide: FindTenantByIdUseCase, useValue: findTenantById },
         { provide: PROFESSIONAL_PROFILE_REPOSITORY, useValue: profRepo },
-        { provide: TENANT_USER_REPOSITORY, useValue: tenantUserRepo },
+        {
+          provide: FindOptionalMembershipByTenantAndUserUseCase,
+          useValue: findOptionalMembership,
+        },
       ],
     }).compile();
     useCase = module.get(CreateReviewUseCase);
     jest.clearAllMocks();
     findTenantById.run.mockResolvedValue({ id: 'tenant-1' });
-    tenantUserRepo.findByTenantAndUser.mockResolvedValue(null);
+    findOptionalMembership.run.mockResolvedValue(null);
     reviewRepo.findActiveByReviewerAndTarget.mockResolvedValue(null);
     reviewRepo.create.mockResolvedValue({
       id: 'review-1',
@@ -64,7 +67,7 @@ describe('CreateReviewUseCase', () => {
   });
 
   it('lança CANNOT_REVIEW_YOURSELF para OWNER do tenant', async () => {
-    tenantUserRepo.findByTenantAndUser.mockResolvedValue({
+    findOptionalMembership.run.mockResolvedValue({
       role: TenantUserRole.OWNER,
     });
     await expect(

@@ -17,6 +17,7 @@ import { FindTenantUserByIdAndTenantUseCase } from './use-cases/find-tenant-user
 import { FindUserRoleByUserIdAndTenantIdUseCase } from './use-cases/find-user-role-by-userId-and-tenantId.use-case';
 import { RemoveUserFromTenantByUserIdAndTenantIdUseCase } from './use-cases/remove-user-from-tenant-by-userId-and-tenantId.use-case';
 import { ValidateMembershipByUserIdAndTenantIdUseCase } from './use-cases/validate-membership-by-userId-and-tenantId.use-case';
+import { FindOptionalMembershipByTenantAndUserUseCase } from './use-cases/find-optional-membership-by-tenant-and-user.use-case';
 @Module({
   imports: [
     TypeOrmModule.forFeature([TenantUserEntity]),
@@ -33,6 +34,7 @@ import { ValidateMembershipByUserIdAndTenantIdUseCase } from './use-cases/valida
     FindMembershipByTenantIdAndUserIdUseCase,
     FindUserRoleByUserIdAndTenantIdUseCase,
     ValidateMembershipByUserIdAndTenantIdUseCase,
+    FindOptionalMembershipByTenantAndUserUseCase,
     RemoveUserFromTenantByUserIdAndTenantIdUseCase,
     TenantMembershipResolverAdapter,
     {
@@ -43,12 +45,12 @@ import { ValidateMembershipByUserIdAndTenantIdUseCase } from './use-cases/valida
     TenantRolesGuard,
   ],
   exports: [
-    TENANT_USER_REPOSITORY,
     AddUserToTenantUseCase,
     FindTenantUserByIdAndTenantUseCase,
     FindMembershipByTenantIdAndUserIdUseCase,
     FindUserRoleByUserIdAndTenantIdUseCase,
     ValidateMembershipByUserIdAndTenantIdUseCase,
+    FindOptionalMembershipByTenantAndUserUseCase,
     RemoveUserFromTenantByUserIdAndTenantIdUseCase,
     TENANT_MEMBERSHIP_RESOLVER,
     TenantMembershipGuard,

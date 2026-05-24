@@ -1,9 +1,6 @@
 import { ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { TenantUserRole } from '../../tenant-user/entities/tenant-user-role.enum';
-import {
-  ITenantUserRepository,
-  TENANT_USER_REPOSITORY,
-} from '../../tenant-user/interfaces/tenant-user-repository.interface';
+import { FindOptionalMembershipByTenantAndUserUseCase } from '../../tenant-user/use-cases/find-optional-membership-by-tenant-and-user.use-case';
 import {
   IProfessionalProfileRepository,
   PROFESSIONAL_PROFILE_REPOSITORY,
@@ -21,8 +18,7 @@ export class DeleteReviewUseCase {
   constructor(
     @Inject(REVIEW_REPOSITORY)
     private readonly reviewRepository: IReviewRepository,
-    @Inject(TENANT_USER_REPOSITORY)
-    private readonly tenantUserRepository: ITenantUserRepository,
+    private readonly findOptionalMembershipByTenantAndUserUseCase: FindOptionalMembershipByTenantAndUserUseCase,
     @Inject(PROFESSIONAL_PROFILE_REPOSITORY)
     private readonly professionalProfileRepository: IProfessionalProfileRepository,
   ) {}
@@ -73,10 +69,11 @@ export class DeleteReviewUseCase {
     }
 
     if (targetType === ReviewTargetType.TENANT) {
-      const membership = await this.tenantUserRepository.findByTenantAndUser(
-        targetId,
-        performedBy,
-      );
+      const membership =
+        await this.findOptionalMembershipByTenantAndUserUseCase.run(
+          targetId,
+          performedBy,
+        );
       return (
         !!membership &&
         (membership.role === TenantUserRole.OWNER ||

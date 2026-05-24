@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ForbiddenException } from '@nestjs/common';
 import { ReplyReviewUseCase } from 'src/modules/review/use-cases/reply-review.use-case';
 import { REVIEW_REPOSITORY } from 'src/modules/review/interfaces/review-repository.interface';
-import { TENANT_USER_REPOSITORY } from 'src/modules/tenant-user/interfaces/tenant-user-repository.interface';
+import { FindOptionalMembershipByTenantAndUserUseCase } from 'src/modules/tenant-user/use-cases/find-optional-membership-by-tenant-and-user.use-case';
 import { PROFESSIONAL_PROFILE_REPOSITORY } from 'src/modules/professional-profile/interfaces/professional-profile-repository.interface';
 import { ReviewTargetType } from 'src/modules/review/entities/review-target-type.enum';
 import { TenantUserRole } from 'src/modules/tenant-user/entities/tenant-user-role.enum';
@@ -10,7 +10,7 @@ import { TenantUserRole } from 'src/modules/tenant-user/entities/tenant-user-rol
 describe('ReplyReviewUseCase', () => {
   let useCase: ReplyReviewUseCase;
   const reviewRepo = { findByIdAndTarget: jest.fn(), update: jest.fn() };
-  const tenantUserRepo = { findByTenantAndUser: jest.fn() };
+  const findOptionalMembership = { run: jest.fn() };
   const profRepo = { findById: jest.fn() };
 
   beforeEach(async () => {
@@ -18,7 +18,10 @@ describe('ReplyReviewUseCase', () => {
       providers: [
         ReplyReviewUseCase,
         { provide: REVIEW_REPOSITORY, useValue: reviewRepo },
-        { provide: TENANT_USER_REPOSITORY, useValue: tenantUserRepo },
+        {
+          provide: FindOptionalMembershipByTenantAndUserUseCase,
+          useValue: findOptionalMembership,
+        },
         { provide: PROFESSIONAL_PROFILE_REPOSITORY, useValue: profRepo },
       ],
     }).compile();
@@ -28,7 +31,7 @@ describe('ReplyReviewUseCase', () => {
   });
 
   it('OWNER pode responder avaliação do tenant', async () => {
-    tenantUserRepo.findByTenantAndUser.mockResolvedValue({
+    findOptionalMembership.run.mockResolvedValue({
       role: TenantUserRole.OWNER,
     });
     await useCase.run(
@@ -54,7 +57,7 @@ describe('ReplyReviewUseCase', () => {
   });
 
   it('nega resposta sem permissão no tenant', async () => {
-    tenantUserRepo.findByTenantAndUser.mockResolvedValue({
+    findOptionalMembership.run.mockResolvedValue({
       role: TenantUserRole.STAFF,
     });
     await expect(

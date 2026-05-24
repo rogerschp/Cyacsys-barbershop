@@ -1,10 +1,7 @@
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
 import { TenantUserRole } from '../../tenant-user/entities/tenant-user-role.enum';
-import {
-  ITenantUserRepository,
-  TENANT_USER_REPOSITORY,
-} from '../../tenant-user/interfaces/tenant-user-repository.interface';
+import { FindOptionalMembershipByTenantAndUserUseCase } from '../../tenant-user/use-cases/find-optional-membership-by-tenant-and-user.use-case';
 import { FindTenantByIdUseCase } from '../../tenant/use-cases/find-tenant-by-id.use-case';
 import {
   IProfessionalProfileRepository,
@@ -28,8 +25,7 @@ export class CreateReviewUseCase {
     private readonly findTenantByIdUseCase: FindTenantByIdUseCase,
     @Inject(PROFESSIONAL_PROFILE_REPOSITORY)
     private readonly professionalProfileRepository: IProfessionalProfileRepository,
-    @Inject(TENANT_USER_REPOSITORY)
-    private readonly tenantUserRepository: ITenantUserRepository,
+    private readonly findOptionalMembershipByTenantAndUserUseCase: FindOptionalMembershipByTenantAndUserUseCase,
   ) {}
 
   async run(
@@ -105,10 +101,11 @@ export class CreateReviewUseCase {
     targetId: string,
   ): Promise<void> {
     if (targetType === ReviewTargetType.TENANT) {
-      const membership = await this.tenantUserRepository.findByTenantAndUser(
-        targetId,
-        reviewerUserId,
-      );
+      const membership =
+        await this.findOptionalMembershipByTenantAndUserUseCase.run(
+          targetId,
+          reviewerUserId,
+        );
       if (
         membership &&
         (membership.role === TenantUserRole.OWNER ||
