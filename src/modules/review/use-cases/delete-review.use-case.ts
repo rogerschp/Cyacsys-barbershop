@@ -1,4 +1,10 @@
-import { ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { TenantUserRole } from '../../tenant-user/entities/tenant-user-role.enum';
 import { FindOptionalMembershipByTenantAndUserUseCase } from '../../tenant-user/use-cases/find-optional-membership-by-tenant-and-user.use-case';
 import {

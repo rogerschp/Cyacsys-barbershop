@@ -51,10 +51,15 @@ describe('CreateReviewUseCase', () => {
   });
 
   it('cria avaliação de tenant', async () => {
-    const result = await useCase.run('user-1', ReviewTargetType.TENANT, 'tenant-1', {
-      rating: 5,
-      comment: 'Ótimo',
-    });
+    const result = await useCase.run(
+      'user-1',
+      ReviewTargetType.TENANT,
+      'tenant-1',
+      {
+        rating: 5,
+        comment: 'Ótimo',
+      },
+    );
     expect(result.id).toBe('review-1');
     expect(reviewRepo.create).toHaveBeenCalled();
   });

@@ -9,7 +9,9 @@ import { BookingEntity } from 'src/modules/booking/entities/booking.entity';
 
 describe('ListMyBookingsUseCase', () => {
   let useCase: ListMyBookingsUseCase;
-  let bookingRepository: jest.Mocked<Pick<IBookingRepository, 'findByClientUserId'>>;
+  let bookingRepository: jest.Mocked<
+    Pick<IBookingRepository, 'findByClientUserId'>
+  >;
 
   beforeEach(async () => {
     bookingRepository = {

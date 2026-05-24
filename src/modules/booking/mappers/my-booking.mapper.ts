@@ -29,9 +29,9 @@ export function mapBookingToMyBookingResponse(
   booking: BookingEntity,
 ): MyBookingResponseDto {
   const timezone = booking.tenant?.timezone || 'America/Sao_Paulo';
-  const startLocal = DateTime.fromJSDate(booking.startsAt, { zone: 'utc' }).setZone(
-    timezone,
-  );
+  const startLocal = DateTime.fromJSDate(booking.startsAt, {
+    zone: 'utc',
+  }).setZone(timezone);
   const endLocal = DateTime.fromJSDate(booking.endsAt, { zone: 'utc' }).setZone(
     timezone,
   );

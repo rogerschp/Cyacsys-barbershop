@@ -1,4 +1,9 @@
-import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
 import { UpdateReviewDto } from '../dto/update-review.dto';
 import { ReviewEntity } from '../entities/review.entity';
@@ -51,7 +56,7 @@ export class EditReviewUseCase {
       rating: dto.rating ?? review.rating,
       comment:
         dto.comment !== undefined
-          ? dto.comment?.trim() ?? null
+          ? (dto.comment?.trim() ?? null)
           : review.comment,
       isEdited: true,
       editedAt: new Date(),

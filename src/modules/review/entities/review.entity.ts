@@ -15,10 +15,14 @@ import { ReviewTargetType } from './review-target-type.enum';
 
 @Entity('reviews')
 @Index('IDX_reviews_target', ['targetType', 'targetId'])
-@Index('UQ_reviews_reviewer_target_active', ['reviewerUserId', 'targetType', 'targetId'], {
-  unique: true,
-  where: '"deletedAt" IS NULL',
-})
+@Index(
+  'UQ_reviews_reviewer_target_active',
+  ['reviewerUserId', 'targetType', 'targetId'],
+  {
+    unique: true,
+    where: '"deletedAt" IS NULL',
+  },
+)
 export class ReviewEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })

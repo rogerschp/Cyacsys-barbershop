@@ -224,9 +224,9 @@ describe('ReviewRepository', () => {
   it('update lança quando entidade não encontrada', async () => {
     typeOrmRepo.update.mockResolvedValue({ affected: 1 } as never);
     typeOrmRepo.findOne.mockResolvedValue(null);
-    await expect(
-      repository.update('review-1', { rating: 4 }),
-    ).rejects.toThrow('Review not found after update');
+    await expect(repository.update('review-1', { rating: 4 })).rejects.toThrow(
+      'Review not found after update',
+    );
   });
 
   it('softDelete remove logicamente', async () => {
