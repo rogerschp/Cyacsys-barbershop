@@ -48,10 +48,7 @@ export class UserBookingsController {
   @ApiResponse({ status: 401, description: 'Token ausente ou inválido' })
   async listMyBookings(
     @Req() req: { user?: RequestUser },
-    @Query(
-      'status',
-      new ParseEnumPipe(BookingStatus, { optional: true }),
-    )
+    @Query('status', new ParseEnumPipe(BookingStatus, { optional: true }))
     status?: BookingStatus,
   ) {
     const userId = req.user?.dbUser?.id;

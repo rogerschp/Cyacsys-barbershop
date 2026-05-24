@@ -14,6 +14,7 @@ import { ServiceModule } from './modules/service/service.module';
 import { TenantModule } from './modules/tenant/tenant.module';
 import { TenantUserModule } from './modules/tenant-user/tenant-user.module';
 import { UserModule } from './modules/user/user.module';
+import { ReviewModule } from './modules/review/review.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -41,6 +42,7 @@ import { UserModule } from './modules/user/user.module';
     AvailabilityModule,
     BookingModule,
     UserModule,
+    ReviewModule,
   ],
   controllers: [],
   providers: [
