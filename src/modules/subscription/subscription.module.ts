@@ -43,14 +43,11 @@ import { GetTenantSubscriptionUseCase } from './use-cases/get-tenant-subscriptio
     AdminSubscriptionController,
   ],
   providers: [
-    PlanRepository,
     { provide: PLAN_REPOSITORY, useClass: PlanRepository },
-    TenantSubscriptionRepository,
     {
       provide: TENANT_SUBSCRIPTION_REPOSITORY,
       useClass: TenantSubscriptionRepository,
     },
-    SubscriptionHistoryRepository,
     {
       provide: SUBSCRIPTION_HISTORY_REPOSITORY,
       useClass: SubscriptionHistoryRepository,
