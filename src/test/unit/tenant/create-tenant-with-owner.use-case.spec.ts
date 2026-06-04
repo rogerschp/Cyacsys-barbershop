@@ -5,6 +5,7 @@ import { TenantRepository } from 'src/repository/tenant/tenant.repository';
 import { AddressRepository } from 'src/repository/address/address.repository';
 import { TenantEntity } from 'src/modules/tenant/entities/tenant.entity';
 import { TenantStatus } from 'src/modules/tenant/entities/tenant-status.enum';
+import { CreateFreeSubscriptionUseCase } from 'src/modules/subscription/use-cases/create-free-subscription.use-case';
 import { getDataSourceToken } from '@nestjs/typeorm';
 describe('CreateTenantWithOwnerUseCase', () => {
   let useCase: CreateTenantWithOwnerUseCase;
@@ -60,6 +61,10 @@ describe('CreateTenantWithOwnerUseCase', () => {
             create: jest.fn(),
             softDelete: jest.fn(),
           },
+        },
+        {
+          provide: CreateFreeSubscriptionUseCase,
+          useValue: { run: jest.fn().mockResolvedValue(undefined) },
         },
       ],
     }).compile();
