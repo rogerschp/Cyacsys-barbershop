@@ -17,6 +17,7 @@ import { TenantUserRole } from '../../tenant-user/entities/tenant-user-role.enum
 import { TenantUserStatus } from '../../tenant-user/entities/tenant-user-status.enum';
 import { TenantRepository } from '../../../repository/tenant/tenant.repository';
 import { AddressRepository } from 'src/repository/address/address.repository';
+import { CreateFreeSubscriptionUseCase } from '../../subscription/use-cases/create-free-subscription.use-case';
 @Injectable()
 export class CreateTenantWithOwnerUseCase {
   constructor(
@@ -24,6 +25,7 @@ export class CreateTenantWithOwnerUseCase {
     private readonly dataSource: DataSource,
     private readonly tenantRepository: TenantRepository,
     private readonly addressRepository: AddressRepository,
+    private readonly createFreeSubscriptionUseCase: CreateFreeSubscriptionUseCase,
   ) {}
   async run(userId: string, dto: CreateTenantDto): Promise<TenantEntity> {
     const rawSlug = dto.slug ?? dto.name;
@@ -68,6 +70,11 @@ export class CreateTenantWithOwnerUseCase {
           status: TenantUserStatus.ACTIVE,
         });
         await tenantUserRepo.save(tenantUser);
+        await this.createFreeSubscriptionUseCase.run(
+          savedTenant.id,
+          userId,
+          manager,
+        );
         return savedTenant;
       });
     } catch (err) {

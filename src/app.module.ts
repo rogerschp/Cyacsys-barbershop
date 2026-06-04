@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { getTypeOrmConfig } from './config/typeorm.config';
@@ -15,6 +16,7 @@ import { TenantModule } from './modules/tenant/tenant.module';
 import { TenantUserModule } from './modules/tenant-user/tenant-user.module';
 import { UserModule } from './modules/user/user.module';
 import { ReviewModule } from './modules/review/review.module';
+import { SubscriptionModule } from './modules/subscription/subscription.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -26,6 +28,7 @@ import { ReviewModule } from './modules/review/review.module';
         limit: 60,
       },
     ]),
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) =>
@@ -43,6 +46,7 @@ import { ReviewModule } from './modules/review/review.module';
     BookingModule,
     UserModule,
     ReviewModule,
+    SubscriptionModule,
   ],
   controllers: [],
   providers: [

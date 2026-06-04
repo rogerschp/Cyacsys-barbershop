@@ -14,12 +14,14 @@ import { UpdateTenantByIdUseCase } from './use-cases/update-tenant-by-id.use-cas
 import { ValidateSlugUseCase } from './use-cases/validate-slug.use-case';
 import { DeleteTenantByIdUseCase } from './use-cases/delete-tenant-by-id.use-case';
 import { CreateTenantUseCase } from './use-cases/create-tenant.use-case';
+import { SubscriptionModule } from '../subscription/subscription.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([TenantEntity]),
     forwardRef(() => AuthModule),
     AddressModule,
     forwardRef(() => TenantUserModule),
+    forwardRef(() => SubscriptionModule),
   ],
   controllers: [TenantController],
   providers: [
