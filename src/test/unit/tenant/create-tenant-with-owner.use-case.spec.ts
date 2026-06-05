@@ -24,6 +24,7 @@ describe('CreateTenantWithOwnerUseCase', () => {
     timezone: 'America/Sao_Paulo',
     socialMedia: null,
     cnpj: null,
+    theme: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: undefined,

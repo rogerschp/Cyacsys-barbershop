@@ -18,6 +18,7 @@ describe('TenantController (e2e)', () => {
     timezone: 'America/Sao_Paulo',
     socialMedia: null,
     cnpj: null,
+    theme: null,
     createdAt: new Date('2021-01-01'),
     updatedAt: new Date('2021-01-01'),
     deletedAt: undefined,
