@@ -17,6 +17,7 @@ import { TenantUserModule } from './modules/tenant-user/tenant-user.module';
 import { UserModule } from './modules/user/user.module';
 import { ReviewModule } from './modules/review/review.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
+import { ReportModule } from './modules/report/report.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -47,6 +48,7 @@ import { SubscriptionModule } from './modules/subscription/subscription.module';
     UserModule,
     ReviewModule,
     SubscriptionModule,
+    ReportModule,
   ],
   controllers: [],
   providers: [
