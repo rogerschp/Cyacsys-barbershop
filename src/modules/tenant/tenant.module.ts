@@ -14,16 +14,21 @@ import { UpdateTenantByIdUseCase } from './use-cases/update-tenant-by-id.use-cas
 import { ValidateSlugUseCase } from './use-cases/validate-slug.use-case';
 import { DeleteTenantByIdUseCase } from './use-cases/delete-tenant-by-id.use-case';
 import { CreateTenantUseCase } from './use-cases/create-tenant.use-case';
+import { SubscriptionModule } from '../subscription/subscription.module';
+import { TENANT_REPOSITORY } from './interfaces/tenant-repository.interface';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([TenantEntity]),
     forwardRef(() => AuthModule),
     AddressModule,
     forwardRef(() => TenantUserModule),
+    forwardRef(() => SubscriptionModule),
   ],
   controllers: [TenantController],
   providers: [
     TenantRepository,
+    { provide: TENANT_REPOSITORY, useClass: TenantRepository },
     FindTenantByIdUseCase,
     FindTenantBySlugUseCase,
     UpdateTenantByIdUseCase,
@@ -34,6 +39,7 @@ import { CreateTenantUseCase } from './use-cases/create-tenant.use-case';
     TenantInterceptor,
   ],
   exports: [
+    TENANT_REPOSITORY,
     FindTenantByIdUseCase,
     TenantInterceptor,
     CreateTenantWithOwnerUseCase,
