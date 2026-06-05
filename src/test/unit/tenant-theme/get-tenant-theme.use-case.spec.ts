@@ -78,7 +78,9 @@ describe('GetTenantThemeUseCase', () => {
     tenantRepository.findById.mockResolvedValue(null);
 
     await expect(useCase.run(tenantId)).rejects.toThrow(NotFoundException);
-    expect(tenantSubscriptionRepository.findByTenantIdWithPlan).not.toHaveBeenCalled();
+    expect(
+      tenantSubscriptionRepository.findByTenantIdWithPlan,
+    ).not.toHaveBeenCalled();
   });
 
   it('deve lançar NotFoundException quando assinatura não existe', async () => {

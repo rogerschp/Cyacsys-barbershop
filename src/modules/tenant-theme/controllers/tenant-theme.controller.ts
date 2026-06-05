@@ -50,7 +50,9 @@ export class TenantThemeController {
   @ApiParam({ name: 'tenantId', description: 'UUID do tenant' })
   @ApiResponse({ status: 200, type: TenantThemeResponseDto })
   @ApiResponse({ status: 404, description: 'Tenant não encontrado' })
-  async get(@Param('tenantId') tenantId: string): Promise<TenantThemeResponseDto> {
+  async get(
+    @Param('tenantId') tenantId: string,
+  ): Promise<TenantThemeResponseDto> {
     return this.getTenantThemeUseCase.run(tenantId);
   }
 
@@ -92,7 +94,9 @@ export class TenantThemeController {
   )
   @TenantRoles(TenantUserRole.OWNER, TenantUserRole.ADMIN)
   @ApiBearerAuth('bearer')
-  @ApiOperation({ summary: 'Remove customização e restaura defaults do frontend' })
+  @ApiOperation({
+    summary: 'Remove customização e restaura defaults do frontend',
+  })
   @ApiParam({ name: 'tenantId', description: 'UUID do tenant' })
   @ApiResponse({ status: 200, description: 'Tema removido' })
   async delete(

@@ -13,9 +13,7 @@ import {
 import { UpsertTenantThemeDto } from '../dto/upsert-tenant-theme.dto';
 import { TipoSecao } from '../enums/tipo-secao.enum';
 import { VarianteComponente } from '../enums/variante-componente.enum';
-import {
-  TenantThemeData,
-} from '../interfaces/tenant-theme-data.interface';
+import { TenantThemeData } from '../interfaces/tenant-theme-data.interface';
 
 @Injectable()
 export class UpsertTenantThemeUseCase {

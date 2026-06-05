@@ -166,7 +166,9 @@ describe('TenantRepository', () => {
 
       await repository.updateTheme('uuid-123', null);
 
-      expect(typeOrmRepo.update).toHaveBeenCalledWith('uuid-123', { theme: null });
+      expect(typeOrmRepo.update).toHaveBeenCalledWith('uuid-123', {
+        theme: null,
+      });
     });
   });
 

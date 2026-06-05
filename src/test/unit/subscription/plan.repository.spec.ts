@@ -50,9 +50,9 @@ describe('PlanRepository', () => {
     }).compile();
 
     repository = module.get(PlanRepository);
-    typeOrmRepo = module.get(
-      getRepositoryToken(PlanEntity),
-    ) as jest.Mocked<Repository<PlanEntity>>;
+    typeOrmRepo = module.get(getRepositoryToken(PlanEntity)) as jest.Mocked<
+      Repository<PlanEntity>
+    >;
   });
 
   it('deve estar definido', () => {

@@ -30,8 +30,14 @@ describe('TenantThemeController (HTTP)', () => {
       controllers: [TenantThemeController],
       providers: [
         { provide: GetTenantThemeUseCase, useValue: getTenantThemeUseCase },
-        { provide: UpsertTenantThemeUseCase, useValue: upsertTenantThemeUseCase },
-        { provide: DeleteTenantThemeUseCase, useValue: deleteTenantThemeUseCase },
+        {
+          provide: UpsertTenantThemeUseCase,
+          useValue: upsertTenantThemeUseCase,
+        },
+        {
+          provide: DeleteTenantThemeUseCase,
+          useValue: deleteTenantThemeUseCase,
+        },
       ],
     })
       .overrideGuard(BearerAuthGuard)
@@ -81,13 +87,15 @@ describe('TenantThemeController (HTTP)', () => {
     const dto = buildValidThemeDto();
     const savedTheme = {
       ...dto,
-      secoesLayout: dto.secoesLayout.map(({ id, tipo, visivel, ordem, variante }) => ({
-        id,
-        tipo,
-        visivel,
-        ordem,
-        variante,
-      })),
+      secoesLayout: dto.secoesLayout.map(
+        ({ id, tipo, visivel, ordem, variante }) => ({
+          id,
+          tipo,
+          visivel,
+          ordem,
+          variante,
+        }),
+      ),
     };
 
     upsertTenantThemeUseCase.run.mockResolvedValue(savedTheme);
@@ -116,8 +124,14 @@ describe('TenantThemeController (HTTP)', () => {
       controllers: [TenantThemeController],
       providers: [
         { provide: GetTenantThemeUseCase, useValue: getTenantThemeUseCase },
-        { provide: UpsertTenantThemeUseCase, useValue: upsertTenantThemeUseCase },
-        { provide: DeleteTenantThemeUseCase, useValue: deleteTenantThemeUseCase },
+        {
+          provide: UpsertTenantThemeUseCase,
+          useValue: upsertTenantThemeUseCase,
+        },
+        {
+          provide: DeleteTenantThemeUseCase,
+          useValue: deleteTenantThemeUseCase,
+        },
       ],
     })
       .overrideGuard(BearerAuthGuard)
@@ -145,7 +159,11 @@ describe('TenantThemeController (HTTP)', () => {
       .send(dto)
       .expect(200);
 
-    expect(upsertTenantThemeUseCase.run).toHaveBeenCalledWith(tenantId, dto, '');
+    expect(upsertTenantThemeUseCase.run).toHaveBeenCalledWith(
+      tenantId,
+      dto,
+      '',
+    );
     await isolatedApp.close();
   });
 
@@ -169,8 +187,14 @@ describe('TenantThemeController (HTTP)', () => {
       controllers: [TenantThemeController],
       providers: [
         { provide: GetTenantThemeUseCase, useValue: getTenantThemeUseCase },
-        { provide: UpsertTenantThemeUseCase, useValue: upsertTenantThemeUseCase },
-        { provide: DeleteTenantThemeUseCase, useValue: deleteTenantThemeUseCase },
+        {
+          provide: UpsertTenantThemeUseCase,
+          useValue: upsertTenantThemeUseCase,
+        },
+        {
+          provide: DeleteTenantThemeUseCase,
+          useValue: deleteTenantThemeUseCase,
+        },
       ],
     })
       .overrideGuard(BearerAuthGuard)

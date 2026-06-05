@@ -207,10 +207,7 @@ describe('TenantSubscriptionRepository', () => {
       expect(mockQueryBuilder.where).toHaveBeenCalledWith(
         'ts.status IN (:...statuses)',
         {
-          statuses: [
-            SubscriptionStatus.ACTIVE,
-            SubscriptionStatus.CANCELLED,
-          ],
+          statuses: [SubscriptionStatus.ACTIVE, SubscriptionStatus.CANCELLED],
         },
       );
       expect(result).toEqual([mockSubscription]);
@@ -224,9 +221,12 @@ describe('TenantSubscriptionRepository', () => {
 
       const result = await repository.findExpiredGracePeriod(now);
 
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('ts.status = :status', {
-        status: SubscriptionStatus.GRACE_PERIOD,
-      });
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith(
+        'ts.status = :status',
+        {
+          status: SubscriptionStatus.GRACE_PERIOD,
+        },
+      );
       expect(result).toEqual([mockSubscription]);
     });
   });

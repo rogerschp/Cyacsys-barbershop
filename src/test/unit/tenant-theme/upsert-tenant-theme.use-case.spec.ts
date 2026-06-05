@@ -22,7 +22,9 @@ describe('UpsertTenantThemeUseCase', () => {
 
   beforeEach(async () => {
     tenantRepository = { updateTheme: jest.fn().mockResolvedValue(undefined) };
-    findTenantByIdUseCase = { run: jest.fn().mockResolvedValue({ id: tenantId }) };
+    findTenantByIdUseCase = {
+      run: jest.fn().mockResolvedValue({ id: tenantId }),
+    };
     tenantSubscriptionRepository = { findByTenantIdWithPlan: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -40,7 +42,10 @@ describe('UpsertTenantThemeUseCase', () => {
     useCase = module.get(UpsertTenantThemeUseCase);
   });
 
-  const mockSubscription = (customization: string, plan = PlanName.STANDARD) => ({
+  const mockSubscription = (
+    customization: string,
+    plan = PlanName.STANDARD,
+  ) => ({
     plan: {
       name: plan,
       features: { customization },
@@ -138,9 +143,13 @@ describe('UpsertTenantThemeUseCase', () => {
       }),
     });
 
-    await expect(useCase.run(tenantId, dto, performedBy)).rejects.toMatchObject({
-      response: expect.objectContaining({ code: 'THEME_REORDER_NOT_ALLOWED' }),
-    });
+    await expect(useCase.run(tenantId, dto, performedBy)).rejects.toMatchObject(
+      {
+        response: expect.objectContaining({
+          code: 'THEME_REORDER_NOT_ALLOWED',
+        }),
+      },
+    );
   });
 
   it('deve lançar BusinessRuleException quando há tipos de seção duplicados', async () => {
@@ -155,9 +164,13 @@ describe('UpsertTenantThemeUseCase', () => {
       ),
     });
 
-    await expect(useCase.run(tenantId, dto, performedBy)).rejects.toMatchObject({
-      response: expect.objectContaining({ code: 'THEME_DUPLICATE_SECTION_TYPE' }),
-    });
+    await expect(useCase.run(tenantId, dto, performedBy)).rejects.toMatchObject(
+      {
+        response: expect.objectContaining({
+          code: 'THEME_DUPLICATE_SECTION_TYPE',
+        }),
+      },
+    );
   });
 
   it('deve lançar BusinessRuleException quando há ordens duplicadas', async () => {
@@ -172,9 +185,11 @@ describe('UpsertTenantThemeUseCase', () => {
       })),
     });
 
-    await expect(useCase.run(tenantId, dto, performedBy)).rejects.toMatchObject({
-      response: expect.objectContaining({ code: 'THEME_DUPLICATE_ORDER' }),
-    });
+    await expect(useCase.run(tenantId, dto, performedBy)).rejects.toMatchObject(
+      {
+        response: expect.objectContaining({ code: 'THEME_DUPLICATE_ORDER' }),
+      },
+    );
   });
 
   it('deve lançar BusinessRuleException quando quantidade de seções é inválida', async () => {
@@ -186,9 +201,13 @@ describe('UpsertTenantThemeUseCase', () => {
       secoesLayout: buildValidThemeDto().secoesLayout.slice(0, 5),
     });
 
-    await expect(useCase.run(tenantId, dto, performedBy)).rejects.toMatchObject({
-      response: expect.objectContaining({ code: 'THEME_INVALID_SECTIONS_COUNT' }),
-    });
+    await expect(useCase.run(tenantId, dto, performedBy)).rejects.toMatchObject(
+      {
+        response: expect.objectContaining({
+          code: 'THEME_INVALID_SECTIONS_COUNT',
+        }),
+      },
+    );
   });
 
   it('deve lançar BusinessRuleException quando tipo de seção é inválido', async () => {
@@ -202,8 +221,12 @@ describe('UpsertTenantThemeUseCase', () => {
       ),
     });
 
-    await expect(useCase.run(tenantId, dto, performedBy)).rejects.toMatchObject({
-      response: expect.objectContaining({ code: 'THEME_INVALID_SECTION_TYPE' }),
-    });
+    await expect(useCase.run(tenantId, dto, performedBy)).rejects.toMatchObject(
+      {
+        response: expect.objectContaining({
+          code: 'THEME_INVALID_SECTION_TYPE',
+        }),
+      },
+    );
   });
 });

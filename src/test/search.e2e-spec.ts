@@ -40,9 +40,7 @@ describe('SearchController (e2e)', () => {
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [SearchController],
-      providers: [
-        { provide: SearchTenantsUseCase, useValue: mockUseCase },
-      ],
+      providers: [{ provide: SearchTenantsUseCase, useValue: mockUseCase }],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -125,9 +123,7 @@ describe('SearchController (e2e)', () => {
         .expect(400);
 
       expect(res.body.message).toEqual(
-        expect.arrayContaining([
-          expect.stringContaining('radius'),
-        ]),
+        expect.arrayContaining([expect.stringContaining('radius')]),
       );
     });
   });

@@ -14,7 +14,9 @@ describe('DeleteTenantThemeUseCase', () => {
 
   beforeEach(async () => {
     tenantRepository = { updateTheme: jest.fn().mockResolvedValue(undefined) };
-    findTenantByIdUseCase = { run: jest.fn().mockResolvedValue({ id: tenantId }) };
+    findTenantByIdUseCase = {
+      run: jest.fn().mockResolvedValue({ id: tenantId }),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
