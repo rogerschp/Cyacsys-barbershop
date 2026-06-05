@@ -18,6 +18,9 @@
     "test:cov": "jest --config jest.config.ts --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --config jest.config.ts --runInBand",
     "test:e2e": "jest --config jest-e2e.json",
+    "test:e2e:search": "jest --config jest-e2e.json src/test/search.e2e-spec.ts",
+    "test:search": "jest --config jest.search.config.ts",
+    "test:search:cov": "jest --config jest.search.config.ts --coverage",
     "test:unit": "jest --config ./test/jest-unit.json",
     "migration:generate": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate -d src/config/typeorm.config.ts",
     "migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/config/typeorm.config.ts"
