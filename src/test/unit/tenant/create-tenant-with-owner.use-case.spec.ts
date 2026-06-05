@@ -28,6 +28,7 @@ describe('CreateTenantWithOwnerUseCase', () => {
     avatarUrl: null,
     latitude: null,
     longitude: null,
+    theme: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: undefined,

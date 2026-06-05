@@ -13,6 +13,7 @@ import {
 import { TenantSegment } from 'src/common/enums/tenant-segment.enum';
 import { TenantStatus } from './tenant-status.enum';
 import { AddressEntity } from 'src/modules/address/entities/address.entity';
+import { TenantThemeData } from '../../tenant-theme/interfaces/tenant-theme-data.interface';
 @Entity('tenants')
 export class TenantEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -135,4 +136,13 @@ export class TenantEntity {
   })
   @ApiProperty({ nullable: true, example: -46.6333094 })
   longitude: number | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  @ApiProperty({
+    nullable: true,
+    description:
+      'Tema visual da página pública. Null usa defaults do frontend.',
+    required: false,
+  })
+  theme: TenantThemeData | null;
 }

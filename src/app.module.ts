@@ -18,6 +18,8 @@ import { UserModule } from './modules/user/user.module';
 import { ReviewModule } from './modules/review/review.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { SearchModule } from './modules/search/search.module';
+import { TenantThemeModule } from './modules/tenant-theme/tenant-theme.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -49,6 +51,7 @@ import { SearchModule } from './modules/search/search.module';
     ReviewModule,
     SubscriptionModule,
     SearchModule,
+    TenantThemeModule,
   ],
   controllers: [],
   providers: [

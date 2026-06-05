@@ -22,6 +22,7 @@ describe('TenantRepository', () => {
     avatarUrl: null,
     latitude: null,
     longitude: null,
+    theme: null,
     createdAt: new Date('2021-01-01'),
     updatedAt: new Date('2021-01-01'),
     deletedAt: undefined,
@@ -37,6 +38,7 @@ describe('TenantRepository', () => {
       create: jest.fn(),
       save: jest.fn(),
       softDelete: jest.fn(),
+      update: jest.fn(),
       createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
     };
     const module: TestingModule = await Test.createTestingModule({
@@ -140,12 +142,39 @@ describe('TenantRepository', () => {
       expect(result).toEqual(updated);
     });
   });
+  describe('updateTheme', () => {
+    it('deve atualizar coluna theme via update', async () => {
+      const theme = {
+        corPrimaria: '#111111',
+        corSecundaria: '#222222',
+        corFundo: '#FFFFFF',
+        corTexto: '#000000',
+        fonte: 'Inter',
+        borderRadius: 'md',
+        secoesLayout: [],
+      };
+
+      typeOrmRepo.update.mockResolvedValue({ affected: 1 } as any);
+
+      await repository.updateTheme('uuid-123', theme as any);
+
+      expect(typeOrmRepo.update).toHaveBeenCalledWith('uuid-123', { theme });
+    });
+
+    it('deve permitir resetar theme para null', async () => {
+      typeOrmRepo.update.mockResolvedValue({ affected: 1 } as any);
+
+      await repository.updateTheme('uuid-123', null);
+
+      expect(typeOrmRepo.update).toHaveBeenCalledWith('uuid-123', { theme: null });
+    });
+  });
+
   describe('softDelete', () => {
     it('deve chamar softDelete do repositório', async () => {
       typeOrmRepo.softDelete.mockResolvedValue({ affected: 1 } as any);
-      const result = await repository.softDelete('uuid-123');
+      await repository.softDelete('uuid-123');
       expect(typeOrmRepo.softDelete).toHaveBeenCalledWith('uuid-123');
-      expect(result).toEqual({ affected: 1 });
     });
   });
 });

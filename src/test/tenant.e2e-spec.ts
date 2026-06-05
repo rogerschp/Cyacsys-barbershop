@@ -22,6 +22,7 @@ describe('TenantController (e2e)', () => {
     avatarUrl: null,
     latitude: null,
     longitude: null,
+    theme: null,
     createdAt: new Date('2021-01-01'),
     updatedAt: new Date('2021-01-01'),
     deletedAt: undefined,
