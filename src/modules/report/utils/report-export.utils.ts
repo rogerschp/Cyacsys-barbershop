@@ -46,7 +46,10 @@ export async function buildExcelReport(
   workbook.creator = 'Cyacsys Barbershop';
 
   const summarySheet = workbook.addWorksheet('Resumo');
-  summarySheet.addRow(['Período', `${report.period.start} — ${report.period.end}`]);
+  summarySheet.addRow([
+    'Período',
+    `${report.period.start} — ${report.period.end}`,
+  ]);
   summarySheet.addRow(['Faturamento total', report.revenue]);
   summarySheet.addRow(['Bookings confirmados', report.confirmedBookings]);
   summarySheet.addRow(['Bookings cancelados', report.cancelledBookings]);
@@ -112,7 +115,9 @@ export async function buildPdfReport(
 
   doc.fontSize(18).text('Relatório Elite', { underline: true });
   doc.moveDown();
-  doc.fontSize(12).text(`Período: ${report.period.start} — ${report.period.end}`);
+  doc
+    .fontSize(12)
+    .text(`Período: ${report.period.start} — ${report.period.end}`);
   doc.text(`Faturamento total: R$ ${formatCurrency(report.revenue)}`);
   doc.text(`Bookings confirmados: ${report.confirmedBookings}`);
   doc.text(`Bookings cancelados: ${report.cancelledBookings}`);

@@ -24,12 +24,7 @@ export class GetProReportUseCase {
     const monthBuckets = listMonthsInPeriod(tenant.timezone, 2);
 
     const [totals, monthlyBreakdown] = await Promise.all([
-      fetchBookingTotals(
-        this.dataSource,
-        tenantId,
-        period.start,
-        period.end,
-      ),
+      fetchBookingTotals(this.dataSource, tenantId, period.start, period.end),
       fetchMonthlyBreakdown(
         this.dataSource,
         tenantId,

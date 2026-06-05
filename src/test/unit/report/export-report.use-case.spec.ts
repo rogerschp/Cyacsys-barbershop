@@ -62,12 +62,14 @@ describe('ExportReportUseCase', () => {
       filename: 'relatorio-barbearia-x-2026-06.xlsx',
     });
 
-    jest.spyOn(DateTime, 'now').mockReturnValue(
-      DateTime.fromObject(
-        { year: 2026, month: 6, day: 4 },
-        { zone: 'America/Sao_Paulo' },
-      ) as DateTime<true>,
-    );
+    jest
+      .spyOn(DateTime, 'now')
+      .mockReturnValue(
+        DateTime.fromObject(
+          { year: 2026, month: 6, day: 4 },
+          { zone: 'America/Sao_Paulo' },
+        ) as DateTime<true>,
+      );
   });
 
   afterEach(() => {

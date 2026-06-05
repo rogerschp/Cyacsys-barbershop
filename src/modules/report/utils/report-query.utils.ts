@@ -127,8 +127,7 @@ export function applyRevenueChangePercent(
       return { ...metric, revenueChangePercent: null };
     }
 
-    const change =
-      ((metric.revenue - previousRevenue) / previousRevenue) * 100;
+    const change = ((metric.revenue - previousRevenue) / previousRevenue) * 100;
     return {
       ...metric,
       revenueChangePercent: Math.round(change * 100) / 100,

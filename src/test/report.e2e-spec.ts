@@ -151,7 +151,7 @@ describe('ReportController (e2e)', () => {
       .get(`${basePath}/export`)
       .query({ format: 'pdf' })
       .expect(200)
-      .expect((res) => {
+      .expect(() => {
         expect(exportReportUseCase.run).toHaveBeenCalledWith(tenantId, 'pdf');
       });
   });
@@ -168,7 +168,7 @@ describe('ReportController (e2e)', () => {
       .get(`${basePath}/export`)
       .query({ format: 'excel' })
       .expect(200)
-      .expect((res) => {
+      .expect(() => {
         expect(exportReportUseCase.run).toHaveBeenCalledWith(tenantId, 'excel');
       });
   });

@@ -10,12 +10,14 @@ describe('report-period.utils', () => {
   });
 
   it('getReportPeriod usa timezone do tenant e início do mês', () => {
-    jest.spyOn(DateTime, 'now').mockReturnValue(
-      DateTime.fromObject(
-        { year: 2026, month: 6, day: 4, hour: 15 },
-        { zone: 'America/Sao_Paulo' },
-      ) as DateTime<true>,
-    );
+    jest
+      .spyOn(DateTime, 'now')
+      .mockReturnValue(
+        DateTime.fromObject(
+          { year: 2026, month: 6, day: 4, hour: 15 },
+          { zone: 'America/Sao_Paulo' },
+        ) as DateTime<true>,
+      );
 
     const period = getReportPeriod('America/Sao_Paulo', 0);
 
@@ -33,12 +35,14 @@ describe('report-period.utils', () => {
   });
 
   it('getReportPeriod usa fallback quando timezone vazio', () => {
-    jest.spyOn(DateTime, 'now').mockReturnValue(
-      DateTime.fromObject(
-        { year: 2026, month: 3, day: 10 },
-        { zone: 'America/Sao_Paulo' },
-      ) as DateTime<true>,
-    );
+    jest
+      .spyOn(DateTime, 'now')
+      .mockReturnValue(
+        DateTime.fromObject(
+          { year: 2026, month: 3, day: 10 },
+          { zone: 'America/Sao_Paulo' },
+        ) as DateTime<true>,
+      );
 
     const period = getReportPeriod('', 2);
 
@@ -46,12 +50,14 @@ describe('report-period.utils', () => {
   });
 
   it('listMonthsInPeriod retorna buckets do período PRO (3 meses)', () => {
-    jest.spyOn(DateTime, 'now').mockReturnValue(
-      DateTime.fromObject(
-        { year: 2026, month: 6, day: 15 },
-        { zone: 'America/Sao_Paulo' },
-      ) as DateTime<true>,
-    );
+    jest
+      .spyOn(DateTime, 'now')
+      .mockReturnValue(
+        DateTime.fromObject(
+          { year: 2026, month: 6, day: 15 },
+          { zone: 'America/Sao_Paulo' },
+        ) as DateTime<true>,
+      );
 
     const buckets = listMonthsInPeriod('America/Sao_Paulo', 2);
 

@@ -137,7 +137,7 @@ describe('ReportController (HTTP)', () => {
       .get(`/tenants/${tenantId}/reports/export`)
       .query({ format: 'excel' })
       .expect(200)
-      .expect((res) => {
+      .expect(() => {
         expect(exportReport.run).toHaveBeenCalledWith(tenantId, 'excel');
       });
   });

@@ -26,12 +26,7 @@ export class GetEliteReportUseCase {
 
     const [totals, monthlyBreakdown, professionalBreakdown] = await Promise.all(
       [
-        fetchBookingTotals(
-          this.dataSource,
-          tenantId,
-          period.start,
-          period.end,
-        ),
+        fetchBookingTotals(this.dataSource, tenantId, period.start, period.end),
         fetchMonthlyBreakdown(
           this.dataSource,
           tenantId,

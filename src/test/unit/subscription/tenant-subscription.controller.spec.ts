@@ -101,7 +101,9 @@ describe('TenantSubscriptionController (HTTP)', () => {
       .expect(200)
       .expect((res) => {
         expect(res.body).toHaveLength(1);
-        expect(getSubscriptionHistoryUseCase.run).toHaveBeenCalledWith(tenantId);
+        expect(getSubscriptionHistoryUseCase.run).toHaveBeenCalledWith(
+          tenantId,
+        );
       });
   });
 });
