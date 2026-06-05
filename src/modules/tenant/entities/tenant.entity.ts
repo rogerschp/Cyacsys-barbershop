@@ -10,6 +10,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
+import { TenantSegment } from 'src/common/enums/tenant-segment.enum';
 import { TenantStatus } from './tenant-status.enum';
 import { AddressEntity } from 'src/modules/address/entities/address.entity';
 import { TenantThemeData } from '../../tenant-theme/interfaces/tenant-theme-data.interface';
@@ -91,6 +92,50 @@ export class TenantEntity {
     nullable: true,
   })
   cnpj: string | null;
+
+  @Column({
+    type: 'enum',
+    enum: TenantSegment,
+    enumName: 'tenant_segment_enum',
+    nullable: true,
+  })
+  @ApiProperty({
+    enum: TenantSegment,
+    nullable: true,
+    description: 'Segmento do estabelecimento',
+  })
+  segment: TenantSegment | null;
+
+  @Column({
+    name: 'avatar_url',
+    type: 'varchar',
+    nullable: true,
+  })
+  @ApiProperty({
+    nullable: true,
+    description: 'URL do avatar/logo do estabelecimento',
+  })
+  avatarUrl: string | null;
+
+  @Index()
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 8,
+    nullable: true,
+  })
+  @ApiProperty({ nullable: true, example: -23.5505199 })
+  latitude: number | null;
+
+  @Index()
+  @Column({
+    type: 'decimal',
+    precision: 11,
+    scale: 8,
+    nullable: true,
+  })
+  @ApiProperty({ nullable: true, example: -46.6333094 })
+  longitude: number | null;
 
   @Column({ type: 'jsonb', nullable: true })
   @ApiProperty({

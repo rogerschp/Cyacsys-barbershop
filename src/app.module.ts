@@ -17,6 +17,7 @@ import { TenantUserModule } from './modules/tenant-user/tenant-user.module';
 import { UserModule } from './modules/user/user.module';
 import { ReviewModule } from './modules/review/review.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
+import { SearchModule } from './modules/search/search.module';
 import { TenantThemeModule } from './modules/tenant-theme/tenant-theme.module';
 
 @Module({
@@ -49,6 +50,7 @@ import { TenantThemeModule } from './modules/tenant-theme/tenant-theme.module';
     UserModule,
     ReviewModule,
     SubscriptionModule,
+    SearchModule,
     TenantThemeModule,
   ],
   controllers: [],
