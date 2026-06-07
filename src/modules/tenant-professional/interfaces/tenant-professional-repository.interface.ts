@@ -31,6 +31,9 @@ export interface ITenantProfessionalRepository {
     tenantId: string,
     options?: { activeOnly?: boolean },
   ): Promise<TenantProfessionalEntity[]>;
+  listActiveTenantIdsByProfessionalProfileId(
+    professionalProfileId: string,
+  ): Promise<string[]>;
   update(
     id: string,
     tenantId: string,

@@ -31,7 +31,6 @@ lerna-debug.log*
 .settings/
 *.sublime-workspace
 
-# Cursor (regras locais; não versionar)
 .cursor
 
 # IDE - VSCode

@@ -4,6 +4,7 @@ import { DataSource, Repository } from 'typeorm';
 import { BookingEntity } from '../../modules/booking/entities/booking.entity';
 import { BookingStatus } from '../../modules/booking/entities/booking-status.enum';
 import {
+  ActiveBookingTimeRange,
   CreateBookingDraftData,
   IBookingRepository,
 } from '../../modules/booking/interfaces/booking-repository.interface';
@@ -18,6 +19,32 @@ export class BookingRepository implements IBookingRepository {
     @InjectDataSource()
     private readonly dataSource: DataSource,
   ) {}
+
+  async findActiveByTenantProfessionalBetween(
+    tenantId: string,
+    tenantProfessionalId: string,
+    rangeStart: Date,
+    rangeEnd: Date,
+  ): Promise<ActiveBookingTimeRange[]> {
+    const rows = await this.bookingRepo
+      .createQueryBuilder('b')
+      .select(['b.startsAt', 'b.endsAt'])
+      .where('b.tenant_id = :tenantId', { tenantId })
+      .andWhere('b.tenant_professional_id = :tenantProfessionalId', {
+        tenantProfessionalId,
+      })
+      .andWhere('b.status IN (:...statuses)', { statuses: ACTIVE_STATUSES })
+      .andWhere('b.starts_at < :rangeEnd AND b.ends_at > :rangeStart', {
+        rangeStart,
+        rangeEnd,
+      })
+      .getMany();
+
+    return rows.map((row) => ({
+      startsAt: row.startsAt,
+      endsAt: row.endsAt,
+    }));
+  }
 
   async createDraft(data: CreateBookingDraftData): Promise<BookingEntity> {
     return this.dataSource.transaction(async (manager) => {

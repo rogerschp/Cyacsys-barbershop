@@ -84,20 +84,31 @@ describe('BookingController (e2e)', () => {
     if (app) await app.close();
   });
 
+  const mockBookingEntity = (status: BookingStatus) => ({
+    id: bookingId,
+    tenantId,
+    tenantProfessionalId,
+    serviceId,
+    startsAt: new Date('2099-07-01T12:00:00.000Z'),
+    endsAt: new Date('2099-07-01T12:30:00.000Z'),
+    status,
+    clientUserId: 'user-e2e-123',
+    createdByTenantUserId: 'tu-e2e',
+    createdAt: new Date('2099-07-01T11:00:00.000Z'),
+    updatedAt: new Date('2099-07-01T11:00:00.000Z'),
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
-    createBookingDraftUseCase.run.mockResolvedValue({
-      id: bookingId,
-      status: BookingStatus.DRAFT,
-    } as any);
-    confirmBookingUseCase.run.mockResolvedValue({
-      id: bookingId,
-      status: BookingStatus.CONFIRMED,
-    } as any);
-    cancelBookingDraftUseCase.run.mockResolvedValue({
-      id: bookingId,
-      status: BookingStatus.CANCELLED,
-    } as any);
+    createBookingDraftUseCase.run.mockResolvedValue(
+      mockBookingEntity(BookingStatus.DRAFT) as any,
+    );
+    confirmBookingUseCase.run.mockResolvedValue(
+      mockBookingEntity(BookingStatus.CONFIRMED) as any,
+    );
+    cancelBookingDraftUseCase.run.mockResolvedValue(
+      mockBookingEntity(BookingStatus.CANCELLED) as any,
+    );
   });
 
   describe(`POST ${basePath}/draft`, () => {

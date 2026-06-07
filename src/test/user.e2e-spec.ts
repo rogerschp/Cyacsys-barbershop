@@ -8,6 +8,7 @@ import { CreateUserUseCase } from '../modules/user/use-cases/create-user.use-cas
 import { UpdateUserUseCase } from '../modules/user/use-cases/update-user.use-case';
 import { DeleteUserUseCase } from '../modules/user/use-cases/delete-user.use-case';
 import { BearerAuthGuard } from '../modules/auth/guards/bearer-auth.guard';
+import { UserRolesGuard } from '../common/guards/user-roles.guard';
 import { Role } from '../common/enums/role.enum';
 import { UserStatus } from '../modules/user/entities/user-status.enum';
 import { ProfessionalType } from '../modules/professional-profile/entities/professional-type.enum';
@@ -48,12 +49,16 @@ describe('UserController (e2e)', () => {
           switchToHttp: () => { getRequest: () => object };
         }) => {
           const req = context.switchToHttp().getRequest() as {
-            user?: { dbUser: { id: string } };
+            user?: { dbUser: { id: string; role: Role } };
           };
-          req.user = { dbUser: { id: 'user-e2e-uuid' } };
+          req.user = {
+            dbUser: { id: 'user-e2e-uuid', role: Role.ADMIN },
+          };
           return true;
         },
       })
+      .overrideGuard(UserRolesGuard)
+      .useValue({ canActivate: () => true })
       .compile();
 
     app = moduleFixture.createNestApplication();

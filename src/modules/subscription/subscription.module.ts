@@ -25,6 +25,7 @@ import { ExpireSubscriptionsUseCase } from './use-cases/expire-subscriptions.use
 import { GetPlansUseCase } from './use-cases/get-plans.use-case';
 import { GetSubscriptionHistoryUseCase } from './use-cases/get-subscription-history.use-case';
 import { GetTenantSubscriptionUseCase } from './use-cases/get-tenant-subscription.use-case';
+import { AssertTenantPlanFeatureUseCase } from './use-cases/assert-tenant-plan-feature.use-case';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { GetTenantSubscriptionUseCase } from './use-cases/get-tenant-subscriptio
     ExpireSubscriptionsUseCase,
     ExpireSubscriptionsJob,
     SubscriptionGuard,
+    AssertTenantPlanFeatureUseCase,
   ],
   exports: [
     PLAN_REPOSITORY,
@@ -69,6 +71,7 @@ import { GetTenantSubscriptionUseCase } from './use-cases/get-tenant-subscriptio
     SUBSCRIPTION_HISTORY_REPOSITORY,
     CreateFreeSubscriptionUseCase,
     SubscriptionGuard,
+    AssertTenantPlanFeatureUseCase,
     ChangePlanUseCase,
     CancelSubscriptionUseCase,
   ],
