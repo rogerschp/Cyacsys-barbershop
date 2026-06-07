@@ -24,6 +24,10 @@ import {
   rangesOverlapHalfOpen,
 } from '../utils/time-range.utils';
 import { BOOKING_MIN_LEAD_MINUTES } from '../../booking/booking-lead.constants';
+import {
+  BOOKING_REPOSITORY,
+  IBookingRepository,
+} from '../../booking/interfaces/booking-repository.interface';
 
 @Injectable()
 export class GetAvailableSlotsUseCase {
@@ -34,6 +38,8 @@ export class GetAvailableSlotsUseCase {
     private readonly tenantProfessionalRepository: ITenantProfessionalRepository,
     @Inject(SERVICE_REPOSITORY)
     private readonly serviceRepository: IServiceRepository,
+    @Inject(BOOKING_REPOSITORY)
+    private readonly bookingRepository: IBookingRepository,
     private readonly findTenantByIdUseCase: FindTenantByIdUseCase,
   ) {}
 
@@ -137,6 +143,25 @@ export class GetAvailableSlotsUseCase {
       minutes: BOOKING_MIN_LEAD_MINUTES,
     });
 
+    const dayStartUtc = DateTime.fromFormat(dateYmd, 'yyyy-MM-dd', {
+      zone: timezone,
+    })
+      .startOf('day')
+      .toUTC();
+    const dayEndUtc = DateTime.fromFormat(dateYmd, 'yyyy-MM-dd', {
+      zone: timezone,
+    })
+      .endOf('day')
+      .toUTC();
+
+    const activeBookings =
+      await this.bookingRepository.findActiveByTenantProfessionalBetween(
+        tenantId,
+        tenantProfessionalId,
+        dayStartUtc.toJSDate(),
+        dayEndUtc.toJSDate(),
+      );
+
     for (const period of periods) {
       const ps = hmToMinutes(period.startTime);
       const pe = hmToMinutes(period.endTime);
@@ -174,6 +199,18 @@ export class GetAvailableSlotsUseCase {
           t += duration;
           continue;
         }
+
+        const slotEndUtc = slotStartUtc.plus({ minutes: duration });
+        const overlapsBooking = activeBookings.some(
+          (booking) =>
+            booking.startsAt < slotEndUtc.toJSDate() &&
+            booking.endsAt > slotStartUtc.toJSDate(),
+        );
+        if (overlapsBooking) {
+          t += duration;
+          continue;
+        }
+
         slotSet.add(hm);
         t += duration;
       }

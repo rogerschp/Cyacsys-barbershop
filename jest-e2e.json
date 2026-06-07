@@ -6,6 +6,8 @@
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "testEnvironment": "node",
+  "testPathIgnorePatterns": ["/node_modules/", "/.worktrees/"],
+  "modulePathIgnorePatterns": ["<rootDir>/.worktrees"],
   "moduleNameMapper": {
     "^src/(.*)$": "<rootDir>/src/$1"
   }

@@ -15,7 +15,18 @@ export interface ListBookingsByClientUserOptions {
   status?: BookingStatus;
 }
 
+export interface ActiveBookingTimeRange {
+  startsAt: Date;
+  endsAt: Date;
+}
+
 export interface IBookingRepository {
+  findActiveByTenantProfessionalBetween(
+    tenantId: string,
+    tenantProfessionalId: string,
+    rangeStart: Date,
+    rangeEnd: Date,
+  ): Promise<ActiveBookingTimeRange[]>;
   createDraft(data: CreateBookingDraftData): Promise<BookingEntity>;
   findByClientUserId(
     clientUserId: string,

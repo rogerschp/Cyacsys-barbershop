@@ -6,6 +6,7 @@ import { AVAILABILITY_REPOSITORY } from 'src/modules/availability/interfaces/ava
 import { TENANT_PROFESSIONAL_REPOSITORY } from 'src/modules/tenant-professional/interfaces/tenant-professional-repository.interface';
 import { SERVICE_REPOSITORY } from 'src/modules/service/interfaces/service-repository.interface';
 import { FindTenantByIdUseCase } from 'src/modules/tenant/use-cases/find-tenant-by-id.use-case';
+import { BOOKING_REPOSITORY } from 'src/modules/booking/interfaces/booking-repository.interface';
 import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
 import { TenantUserRole } from 'src/modules/tenant-user/entities/tenant-user-role.enum';
 import { TenantStatus } from 'src/modules/tenant/entities/tenant-status.enum';
@@ -27,6 +28,9 @@ describe('GetAvailableSlotsUseCase', () => {
   };
   let findTenantByIdUseCase: {
     run: jest.Mock;
+  };
+  let bookingRepository: {
+    findActiveByTenantProfessionalBetween: jest.Mock;
   };
   const tenantId = 'tenant-uuid';
   const tenantProfessionalId = 'bp-uuid';
@@ -97,6 +101,9 @@ describe('GetAvailableSlotsUseCase', () => {
     findTenantByIdUseCase = {
       run: jest.fn().mockResolvedValue(mockTenant),
     };
+    bookingRepository = {
+      findActiveByTenantProfessionalBetween: jest.fn().mockResolvedValue([]),
+    };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GetAvailableSlotsUseCase,
@@ -106,6 +113,7 @@ describe('GetAvailableSlotsUseCase', () => {
           useValue: tenantProfessionalRepository,
         },
         { provide: SERVICE_REPOSITORY, useValue: serviceRepository },
+        { provide: BOOKING_REPOSITORY, useValue: bookingRepository },
         { provide: FindTenantByIdUseCase, useValue: findTenantByIdUseCase },
       ],
     }).compile();
@@ -284,6 +292,56 @@ describe('GetAvailableSlotsUseCase', () => {
     );
     availabilityRepository.listBlocksOnDate.mockResolvedValue([
       { startTime: '10:00', endTime: '11:00' } as any,
+    ]);
+    jest
+      .spyOn(DateTime, 'now')
+      .mockReturnValue(
+        DateTime.fromObject(
+          { year: 2030, month: 1, day: 7, hour: 7, minute: 0, second: 0 },
+          { zone: 'America/Sao_Paulo' },
+        ) as any,
+      );
+    const result = await useCase.run(
+      tenantId,
+      tenantProfessionalId,
+      serviceId,
+      dateYmd,
+      userId,
+      TenantUserRole.ADMIN,
+    );
+    expect(result.slots).toEqual(['09:00', '11:00']);
+  });
+
+  it('omite slot ocupado por booking DRAFT ou CONFIRMED', async () => {
+    const wh: WorkingHoursEntity = {
+      id: 'wh-1',
+      tenantId,
+      tenantProfessionalId,
+      dayOfWeek: DayOfWeek.MONDAY,
+      isActive: true,
+      periods: [{ startTime: '09:00', endTime: '12:00' } as any],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: undefined,
+    } as WorkingHoursEntity;
+    availabilityRepository.findWorkingHoursByProfessionalAndDay.mockResolvedValue(
+      wh,
+    );
+    bookingRepository.findActiveByTenantProfessionalBetween.mockResolvedValue([
+      {
+        startsAt: DateTime.fromObject(
+          { year: 2030, month: 1, day: 7, hour: 10, minute: 0 },
+          { zone: 'America/Sao_Paulo' },
+        )
+          .toUTC()
+          .toJSDate(),
+        endsAt: DateTime.fromObject(
+          { year: 2030, month: 1, day: 7, hour: 11, minute: 0 },
+          { zone: 'America/Sao_Paulo' },
+        )
+          .toUTC()
+          .toJSDate(),
+      },
     ]);
     jest
       .spyOn(DateTime, 'now')

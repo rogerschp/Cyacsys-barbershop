@@ -1,6 +1,6 @@
 services:
   api:
-    user: "${UID}:${GID}"
+    user: "0:0"
     build:
       context: .
       dockerfile: Dockerfile.dev
@@ -9,6 +9,9 @@ services:
       - "3000:3000"
     env_file:
       - .env
+    environment:
+      APP_UID: ${UID:-1000}
+      APP_GID: ${GID:-1000}
     volumes:
       - .:/app
       - /app/node_modules
