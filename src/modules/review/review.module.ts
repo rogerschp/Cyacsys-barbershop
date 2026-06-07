@@ -3,7 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ReviewRepository } from '../../repository/review/review.repository';
 import { AuthModule } from '../auth/auth.module';
 import { ProfessionalProfileModule } from '../professional-profile/professional-profile.module';
+import { SubscriptionModule } from '../subscription/subscription.module';
 import { TenantModule } from '../tenant/tenant.module';
+import { TenantProfessionalModule } from '../tenant-professional/tenant-professional.module';
 import { TenantUserModule } from '../tenant-user/tenant-user.module';
 import { TenantReviewController } from './controllers/tenant-review.controller';
 import {
@@ -25,6 +27,8 @@ import { ReplyReviewUseCase } from './use-cases/reply-review.use-case';
     forwardRef(() => TenantModule),
     forwardRef(() => TenantUserModule),
     forwardRef(() => ProfessionalProfileModule),
+    forwardRef(() => SubscriptionModule),
+    forwardRef(() => TenantProfessionalModule),
   ],
   controllers: [
     TenantReviewController,

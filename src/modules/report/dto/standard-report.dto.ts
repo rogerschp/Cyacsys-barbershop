@@ -18,6 +18,7 @@ export class StandardReportDto {
     nullable: true,
     example: null,
     description: 'Reservado para insights de IA futura',
+    type: Object,
   })
-  insights: null;
+  insights: object | null;
 }

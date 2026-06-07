@@ -25,18 +25,19 @@ describe('BookingController (HTTP)', () => {
   const serviceId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
   const basePath = `/tenants/${tenantId}/tenant-professionals/${tenantProfessionalId}/bookings`;
 
-  const mockDraftResponse = {
+  const mockBookingEntity = (status: BookingStatus) => ({
     id: bookingId,
     tenantId,
     tenantProfessionalId,
     serviceId,
-    startsAt: new Date('2099-06-15T13:00:00.000Z').toISOString(),
-    endsAt: new Date('2099-06-15T13:30:00.000Z').toISOString(),
-    status: BookingStatus.DRAFT,
+    startsAt: new Date('2099-06-15T13:00:00.000Z'),
+    endsAt: new Date('2099-06-15T13:30:00.000Z'),
+    status,
+    clientUserId: 'user-uuid-123',
     createdByTenantUserId: 'tu-1',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+    createdAt: new Date('2099-06-15T12:00:00.000Z'),
+    updatedAt: new Date('2099-06-15T12:00:00.000Z'),
+  });
 
   beforeAll(async () => {
     const mockCreate = { run: jest.fn() };
@@ -90,15 +91,15 @@ describe('BookingController (HTTP)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    createBookingDraftUseCase.run.mockResolvedValue(mockDraftResponse as any);
-    confirmBookingUseCase.run.mockResolvedValue({
-      ...mockDraftResponse,
-      status: BookingStatus.CONFIRMED,
-    } as any);
-    cancelBookingDraftUseCase.run.mockResolvedValue({
-      ...mockDraftResponse,
-      status: BookingStatus.CANCELLED,
-    } as any);
+    createBookingDraftUseCase.run.mockResolvedValue(
+      mockBookingEntity(BookingStatus.DRAFT) as any,
+    );
+    confirmBookingUseCase.run.mockResolvedValue(
+      mockBookingEntity(BookingStatus.CONFIRMED) as any,
+    );
+    cancelBookingDraftUseCase.run.mockResolvedValue(
+      mockBookingEntity(BookingStatus.CANCELLED) as any,
+    );
   });
 
   describe(`POST ${basePath}/draft`, () => {
@@ -248,11 +249,31 @@ describe('BookingController (HTTP) — user/tenant opcionais', () => {
     await app.close();
   });
 
+  const mockBookingEntity = (status: BookingStatus) => ({
+    id: bookingId,
+    tenantId,
+    tenantProfessionalId,
+    serviceId,
+    startsAt: new Date('2099-06-15T13:00:00.000Z'),
+    endsAt: new Date('2099-06-15T13:30:00.000Z'),
+    status,
+    clientUserId: null,
+    createdByTenantUserId: null,
+    createdAt: new Date('2099-06-15T12:00:00.000Z'),
+    updatedAt: new Date('2099-06-15T12:00:00.000Z'),
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
-    createBookingDraftUseCase.run.mockResolvedValue({ id: 'b1' } as any);
-    confirmBookingUseCase.run.mockResolvedValue({ id: bookingId } as any);
-    cancelBookingDraftUseCase.run.mockResolvedValue({ id: bookingId } as any);
+    createBookingDraftUseCase.run.mockResolvedValue(
+      mockBookingEntity(BookingStatus.DRAFT) as any,
+    );
+    confirmBookingUseCase.run.mockResolvedValue(
+      mockBookingEntity(BookingStatus.CONFIRMED) as any,
+    );
+    cancelBookingDraftUseCase.run.mockResolvedValue(
+      mockBookingEntity(BookingStatus.CANCELLED) as any,
+    );
   });
 
   it('POST draft usa userId vazio e role undefined nos optional chains', () => {

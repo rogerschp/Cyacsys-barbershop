@@ -2,6 +2,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AvailabilityRepository } from '../../repository/availability/availability.repository';
 import { AuthModule } from '../auth/auth.module';
+import { BookingModule } from '../booking/booking.module';
 import { ServiceModule } from '../service/service.module';
 import { TenantModule } from '../tenant/tenant.module';
 import { TenantUserModule } from '../tenant-user/tenant-user.module';
@@ -50,6 +51,7 @@ import { UpdateWorkingHoursPeriodUseCase } from './use-cases/update-working-hour
     forwardRef(() => TenantUserModule),
     forwardRef(() => TenantProfessionalModule),
     forwardRef(() => ServiceModule),
+    forwardRef(() => BookingModule),
   ],
   controllers: [AvailabilityController],
   providers: [

@@ -1,5 +1,12 @@
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
+import { TenantForbiddenException } from '../../../common/exceptions/tenant-forbidden.exception';
+import { PlanFeature } from '../../subscription/enums/plan-feature.enum';
+import { AssertTenantPlanFeatureUseCase } from '../../subscription/use-cases/assert-tenant-plan-feature.use-case';
+import {
+  ITenantProfessionalRepository,
+  TENANT_PROFESSIONAL_REPOSITORY,
+} from '../../tenant-professional/interfaces/tenant-professional-repository.interface';
 import { TenantUserRole } from '../../tenant-user/entities/tenant-user-role.enum';
 import { FindOptionalMembershipByTenantAndUserUseCase } from '../../tenant-user/use-cases/find-optional-membership-by-tenant-and-user.use-case';
 import { FindTenantByIdUseCase } from '../../tenant/use-cases/find-tenant-by-id.use-case';
@@ -26,6 +33,9 @@ export class CreateReviewUseCase {
     @Inject(PROFESSIONAL_PROFILE_REPOSITORY)
     private readonly professionalProfileRepository: IProfessionalProfileRepository,
     private readonly findOptionalMembershipByTenantAndUserUseCase: FindOptionalMembershipByTenantAndUserUseCase,
+    private readonly assertTenantPlanFeatureUseCase: AssertTenantPlanFeatureUseCase,
+    @Inject(TENANT_PROFESSIONAL_REPOSITORY)
+    private readonly tenantProfessionalRepository: ITenantProfessionalRepository,
   ) {}
 
   async run(
@@ -42,6 +52,7 @@ export class CreateReviewUseCase {
     }
 
     await this.assertTargetExists(targetType, targetId);
+    await this.assertReviewsPlanAllowed(targetType, targetId);
     await this.assertCanReviewTarget(reviewerUserId, targetType, targetId);
 
     const existing = await this.reviewRepository.findActiveByReviewerAndTarget(
@@ -93,6 +104,51 @@ export class CreateReviewUseCase {
     if (!profile) {
       throw new NotFoundException('Professional profile not found');
     }
+  }
+
+  private async assertReviewsPlanAllowed(
+    targetType: ReviewTargetType,
+    targetId: string,
+  ): Promise<void> {
+    if (targetType === ReviewTargetType.TENANT) {
+      await this.assertTenantPlanFeatureUseCase.run(
+        targetId,
+        PlanFeature.REVIEWS,
+      );
+      return;
+    }
+
+    const tenantIds =
+      await this.tenantProfessionalRepository.listActiveTenantIdsByProfessionalProfileId(
+        targetId,
+      );
+
+    if (!tenantIds.length) {
+      throw new TenantForbiddenException(
+        'PLAN_FEATURE_NOT_AVAILABLE',
+        'Avaliações não disponíveis para este profissional.',
+      );
+    }
+
+    for (const tenantId of tenantIds) {
+      try {
+        await this.assertTenantPlanFeatureUseCase.run(
+          tenantId,
+          PlanFeature.REVIEWS,
+        );
+        return;
+      } catch (error) {
+        if (!(error instanceof TenantForbiddenException)) {
+          throw error;
+        }
+      }
+    }
+
+    throw new TenantForbiddenException(
+      'PLAN_FEATURE_NOT_AVAILABLE',
+      "Feature 'reviews' não disponível no plano atual.",
+      { tenantId: tenantIds[0] },
+    );
   }
 
   private async assertCanReviewTarget(

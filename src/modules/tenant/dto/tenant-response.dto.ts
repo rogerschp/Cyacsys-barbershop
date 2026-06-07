@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { TenantSegment } from 'src/common/enums/tenant-segment.enum';
 import { AddressResponseDto } from 'src/modules/address/dto/address-response.dto';
 
 export class TenantResponseDto {
@@ -52,4 +53,16 @@ export class TenantResponseDto {
     description: 'Timezone para cálculos de horários no front-end',
   })
   timezone: string;
+
+  @ApiPropertyOptional({ enum: TenantSegment, nullable: true })
+  segment?: TenantSegment | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  avatarUrl?: string | null;
+
+  @ApiPropertyOptional({ nullable: true, example: -23.5505199 })
+  latitude?: number | null;
+
+  @ApiPropertyOptional({ nullable: true, example: -46.6333094 })
+  longitude?: number | null;
 }

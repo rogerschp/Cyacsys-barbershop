@@ -10,6 +10,7 @@ import { GetServiceUseCase } from '../modules/service/use-cases/get-service.use-
 import { BearerAuthGuard } from '../modules/auth/guards/bearer-auth.guard';
 import { TenantInterceptor } from '../common/interceptors/tenant.interceptor';
 import { TenantMembershipGuard } from '../common/guards/tenant-membership.guard';
+import { TenantResolverGuard } from '../common/guards/tenant-resolver.guard';
 import { TenantRolesGuard } from '../common/guards/tenant-roles.guard';
 import { ServiceEntity } from '../modules/service/entities/service.entity';
 describe('ServiceController (e2e)', () => {
@@ -60,6 +61,8 @@ describe('ServiceController (e2e)', () => {
       .overrideInterceptor(TenantInterceptor)
       .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
       .overrideGuard(TenantMembershipGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(TenantResolverGuard)
       .useValue({ canActivate: () => true })
       .overrideGuard(TenantRolesGuard)
       .useValue({ canActivate: () => true })

@@ -75,6 +75,26 @@ export class TenantProfessionalRepository implements ITenantProfessionalReposito
     return qb.getMany();
   }
 
+  async listActiveTenantIdsByProfessionalProfileId(
+    professionalProfileId: string,
+  ): Promise<string[]> {
+    const rows = await this.repo
+      .createQueryBuilder('tp')
+      .innerJoin('tp.professionalProfile', 'pp')
+      .select(['tp.tenantId'])
+      .where('tp.professional_profile_id = :professionalProfileId', {
+        professionalProfileId,
+      })
+      .andWhere('tp.status = :status', {
+        status: TenantProfessionalStatus.ACTIVE,
+      })
+      .andWhere('pp.is_active = true')
+      .andWhere('pp.deletedAt IS NULL')
+      .getMany();
+
+    return rows.map((row) => row.tenantId);
+  }
+
   async update(
     id: string,
     tenantId: string,

@@ -7,6 +7,9 @@ import { FindTenantByIdUseCase } from 'src/modules/tenant/use-cases/find-tenant-
 import { PROFESSIONAL_PROFILE_REPOSITORY } from 'src/modules/professional-profile/interfaces/professional-profile-repository.interface';
 import { FindOptionalMembershipByTenantAndUserUseCase } from 'src/modules/tenant-user/use-cases/find-optional-membership-by-tenant-and-user.use-case';
 import { TenantUserRole } from 'src/modules/tenant-user/entities/tenant-user-role.enum';
+import { AssertTenantPlanFeatureUseCase } from 'src/modules/subscription/use-cases/assert-tenant-plan-feature.use-case';
+import { TENANT_PROFESSIONAL_REPOSITORY } from 'src/modules/tenant-professional/interfaces/tenant-professional-repository.interface';
+import { TenantForbiddenException } from 'src/common/exceptions/tenant-forbidden.exception';
 
 describe('CreateReviewUseCase', () => {
   let useCase: CreateReviewUseCase;
@@ -18,6 +21,10 @@ describe('CreateReviewUseCase', () => {
   const findTenantById = { run: jest.fn() };
   const profRepo = { findById: jest.fn() };
   const findOptionalMembership = { run: jest.fn() };
+  const assertTenantPlanFeature = { run: jest.fn() };
+  const tenantProfessionalRepo = {
+    listActiveTenantIdsByProfessionalProfileId: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -30,12 +37,24 @@ describe('CreateReviewUseCase', () => {
           provide: FindOptionalMembershipByTenantAndUserUseCase,
           useValue: findOptionalMembership,
         },
+        {
+          provide: AssertTenantPlanFeatureUseCase,
+          useValue: assertTenantPlanFeature,
+        },
+        {
+          provide: TENANT_PROFESSIONAL_REPOSITORY,
+          useValue: tenantProfessionalRepo,
+        },
       ],
     }).compile();
     useCase = module.get(CreateReviewUseCase);
     jest.clearAllMocks();
     findTenantById.run.mockResolvedValue({ id: 'tenant-1' });
     findOptionalMembership.run.mockResolvedValue(null);
+    assertTenantPlanFeature.run.mockResolvedValue(undefined);
+    tenantProfessionalRepo.listActiveTenantIdsByProfessionalProfileId.mockResolvedValue(
+      [],
+    );
     reviewRepo.findActiveByReviewerAndTarget.mockResolvedValue(null);
     reviewRepo.create.mockResolvedValue({
       id: 'review-1',
@@ -69,6 +88,25 @@ describe('CreateReviewUseCase', () => {
     await expect(
       useCase.run('user-1', ReviewTargetType.TENANT, 'tenant-1', { rating: 4 }),
     ).rejects.toBeInstanceOf(BusinessRuleException);
+  });
+
+  it('valida feature reviews do plano para tenant', async () => {
+    await useCase.run('user-1', ReviewTargetType.TENANT, 'tenant-1', {
+      rating: 5,
+    });
+    expect(assertTenantPlanFeature.run).toHaveBeenCalled();
+  });
+
+  it('lança PLAN_FEATURE_NOT_AVAILABLE quando plano não inclui reviews', async () => {
+    assertTenantPlanFeature.run.mockRejectedValue(
+      new TenantForbiddenException(
+        'PLAN_FEATURE_NOT_AVAILABLE',
+        "Feature 'reviews' não disponível no plano atual.",
+      ),
+    );
+    await expect(
+      useCase.run('user-1', ReviewTargetType.TENANT, 'tenant-1', { rating: 5 }),
+    ).rejects.toBeInstanceOf(TenantForbiddenException);
   });
 
   it('lança CANNOT_REVIEW_YOURSELF para OWNER do tenant', async () => {
