@@ -11,6 +11,7 @@ import { TenantMembershipResolverAdapter } from './adapters/tenant-membership-re
 import { TenantUserEntity } from './entities/tenant-user.entity';
 import { TENANT_USER_REPOSITORY } from './interfaces/tenant-user-repository.interface';
 import { TenantUserController } from './tenant-user.controller';
+import { UserTenantsController } from './user-tenants.controller';
 import { AddUserToTenantUseCase } from './use-cases/add-user-to-tenant.use-case';
 import { FindMembershipByTenantIdAndUserIdUseCase } from './use-cases/find-membership-by-tenantId-and-userId.use-case';
 import { FindTenantUserByIdAndTenantUseCase } from './use-cases/find-tenant-user-by-id-and-tenant.use-case';
@@ -18,6 +19,7 @@ import { FindUserRoleByUserIdAndTenantIdUseCase } from './use-cases/find-user-ro
 import { RemoveUserFromTenantByUserIdAndTenantIdUseCase } from './use-cases/remove-user-from-tenant-by-userId-and-tenantId.use-case';
 import { ValidateMembershipByUserIdAndTenantIdUseCase } from './use-cases/validate-membership-by-userId-and-tenantId.use-case';
 import { FindOptionalMembershipByTenantAndUserUseCase } from './use-cases/find-optional-membership-by-tenant-and-user.use-case';
+import { ListMyTenantsUseCase } from './use-cases/list-my-tenants.use-case';
 @Module({
   imports: [
     TypeOrmModule.forFeature([TenantUserEntity]),
@@ -25,7 +27,7 @@ import { FindOptionalMembershipByTenantAndUserUseCase } from './use-cases/find-o
     forwardRef(() => TenantModule),
     forwardRef(() => UserModule),
   ],
-  controllers: [TenantUserController],
+  controllers: [TenantUserController, UserTenantsController],
   providers: [
     TenantUserRepository,
     { provide: TENANT_USER_REPOSITORY, useClass: TenantUserRepository },
@@ -36,6 +38,7 @@ import { FindOptionalMembershipByTenantAndUserUseCase } from './use-cases/find-o
     ValidateMembershipByUserIdAndTenantIdUseCase,
     FindOptionalMembershipByTenantAndUserUseCase,
     RemoveUserFromTenantByUserIdAndTenantIdUseCase,
+    ListMyTenantsUseCase,
     TenantMembershipResolverAdapter,
     {
       provide: TENANT_MEMBERSHIP_RESOLVER,

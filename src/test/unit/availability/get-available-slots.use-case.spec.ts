@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { DateTime } from 'luxon';
 import { NotFoundException } from '@nestjs/common';
 import { GetAvailableSlotsUseCase } from 'src/modules/availability/use-cases/get-available-slots.use-case';
+import { ResolveAvailableSlotsUseCase } from 'src/modules/availability/use-cases/resolve-available-slots.use-case';
 import { AVAILABILITY_REPOSITORY } from 'src/modules/availability/interfaces/availability-repository.interface';
 import { TENANT_PROFESSIONAL_REPOSITORY } from 'src/modules/tenant-professional/interfaces/tenant-professional-repository.interface';
 import { SERVICE_REPOSITORY } from 'src/modules/service/interfaces/service-repository.interface';
@@ -107,6 +108,7 @@ describe('GetAvailableSlotsUseCase', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GetAvailableSlotsUseCase,
+        ResolveAvailableSlotsUseCase,
         { provide: AVAILABILITY_REPOSITORY, useValue: availabilityRepository },
         {
           provide: TENANT_PROFESSIONAL_REPOSITORY,

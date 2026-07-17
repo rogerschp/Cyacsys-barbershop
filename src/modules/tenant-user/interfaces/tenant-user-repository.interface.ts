@@ -16,6 +16,7 @@ export interface ITenantUserRepository {
     tenantId: string,
     userId: string,
   ): Promise<TenantUserEntity | null>;
+  listActiveByUserId(userId: string): Promise<TenantUserEntity[]>;
   deleteByTenantAndUser(tenantId: string, userId: string): Promise<void>;
 }
 export const TENANT_USER_REPOSITORY = Symbol('TENANT_USER_REPOSITORY');

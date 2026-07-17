@@ -8,11 +8,13 @@ import { TenantUserModule } from '../tenant-user/tenant-user.module';
 import { TenantProfessionalEntity } from './entities/tenant-professional.entity';
 import { TENANT_PROFESSIONAL_REPOSITORY } from './interfaces/tenant-professional-repository.interface';
 import { TenantProfessionalController } from './tenant-professional.controller';
+import { PublicTenantProfessionalsController } from './controllers/public-tenant-professionals.controller';
 import { GetTenantProfessionalUseCase } from './use-cases/get-tenant-professional.use-case';
 import { LeaveTenantProfessionalUseCase } from './use-cases/leave-tenant-professional.use-case';
 import { LinkMyProfessionalToTenantUseCase } from './use-cases/link-my-professional-to-tenant.use-case';
 import { LinkProfessionalToTenantUseCase } from './use-cases/link-professional-to-tenant.use-case';
 import { ListTenantProfessionalsUseCase } from './use-cases/list-tenant-professionals.use-case';
+import { ListPublicTenantProfessionalsUseCase } from './use-cases/list-public-tenant-professionals.use-case';
 import { UpdateTenantProfessionalStatusUseCase } from './use-cases/update-tenant-professional-status.use-case';
 
 @Module({
@@ -23,7 +25,10 @@ import { UpdateTenantProfessionalStatusUseCase } from './use-cases/update-tenant
     forwardRef(() => TenantUserModule),
     forwardRef(() => ProfessionalProfileModule),
   ],
-  controllers: [TenantProfessionalController],
+  controllers: [
+    TenantProfessionalController,
+    PublicTenantProfessionalsController,
+  ],
   providers: [
     TenantProfessionalRepository,
     {
@@ -33,6 +38,7 @@ import { UpdateTenantProfessionalStatusUseCase } from './use-cases/update-tenant
     LinkProfessionalToTenantUseCase,
     LinkMyProfessionalToTenantUseCase,
     ListTenantProfessionalsUseCase,
+    ListPublicTenantProfessionalsUseCase,
     GetTenantProfessionalUseCase,
     UpdateTenantProfessionalStatusUseCase,
     LeaveTenantProfessionalUseCase,
