@@ -19,6 +19,7 @@ describe('TenantUserRepository', () => {
   beforeEach(async () => {
     const mockTypeOrmRepo = {
       findOne: jest.fn(),
+      find: jest.fn(),
       create: jest.fn(),
       save: jest.fn(),
       delete: jest.fn(),
@@ -75,6 +76,18 @@ describe('TenantUserRepository', () => {
       typeOrmRepo.findOne.mockResolvedValue(null);
       const result = await repository.findByTenantAndUser('t', 'u');
       expect(result).toBeNull();
+    });
+  });
+  describe('listActiveByUserId', () => {
+    it('deve listar memberships ACTIVE com relation tenant', async () => {
+      typeOrmRepo.find.mockResolvedValue([mockLink] as TenantUserEntity[]);
+      const result = await repository.listActiveByUserId('user-uuid');
+      expect(typeOrmRepo.find).toHaveBeenCalledWith({
+        where: { userId: 'user-uuid', status: TenantUserStatus.ACTIVE },
+        relations: ['tenant'],
+        order: { createdAt: 'ASC' },
+      });
+      expect(result).toEqual([mockLink]);
     });
   });
   describe('deleteByTenantAndUser', () => {

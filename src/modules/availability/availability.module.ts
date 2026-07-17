@@ -14,6 +14,7 @@ import { WorkingHoursEntity } from './entities/working-hours.entity';
 import { WorkingHoursPeriodEntity } from './entities/working-hours-period.entity';
 import { AVAILABILITY_REPOSITORY } from './interfaces/availability-repository.interface';
 import { AvailabilityController } from './availability.controller';
+import { ClientAvailableSlotsController } from './controllers/client-available-slots.controller';
 import { BootstrapWorkingWeekUseCase } from './use-cases/bootstrap-working-week.use-case';
 import { CreateProfessionalServiceLinkUseCase } from './use-cases/create-professional-service-link.use-case';
 import { CreateBlockUseCase } from './use-cases/create-block.use-case';
@@ -26,6 +27,8 @@ import { DeleteTimeOffUseCase } from './use-cases/delete-time-off.use-case';
 import { DeleteWorkingHoursUseCase } from './use-cases/delete-working-hours.use-case';
 import { DeleteWorkingHoursPeriodUseCase } from './use-cases/delete-working-hours-period.use-case';
 import { GetAvailableSlotsUseCase } from './use-cases/get-available-slots.use-case';
+import { GetClientAvailableSlotsUseCase } from './use-cases/get-client-available-slots.use-case';
+import { ResolveAvailableSlotsUseCase } from './use-cases/resolve-available-slots.use-case';
 import { GetWorkingHoursUseCase } from './use-cases/get-working-hours.use-case';
 import { ListProfessionalServiceLinksUseCase } from './use-cases/list-professional-service-links.use-case';
 import { ListBlocksUseCase } from './use-cases/list-blocks.use-case';
@@ -53,7 +56,7 @@ import { UpdateWorkingHoursPeriodUseCase } from './use-cases/update-working-hour
     forwardRef(() => ServiceModule),
     forwardRef(() => BookingModule),
   ],
-  controllers: [AvailabilityController],
+  controllers: [AvailabilityController, ClientAvailableSlotsController],
   providers: [
     AvailabilityRepository,
     { provide: AVAILABILITY_REPOSITORY, useClass: AvailabilityRepository },
@@ -78,8 +81,15 @@ import { UpdateWorkingHoursPeriodUseCase } from './use-cases/update-working-hour
     UpdateBlockUseCase,
     DeleteBlockUseCase,
     ListBlocksUseCase,
+    ResolveAvailableSlotsUseCase,
     GetAvailableSlotsUseCase,
+    GetClientAvailableSlotsUseCase,
   ],
-  exports: [AVAILABILITY_REPOSITORY, GetAvailableSlotsUseCase],
+  exports: [
+    AVAILABILITY_REPOSITORY,
+    GetAvailableSlotsUseCase,
+    GetClientAvailableSlotsUseCase,
+    ResolveAvailableSlotsUseCase,
+  ],
 })
 export class AvailabilityModule {}
