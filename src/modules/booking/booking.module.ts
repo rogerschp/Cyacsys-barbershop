@@ -10,10 +10,14 @@ import { TenantUserModule } from '../tenant-user/tenant-user.module';
 import { BookingEntity } from './entities/booking.entity';
 import { BOOKING_REPOSITORY } from './interfaces/booking-repository.interface';
 import { BookingController } from './booking.controller';
+import { ClientBookingController } from './controllers/client-booking.controller';
 import { UserBookingsController } from './user-bookings.controller';
 import { CancelBookingDraftUseCase } from './use-cases/cancel-booking-draft.use-case';
+import { CancelClientBookingUseCase } from './use-cases/cancel-client-booking.use-case';
 import { ConfirmBookingUseCase } from './use-cases/confirm-booking.use-case';
+import { ConfirmClientBookingUseCase } from './use-cases/confirm-client-booking.use-case';
 import { CreateBookingDraftUseCase } from './use-cases/create-booking-draft.use-case';
+import { CreateClientBookingDraftUseCase } from './use-cases/create-client-booking-draft.use-case';
 import { ListMyBookingsUseCase } from './use-cases/list-my-bookings.use-case';
 
 @Module({
@@ -26,13 +30,20 @@ import { ListMyBookingsUseCase } from './use-cases/list-my-bookings.use-case';
     forwardRef(() => ServiceModule),
     forwardRef(() => AvailabilityModule),
   ],
-  controllers: [BookingController, UserBookingsController],
+  controllers: [
+    BookingController,
+    ClientBookingController,
+    UserBookingsController,
+  ],
   providers: [
     BookingRepository,
     { provide: BOOKING_REPOSITORY, useClass: BookingRepository },
     CreateBookingDraftUseCase,
     ConfirmBookingUseCase,
     CancelBookingDraftUseCase,
+    CreateClientBookingDraftUseCase,
+    ConfirmClientBookingUseCase,
+    CancelClientBookingUseCase,
     ListMyBookingsUseCase,
   ],
   exports: [BOOKING_REPOSITORY, ListMyBookingsUseCase],
