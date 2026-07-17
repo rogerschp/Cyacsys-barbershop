@@ -39,8 +39,8 @@ Built with [NestJS](https://nestjs.com/), [TypeORM](https://typeorm.io/), and Po
 | **Professional profile** | Global identity (type, `bookingMode`, contacts) |
 | **Tenant professional** | Professional ↔ tenant link |
 | **Services** | Catalog per tenant |
-| **Availability** | Working hours, time off, blocks, offered services, **bootstrap week**, slots (`tenantProfessionalId`) |
-| **Booking** | Draft / confirm driven by `bookingMode`; linked client user |
+| **Availability** | Working hours, time off, blocks, offered services, **bootstrap week**, slots (`tenantProfessionalId`); `available-slots` excludes DRAFT/CONFIRMED bookings |
+| **Booking** | Draft / confirm driven by `bookingMode`; linked client user; responses as `BookingResponseDto` |
 | **API docs** | Swagger/OpenAPI at `/api` |
 | **Quality** | DTOs with `class-validator`; TypeORM migrations; unit and e2e tests; CI (lint, test, typecheck, build) |
 
@@ -50,7 +50,7 @@ Built with [NestJS](https://nestjs.com/), [TypeORM](https://typeorm.io/), and Po
 |------|-------------|
 | **Plans** | FREE, STANDARD, PRO, ELITE — public catalog at `GET /plans` |
 | **Subscriptions** | Auto FREE plan on tenant creation; current subscription + history per tenant |
-| **Plan gating** | `SubscriptionGuard` + `@RequiresPlan()` on reports and theme customization |
+| **Plan gating** | `SubscriptionGuard` + `@RequiresPlan()` on reports and theme; `AssertTenantPlanFeatureUseCase` on review creation |
 | **Admin billing** | SUPER_ADMIN manual activation and forced expiration (testing) |
 | **Expiration job** | Daily cron downgrades expired paid plans |
 
@@ -59,8 +59,8 @@ Built with [NestJS](https://nestjs.com/), [TypeORM](https://typeorm.io/), and Po
 | Area | Description |
 |------|-------------|
 | **Search** | Public tenant search by name, slug, segment, and geo proximity (Haversine) |
-| **Reviews** | Ratings for tenants and professionals; public list, auth to create/edit; OWNER/ADMIN reply |
-| **Tenant profile** | Segment, avatar, latitude/longitude for marketplace-style discovery |
+| **Reviews** | Ratings for tenants and professionals; public list; create requires STANDARD+ plan (`403` on FREE); OWNER/ADMIN reply |
+| **Tenant profile** | Segment, avatar, latitude/longitude for discovery; editable via `PATCH /tenants/:id` (OWNER/ADMIN) |
 
 ### Analytics & branding
 
@@ -77,6 +77,7 @@ Built with [NestJS](https://nestjs.com/), [TypeORM](https://typeorm.io/), and Po
 | **Rate limiting** | Global `ThrottlerGuard` (60 req/min) |
 | **Helmet** | HTTP security headers |
 | **CORS** | Configurable via `CORS_ORIGINS` |
+| **Docker** | `docker-compose.yml` for local API + PostgreSQL 16 |
 
 ---
 
@@ -109,11 +110,16 @@ Tenant
 
 | Resource | Path |
 |----------|------|
+| **Developers (PT)** | [docs/DESENVOLVEDORES.md](docs/DESENVOLVEDORES.md) |
+| **Product / business (PT)** | [docs/PRODUTO_NEGOCIOS.md](docs/PRODUTO_NEGOCIOS.md) |
+| **Front-end integration (PT)** | [docs/FRONTEND_INTEGRACAO.md](docs/FRONTEND_INTEGRACAO.md) |
 | Module index (PT) | [docs/README.md](docs/README.md) |
-| Migration from legacy API | [docs/BREAKING-CHANGES.md](docs/BREAKING-CHANGES.md) |
-| Refactor overview | [docs/refactor-professional-profile.md](docs/refactor-professional-profile.md) |
+| Architecture & conventions | [docs/arquitetura-e-convencoes.md](docs/arquitetura-e-convencoes.md) |
 | RBAC | [docs/RBAC.md](docs/RBAC.md) |
 | Scope / hardening | [docs/HARDENING.md](docs/HARDENING.md) |
+| Migration from legacy API | [docs/BREAKING-CHANGES.md](docs/BREAKING-CHANGES.md) |
+| Refactor overview | [docs/refactor-professional-profile.md](docs/refactor-professional-profile.md) |
+| Security audit (historical) | [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md) |
 
 ---
 
@@ -135,6 +141,8 @@ Tenant
 
 ## Setup
 
+### Local (Node + PostgreSQL)
+
 ```bash
 git clone <repository-url>
 cd cyacsys-barbershop
@@ -145,12 +153,22 @@ yarn migration:run
 yarn start:dev
 ```
 
+### Docker (API + PostgreSQL 16)
+
+```bash
+cp .envExample .env
+# DB_HOST=postgres, DB_PORT=5432, DB_USERNAME=barber, DB_PASSWORD=barber, DB_DATABASE=barber
+docker compose up --build
+# first run: docker compose exec api yarn migration:run
+```
+
 | Variable | Purpose |
 |----------|---------|
 | `DB_*` | PostgreSQL connection |
 | `FIREBASE_*` | Firebase Admin credentials |
 | `CORS_ORIGINS` | Comma-separated allowed browser origins |
 | `PORT` | HTTP port (default `3000`) |
+| `NODE_ENV` | `production` hides Swagger unless `EXPOSE_SWAGGER=true` |
 | `EXPOSE_SWAGGER` | Set `true` in production to expose `/api` |
 
 ---
@@ -214,12 +232,14 @@ If `AvailabilityUseTenantProfessional` fails on a missing `FK_working_hours_barb
 
 ### Subscription plans (summary)
 
-| Plan | Reports | Reviews | Marketplace | Theme | Export |
-|------|---------|---------|-------------|-------|--------|
+| Plan | Reports | Reviews (create) | Marketplace | Theme | Export |
+|------|---------|------------------|-------------|-------|--------|
 | FREE | — | — | — | defaults | — |
 | STANDARD | basic (1 month) | ✓ | ✓ | basic | — |
 | PRO | intermediate (3 months) | ✓ | ✓ + highlight | intermediate | — |
 | ELITE | advanced (6 months) | ✓ | ✓ + badge | full | PDF / Excel |
+
+Review **listing** is public; **creating** a review requires a plan with `reviews: true` (STANDARD+).
 
 ---
 
@@ -239,7 +259,7 @@ npx jest --config jest.config.ts --testPathPattern="professional-profile|tenant-
 npx jest --config jest-e2e.json --testPathPattern="booking|availability|report|search|tenant-theme"
 ```
 
-E2e specs live under `src/test/` (e.g. `report.e2e-spec.ts`, `search.e2e-spec.ts`, `tenant-theme.e2e-spec.ts`).
+E2e specs live under `src/test/`: `tenant`, `user`, `service`, `professional-profile`, `tenant-professional`, `availability`, `booking`, `report`, `search`, `tenant-theme`.
 
 ---
 
@@ -267,8 +287,7 @@ src/
 │   ├── tenant-user/
 │   └── user/
 ├── repository/
-├── test/              # *.e2e-spec.ts
-└── test/unit/
+└── test/              # e2e (*.e2e-spec.ts) + unit/ specs
 docs/                  # Per-module documentation (PT)
 ```
 
@@ -276,7 +295,9 @@ docs/                  # Per-module documentation (PT)
 
 | Endpoint | Notes |
 |----------|-------|
+| `PATCH /tenants/:id` | Update tenant; includes `segment`, `avatarUrl`, `latitude`/`longitude` (pair required) |
 | `POST .../working-hours/bootstrap-week` | Configure full week with `closedDays` and `periods` |
+| `GET .../available-slots` | Returns free slots; excludes DRAFT/CONFIRMED bookings |
 | `GET /tenants/:tenantId/reports/{standard\|pro\|elite}` | Plan-gated analytics |
 | `GET /tenants/:tenantId/reports/export?format=pdf\|excel` | ELITE export |
 | `GET /search/tenants?lat=&lng=&radius=` | Geo search (max 50 km) |
