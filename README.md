@@ -147,7 +147,9 @@ docker compose up --build
 
 | Variable         | Purpose                                                 |
 | ---------------- | ------------------------------------------------------- |
-| `DB_*`           | PostgreSQL connection                                   |
+| `DB_*`           | PostgreSQL: `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_DATABASE` |
+| `DB_SSL`         | `true` / `require` para Neon/Render; `false` no Docker local              |
+| `DATABASE_URL`   | Opcional — connection string completa (Neon)                              |
 | `FIREBASE_*`     | Firebase Admin credentials                              |
 | `CORS_ORIGINS`   | Comma-separated allowed browser origins                 |
 | `PORT`           | HTTP port (default `3000`)                              |
