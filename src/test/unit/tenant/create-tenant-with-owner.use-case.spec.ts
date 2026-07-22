@@ -29,6 +29,8 @@ describe('CreateTenantWithOwnerUseCase', () => {
     latitude: null,
     longitude: null,
     theme: null,
+    clientCanCancelConfirmed: false,
+    clientCancelConfirmedMinLeadMinutes: 60,
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: undefined,

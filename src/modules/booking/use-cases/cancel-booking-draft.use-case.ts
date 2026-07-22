@@ -12,6 +12,7 @@ import {
   IBookingRepository,
 } from '../interfaces/booking-repository.interface';
 
+/** Cancela DRAFT ou CONFIRMED (ops). Sem trava de antecedência do cliente. */
 @Injectable()
 export class CancelBookingDraftUseCase {
   constructor(
@@ -44,10 +45,14 @@ export class CancelBookingDraftUseCase {
     if (!booking) {
       throw new NotFoundException('Booking not found');
     }
-    if (booking.status !== BookingStatus.DRAFT) {
+
+    if (
+      booking.status !== BookingStatus.DRAFT &&
+      booking.status !== BookingStatus.CONFIRMED
+    ) {
       throw new BusinessRuleException(
         'BOOKING_INVALID_STATUS',
-        'Só é possível cancelar um rascunho.',
+        'Só é possível cancelar rascunho ou agendamento confirmado.',
       );
     }
 
@@ -56,14 +61,14 @@ export class CancelBookingDraftUseCase {
         bookingId,
         tenantId,
         tenantProfessionalId,
-        BookingStatus.DRAFT,
+        booking.status,
         BookingStatus.CANCELLED,
       );
     } catch (e: unknown) {
       if (e instanceof Error && e.message === 'BOOKING_INVALID_STATUS') {
         throw new BusinessRuleException(
           'BOOKING_INVALID_STATUS',
-          'Só é possível cancelar um rascunho.',
+          'Só é possível cancelar rascunho ou agendamento confirmado.',
         );
       }
       if (e instanceof Error && e.message === 'BOOKING_NOT_FOUND') {

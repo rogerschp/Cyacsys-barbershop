@@ -145,4 +145,29 @@ export class TenantEntity {
     required: false,
   })
   theme: TenantThemeData | null;
+
+  @Column({
+    name: 'client_can_cancel_confirmed',
+    type: 'boolean',
+    default: false,
+  })
+  @ApiProperty({
+    description:
+      'Se true, o cliente dono do booking pode cancelar agendamentos CONFIRMED (respeitando a antecedência).',
+    default: false,
+  })
+  clientCanCancelConfirmed: boolean;
+
+  @Column({
+    name: 'client_cancel_confirmed_min_lead_minutes',
+    type: 'int',
+    default: 60,
+  })
+  @ApiProperty({
+    description:
+      'Antecedência mínima (minutos) antes de startsAt para o cliente cancelar CONFIRMED. Ex.: 60 = até 1h antes; 720 = até 12h antes.',
+    example: 60,
+    default: 60,
+  })
+  clientCancelConfirmedMinLeadMinutes: number;
 }

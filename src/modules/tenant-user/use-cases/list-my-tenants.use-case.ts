@@ -29,6 +29,9 @@ export class ListMyTenantsUseCase {
         timezone: m.tenant.timezone,
         segment: m.tenant.segment ?? null,
         avatarUrl: m.tenant.avatarUrl ?? null,
+        clientCanCancelConfirmed: m.tenant.clientCanCancelConfirmed,
+        clientCancelConfirmedMinLeadMinutes:
+          m.tenant.clientCancelConfirmedMinLeadMinutes,
       },
     }));
   }
