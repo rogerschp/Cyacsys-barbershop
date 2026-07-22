@@ -9,6 +9,8 @@ import {
   MinLength,
   ValidateIf,
 } from 'class-validator';
+import { IsPhone } from 'src/common/validators/is-phone.decorator';
+import { NormalizePhone } from 'src/common/transformers/brazilian-document.transformers';
 
 export class BookingSlotDraftDto {
   @ApiProperty({ format: 'uuid' })
@@ -47,11 +49,12 @@ export class CreateGuestBookingDraftDto extends BookingSlotDraftDto {
 
   @ApiProperty({
     example: '11999999999',
-    description: 'Telefone (normalizado no backend)',
+    description:
+      'Telefone (aceita máscara; normalizado no backend para dígitos com DDI)',
   })
+  @NormalizePhone()
   @IsString()
-  @MinLength(8)
-  @MaxLength(20)
+  @IsPhone()
   guestPhone: string;
 
   @ApiPropertyOptional({ example: 'joao@email.com' })
@@ -79,10 +82,15 @@ export class CreateOpsBookingDraftDto extends BookingSlotDraftDto {
   @MaxLength(120)
   guestName?: string;
 
-  @ApiPropertyOptional({ example: '11999999999' })
+  @ApiPropertyOptional({
+    example: '11999999999',
+    description:
+      'Telefone guest (aceita máscara; normalizado para dígitos com DDI)',
+  })
   @IsOptional()
+  @NormalizePhone()
   @IsString()
-  @MaxLength(20)
+  @IsPhone()
   guestPhone?: string;
 
   @ApiPropertyOptional({ example: 'maria@email.com' })

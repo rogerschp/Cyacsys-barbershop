@@ -4,16 +4,22 @@ import { TenantEntity } from '../entities/tenant.entity';
 import { TenantStatus } from '../entities/tenant-status.enum';
 import { TenantThemeData } from '../../tenant-theme/interfaces/tenant-theme-data.interface';
 
+/** Campos persistíveis no update (sem `address` aninhado — use `addressId`). */
+export type TenantUpdateData = Omit<UpdateTenantDto, 'address'> & {
+  addressId?: string | null;
+};
+
 export interface ITenantRepository {
   create(
     dto: CreateTenantDto & {
       status?: TenantStatus;
+      addressId?: string | null;
     },
   ): Promise<TenantEntity>;
   findBySlug(slug: string): Promise<TenantEntity | null>;
   existsBySlug(slug: string): Promise<boolean>;
   findById(id: string): Promise<TenantEntity | null>;
-  update(id: string, dto: UpdateTenantDto): Promise<TenantEntity>;
+  update(id: string, dto: TenantUpdateData): Promise<TenantEntity>;
   updateTheme(id: string, theme: TenantThemeData | null): Promise<void>;
   softDelete(id: string): Promise<void>;
 }

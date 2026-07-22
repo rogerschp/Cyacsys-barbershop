@@ -4,8 +4,10 @@ import { Repository } from 'typeorm';
 import { TenantEntity } from '../../modules/tenant/entities/tenant.entity';
 import { TenantStatus } from '../../modules/tenant/entities/tenant-status.enum';
 import { CreateTenantDto } from '../../modules/tenant/dto/create-tenant.dto';
-import { UpdateTenantDto } from '../../modules/tenant/dto/update-tenant.dto';
-import { ITenantRepository } from '../../modules/tenant/interfaces/tenant-repository.interface';
+import {
+  ITenantRepository,
+  TenantUpdateData,
+} from '../../modules/tenant/interfaces/tenant-repository.interface';
 import { TenantThemeData } from '../../modules/tenant-theme/interfaces/tenant-theme-data.interface';
 
 @Injectable()
@@ -18,17 +20,19 @@ export class TenantRepository implements ITenantRepository {
   create(
     dto: CreateTenantDto & {
       status?: TenantStatus;
+      addressId?: string | null;
     },
   ) {
+    const { address: _address, ...rest } = dto;
     const entity = this.repo.create({
-      ...dto,
+      ...rest,
       status: dto.status ?? TenantStatus.ACTIVE,
     });
     return this.repo.save(entity);
   }
 
   findBySlug(slug: string) {
-    return this.repo.findOne({ where: { slug } });
+    return this.repo.findOne({ where: { slug }, relations: ['address'] });
   }
 
   existsBySlug(slug: string) {
@@ -40,10 +44,10 @@ export class TenantRepository implements ITenantRepository {
   }
 
   findById(id: string) {
-    return this.repo.findOne({ where: { id } });
+    return this.repo.findOne({ where: { id }, relations: ['address'] });
   }
 
-  update(id: string, dto: UpdateTenantDto) {
+  update(id: string, dto: TenantUpdateData) {
     return this.repo.save({ id, ...dto });
   }
 

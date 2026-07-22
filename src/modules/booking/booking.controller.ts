@@ -1,9 +1,12 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
+  ParseEnumPipe,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -12,6 +15,7 @@ import {
   ApiBody,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -22,10 +26,13 @@ import { BearerAuthGuard } from '../auth/guards/bearer-auth.guard';
 import { TenantUserRole } from '../tenant-user/entities/tenant-user-role.enum';
 import { BookingResponseDto } from './dto/booking-response.dto';
 import { CreateOpsBookingDraftDto } from './dto/create-booking-draft.dto';
+import { OpsBookingResponseDto } from './dto/ops-booking-response.dto';
+import { BookingStatus } from './entities/booking-status.enum';
 import { mapBookingToResponse } from './mappers/booking.mapper';
 import { CancelBookingDraftUseCase } from './use-cases/cancel-booking-draft.use-case';
 import { ConfirmBookingUseCase } from './use-cases/confirm-booking.use-case';
 import { CreateBookingDraftUseCase } from './use-cases/create-booking-draft.use-case';
+import { ListTenantProfessionalBookingsUseCase } from './use-cases/list-tenant-professional-bookings.use-case';
 import { TenantResolverGuard } from '../../common/guards/tenant-resolver.guard';
 
 interface RequestWithUserAndMembership {
@@ -33,6 +40,9 @@ interface RequestWithUserAndMembership {
     dbUser?: {
       id: string;
     };
+  };
+  tenant?: {
+    timezone?: string;
   };
   tenantMembership?: {
     role: string;
@@ -62,7 +72,49 @@ export class BookingController {
     private readonly createBookingDraftUseCase: CreateBookingDraftUseCase,
     private readonly confirmBookingUseCase: ConfirmBookingUseCase,
     private readonly cancelBookingDraftUseCase: CancelBookingDraftUseCase,
+    private readonly listTenantProfessionalBookingsUseCase: ListTenantProfessionalBookingsUseCase,
   ) {}
+
+  @Get()
+  @TenantRoles(...BOOKING_ROLES)
+  @ApiOperation({
+    summary: 'Lista agendamentos do profissional (agenda ops)',
+    description:
+      'OWNER/ADMIN/STAFF veem qualquer profissional; BARBER só a própria agenda. ' +
+      'Filtre por dia (fuso do tenant) e/ou status. Ordenado por início asc.',
+  })
+  @ApiParam({ name: 'tenantId' })
+  @ApiParam({ name: 'tenantProfessionalId' })
+  @ApiQuery({
+    name: 'date',
+    required: false,
+    description: 'Data no fuso do tenant (yyyy-MM-dd)',
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: BookingStatus,
+    description: 'Filtrar por status (DRAFT, CONFIRMED, CANCELLED)',
+  })
+  @ApiResponse({ status: 200, type: [OpsBookingResponseDto] })
+  async list(
+    @Param('tenantId') tenantId: string,
+    @Param('tenantProfessionalId') tenantProfessionalId: string,
+    @Req() req: RequestWithUserAndMembership,
+    @Query('date') date?: string,
+    @Query('status', new ParseEnumPipe(BookingStatus, { optional: true }))
+    status?: BookingStatus,
+  ) {
+    return this.listTenantProfessionalBookingsUseCase.run({
+      tenantId,
+      tenantProfessionalId,
+      timezone: req.tenant?.timezone ?? 'America/Sao_Paulo',
+      userId: req.user?.dbUser?.id ?? '',
+      callerRole: req.tenantMembership?.role,
+      date,
+      status,
+    });
+  }
 
   @Post('draft')
   @TenantRoles(...BOOKING_ROLES)

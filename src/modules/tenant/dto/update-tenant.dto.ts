@@ -9,7 +9,6 @@ import {
   IsOptional,
   IsString,
   IsUrl,
-  Matches,
   Max,
   MaxLength,
   Min,
@@ -18,6 +17,13 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { CoordinatesPairConstraint } from 'src/common/validators/coordinates-pair.constraint';
+import { IsCnpj } from 'src/common/validators/is-cnpj.decorator';
+import { IsPhone } from 'src/common/validators/is-phone.decorator';
+import {
+  EmptyToUndefined,
+  NormalizeCnpj,
+  NormalizePhone,
+} from 'src/common/transformers/brazilian-document.transformers';
 import { TenantSegment } from 'src/common/enums/tenant-segment.enum';
 import { CreateAddressDto } from 'src/modules/address/dto/create-address.dto';
 import { TenantStatus } from '../entities/tenant-status.enum';
@@ -50,23 +56,25 @@ export class UpdateTenantDto {
 
   @ApiPropertyOptional({
     example: '5511992834085',
-    description: 'Telefone com DDI e DDD (somente dígitos, 10–15 caracteres)',
+    description:
+      'Telefone com DDI e DDD. Aceita máscara; normalizado para dígitos.',
   })
   @IsOptional()
+  @NormalizePhone()
   @IsString()
-  @Matches(/^\+?\d{10,15}$/, {
-    message:
-      'Telephone must contain 10 to 15 digits with country code, e.g. 5511992834085',
-  })
+  @IsPhone()
   telephone?: string;
 
   @ApiPropertyOptional({
-    example: '12345678000199',
-    description: 'CNPJ apenas números',
+    example: '11222333000181',
+    description:
+      'CNPJ com dígitos verificadores. Aceita máscara; normalizado para 14 dígitos.',
   })
+  @EmptyToUndefined()
+  @NormalizeCnpj()
   @IsOptional()
   @IsString()
-  @Matches(/^\d{14}$/, { message: 'CNPJ deve conter exatamente 14 números' })
+  @IsCnpj()
   cnpj?: string;
 
   @ApiPropertyOptional({

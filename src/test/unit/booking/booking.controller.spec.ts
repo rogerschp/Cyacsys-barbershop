@@ -5,6 +5,7 @@ import { BookingController } from 'src/modules/booking/booking.controller';
 import { CreateBookingDraftUseCase } from 'src/modules/booking/use-cases/create-booking-draft.use-case';
 import { ConfirmBookingUseCase } from 'src/modules/booking/use-cases/confirm-booking.use-case';
 import { CancelBookingDraftUseCase } from 'src/modules/booking/use-cases/cancel-booking-draft.use-case';
+import { ListTenantProfessionalBookingsUseCase } from 'src/modules/booking/use-cases/list-tenant-professional-bookings.use-case';
 import { BearerAuthGuard } from 'src/modules/auth/guards/bearer-auth.guard';
 import { TenantInterceptor } from 'src/common/interceptors/tenant.interceptor';
 import { TenantMembershipGuard } from 'src/common/guards/tenant-membership.guard';
@@ -43,6 +44,7 @@ describe('BookingController (HTTP)', () => {
     const mockCreate = { run: jest.fn() };
     const mockConfirm = { run: jest.fn() };
     const mockCancel = { run: jest.fn() };
+    const mockList = { run: jest.fn() };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [BookingController],
@@ -50,6 +52,7 @@ describe('BookingController (HTTP)', () => {
         { provide: CreateBookingDraftUseCase, useValue: mockCreate },
         { provide: ConfirmBookingUseCase, useValue: mockConfirm },
         { provide: CancelBookingDraftUseCase, useValue: mockCancel },
+        { provide: ListTenantProfessionalBookingsUseCase, useValue: mockList },
       ],
     })
       .overrideGuard(BearerAuthGuard)
@@ -204,6 +207,7 @@ describe('BookingController (HTTP) — user/tenant opcionais', () => {
     const mockCreate = { run: jest.fn() };
     const mockConfirm = { run: jest.fn() };
     const mockCancel = { run: jest.fn() };
+    const mockList = { run: jest.fn() };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [BookingController],
@@ -211,6 +215,7 @@ describe('BookingController (HTTP) — user/tenant opcionais', () => {
         { provide: CreateBookingDraftUseCase, useValue: mockCreate },
         { provide: ConfirmBookingUseCase, useValue: mockConfirm },
         { provide: CancelBookingDraftUseCase, useValue: mockCancel },
+        { provide: ListTenantProfessionalBookingsUseCase, useValue: mockList },
       ],
     })
       .overrideGuard(BearerAuthGuard)

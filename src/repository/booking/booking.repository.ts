@@ -10,6 +10,7 @@ import {
   CustomerActiveQuery,
   CustomerTimeOverlapQuery,
   IBookingRepository,
+  ListOpsBookingsQuery,
 } from '../../modules/booking/interfaces/booking-repository.interface';
 
 const ACTIVE_STATUSES = [BookingStatus.DRAFT, BookingStatus.CONFIRMED];
@@ -211,6 +212,35 @@ export class BookingRepository implements IBookingRepository {
     }
 
     return qb.getCount();
+  }
+
+  async listOpsBookings(
+    query: ListOpsBookingsQuery,
+  ): Promise<BookingEntity[]> {
+    const qb = this.bookingRepo
+      .createQueryBuilder('b')
+      .leftJoinAndSelect('b.tenantProfessional', 'tp')
+      .leftJoinAndSelect('tp.professionalProfile', 'pp')
+      .leftJoinAndSelect('b.service', 'service')
+      .where('b.tenant_id = :tenantId', { tenantId: query.tenantId })
+      .orderBy('b.starts_at', 'ASC');
+
+    if (query.tenantProfessionalId) {
+      qb.andWhere('b.tenant_professional_id = :tpId', {
+        tpId: query.tenantProfessionalId,
+      });
+    }
+    if (query.rangeStart && query.rangeEnd) {
+      qb.andWhere('b.starts_at >= :rangeStart AND b.starts_at < :rangeEnd', {
+        rangeStart: query.rangeStart,
+        rangeEnd: query.rangeEnd,
+      });
+    }
+    if (query.status) {
+      qb.andWhere('b.status = :status', { status: query.status });
+    }
+
+    return qb.getMany();
   }
 
   private applyCustomerIdentityFilter(

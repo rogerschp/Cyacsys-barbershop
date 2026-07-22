@@ -9,6 +9,8 @@ import {
 } from 'class-validator';
 import { CreateAddressDto } from 'src/modules/address/dto/create-address.dto';
 import { Type } from 'class-transformer';
+import { IsPhone } from 'src/common/validators/is-phone.decorator';
+import { NormalizePhone } from 'src/common/transformers/brazilian-document.transformers';
 
 export class RegisterUserDto {
   @ApiProperty({ example: 'usuario@email.com' })
@@ -26,9 +28,14 @@ export class RegisterUserDto {
   @MinLength(6, { message: 'Password must be at least 6 characters' })
   password: string;
 
-  @ApiProperty({ example: '5511992834085' })
+  @ApiProperty({
+    example: '5511992834085',
+    description: 'Telefone. Aceita máscara; normalizado para dígitos com DDI.',
+  })
+  @NormalizePhone()
   @IsString()
   @IsNotEmpty()
+  @IsPhone()
   telephone: string;
 
   @ApiProperty({ type: CreateAddressDto, required: false })

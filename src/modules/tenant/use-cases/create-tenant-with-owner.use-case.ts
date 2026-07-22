@@ -60,6 +60,7 @@ export class CreateTenantWithOwnerUseCase {
           telephone: dto.telephone,
           cnpj: dto.cnpj,
           socialMedia: dto.socialMedia,
+          addressId,
         });
         const savedTenant = await tenantRepo.save(tenant);
         const tenantUserRepo = manager.getRepository(TenantUserEntity);

@@ -19,6 +19,14 @@ export interface ListBookingsByClientUserOptions {
   status?: BookingStatus;
 }
 
+export interface ListOpsBookingsQuery {
+  tenantId: string;
+  tenantProfessionalId?: string;
+  rangeStart?: Date;
+  rangeEnd?: Date;
+  status?: BookingStatus;
+}
+
 export interface ActiveBookingTimeRange {
   startsAt: Date;
   endsAt: Date;
@@ -63,6 +71,7 @@ export interface IBookingRepository {
     query: CustomerTimeOverlapQuery,
   ): Promise<ActiveBookingTimeRange | null>;
   countActiveByCustomerIdentity(query: CustomerActiveQuery): Promise<number>;
+  listOpsBookings(query: ListOpsBookingsQuery): Promise<BookingEntity[]>;
 }
 
 export const BOOKING_REPOSITORY = Symbol('BOOKING_REPOSITORY');

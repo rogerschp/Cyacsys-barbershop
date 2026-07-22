@@ -158,6 +158,17 @@ export class SearchTenantsUseCase {
       qb.andWhere('t.segment = :segment', { segment: query.segment });
     }
 
+    if (query.city && query.city.trim().length >= 2) {
+      qb.andWhere(
+        'unaccent(LOWER(a.city)) LIKE unaccent(LOWER(:city))',
+        { city: `%${query.city.trim()}%` },
+      );
+    }
+
+    if (query.state) {
+      qb.andWhere('UPPER(a.state) = UPPER(:state)', { state: query.state });
+    }
+
     if (textQuery) {
       qb.andWhere(
         '(LOWER(t.name) LIKE :textQuery OR LOWER(t.slug) LIKE :textQuery)',
