@@ -18,6 +18,7 @@ import { BookingStatus } from './booking-status.enum';
 
 @Entity('bookings')
 @Index('IDX_bookings_tenant_id', ['tenantId'])
+@Index('IDX_bookings_tenant_starts_at', ['tenantId', 'startsAt'])
 @Index('IDX_bookings_tenant_professional_starts', [
   'tenantProfessionalId',
   'startsAt',

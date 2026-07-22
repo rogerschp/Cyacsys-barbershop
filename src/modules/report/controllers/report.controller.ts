@@ -62,20 +62,45 @@ export class ReportController {
 
   @Get('pro')
   @RequiresPlan(PlanFeature.REPORTS_INTERMEDIATE)
-  @ApiOperation({ summary: 'Relatório PRO (últimos 3 meses)' })
+  @ApiOperation({
+    summary: 'Relatório PRO (janela configurável até 3 meses + breakdown mensal)',
+  })
   @ApiParam({ name: 'tenantId', description: 'UUID do tenant' })
+  @ApiQuery({
+    name: 'months',
+    required: false,
+    type: Number,
+    description:
+      'Quantidade de meses (1–3). Default 3. Ex.: 1 = mês atual; 3 = últimos 3 meses.',
+  })
   @ApiResponse({ status: 200, type: ProReportDto })
-  async getPro(@Param('tenantId') tenantId: string) {
-    return this.getProReportUseCase.run(tenantId);
+  async getPro(
+    @Param('tenantId') tenantId: string,
+    @Query('months') months?: string,
+  ) {
+    return this.getProReportUseCase.run(tenantId, months);
   }
 
   @Get('elite')
   @RequiresPlan(PlanFeature.REPORTS_ADVANCED)
-  @ApiOperation({ summary: 'Relatório ELITE (últimos 6 meses)' })
+  @ApiOperation({
+    summary:
+      'Relatório ELITE (janela configurável + breakdown por profissional)',
+  })
   @ApiParam({ name: 'tenantId', description: 'UUID do tenant' })
+  @ApiQuery({
+    name: 'months',
+    required: false,
+    type: Number,
+    description:
+      'Quantidade de meses (1–12). Default 6. Ex.: 1 = mês atual; 3 = últimos 3 meses; 6 = últimos 6 meses.',
+  })
   @ApiResponse({ status: 200, type: EliteReportDto })
-  async getElite(@Param('tenantId') tenantId: string) {
-    return this.getEliteReportUseCase.run(tenantId);
+  async getElite(
+    @Param('tenantId') tenantId: string,
+    @Query('months') months?: string,
+  ) {
+    return this.getEliteReportUseCase.run(tenantId, months);
   }
 
   @Get('export')
@@ -88,13 +113,24 @@ export class ReportController {
     enum: ['pdf', 'excel'],
     description: 'Formato do arquivo',
   })
+  @ApiQuery({
+    name: 'months',
+    required: false,
+    type: Number,
+    description: 'Mesma janela do GET /elite (1–12, default 6)',
+  })
   @ApiResponse({ status: 200, description: 'Arquivo para download' })
   @Header('Content-Disposition', 'attachment')
   async export(
     @Param('tenantId') tenantId: string,
     @Query('format') format: string,
+    @Query('months') months?: string,
   ): Promise<StreamableFile> {
-    const result = await this.exportReportUseCase.run(tenantId, format);
+    const result = await this.exportReportUseCase.run(
+      tenantId,
+      format,
+      months,
+    );
 
     return new StreamableFile(result.buffer, {
       type: result.contentType,
