@@ -45,6 +45,8 @@ describe('ListMyTenantsUseCase', () => {
           timezone: 'America/Sao_Paulo',
           segment: TenantSegment.BARBERSHOP,
           avatarUrl: 'https://cdn.example/a.png',
+          clientCanCancelConfirmed: false,
+          clientCancelConfirmedMinLeadMinutes: 60,
         },
       },
     ]);
@@ -63,6 +65,8 @@ describe('ListMyTenantsUseCase', () => {
           timezone: 'America/Sao_Paulo',
           segment: TenantSegment.BARBERSHOP,
           avatarUrl: 'https://cdn.example/a.png',
+          clientCanCancelConfirmed: false,
+          clientCancelConfirmedMinLeadMinutes: 60,
         },
       },
     ]);

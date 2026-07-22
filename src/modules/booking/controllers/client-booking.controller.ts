@@ -95,7 +95,9 @@ export class ClientBookingController {
 
   @Patch(':bookingId/cancel')
   @ApiOperation({
-    summary: 'Cancela o próprio rascunho (cliente)',
+    summary: 'Cancela o próprio agendamento (cliente)',
+    description:
+      'DRAFT: sempre permitido. CONFIRMED: só se o tenant permitir (`clientCanCancelConfirmed`) e dentro da antecedência (`clientCancelConfirmedMinLeadMinutes`).',
   })
   @ApiParam({ name: 'tenantId' })
   @ApiParam({ name: 'tenantProfessionalId' })

@@ -27,6 +27,12 @@ export class MyTenantSummaryDto {
 
   @ApiPropertyOptional({ nullable: true })
   avatarUrl?: string | null;
+
+  @ApiProperty({ default: false })
+  clientCanCancelConfirmed: boolean;
+
+  @ApiProperty({ example: 60, default: 60 })
+  clientCancelConfirmedMinLeadMinutes: number;
 }
 
 export class MyTenantResponseDto {

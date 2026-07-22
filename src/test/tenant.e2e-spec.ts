@@ -46,6 +46,8 @@ describe('TenantController (e2e)', () => {
     latitude: null,
     longitude: null,
     theme: null,
+    clientCanCancelConfirmed: false,
+    clientCancelConfirmedMinLeadMinutes: 60,
     createdAt: new Date('2021-01-01'),
     updatedAt: new Date('2021-01-01'),
     deletedAt: undefined,
