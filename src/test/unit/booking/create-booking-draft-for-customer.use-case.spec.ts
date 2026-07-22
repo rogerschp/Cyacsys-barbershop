@@ -9,8 +9,10 @@ import { BusinessRuleException } from 'src/common/exceptions/business-rule.excep
 import { BookingStatus } from 'src/modules/booking/entities/booking-status.enum';
 import { TenantProfessionalStatus } from 'src/modules/tenant-professional/entities/tenant-professional-status.enum';
 import { BookingMode } from 'src/modules/professional-profile/entities/booking-mode.enum';
-import { guestIdentityKey, userIdentityKey } from 'src/modules/booking/domain/customer-identity';
-import { AvailableSlotsResponseDto } from 'src/modules/availability/dto/available-slots-response.dto';
+import {
+  guestIdentityKey,
+  userIdentityKey,
+} from 'src/modules/booking/domain/customer-identity';
 
 describe('CreateBookingDraftForCustomerUseCase', () => {
   let useCase: CreateBookingDraftForCustomerUseCase;
@@ -29,7 +31,9 @@ describe('CreateBookingDraftForCustomerUseCase', () => {
         status: BookingStatus.DRAFT,
       }),
     };
-    assertPolicies = { assertCanCreate: jest.fn().mockResolvedValue(undefined) };
+    assertPolicies = {
+      assertCanCreate: jest.fn().mockResolvedValue(undefined),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -143,10 +147,7 @@ describe('CreateBookingDraftForCustomerUseCase', () => {
 
   it('propaga CUSTOMER_TIME_CONFLICT das policies', async () => {
     assertPolicies.assertCanCreate.mockRejectedValue(
-      new BusinessRuleException(
-        'CUSTOMER_TIME_CONFLICT',
-        'conflito',
-      ),
+      new BusinessRuleException('CUSTOMER_TIME_CONFLICT', 'conflito'),
     );
 
     await expect(

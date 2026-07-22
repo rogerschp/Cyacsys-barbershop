@@ -23,7 +23,8 @@ export class TenantRepository implements ITenantRepository {
       addressId?: string | null;
     },
   ) {
-    const { address: _address, ...rest } = dto;
+    const rest = { ...dto };
+    delete rest.address;
     const entity = this.repo.create({
       ...rest,
       status: dto.status ?? TenantStatus.ACTIVE,
