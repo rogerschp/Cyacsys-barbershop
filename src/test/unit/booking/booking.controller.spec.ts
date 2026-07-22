@@ -19,6 +19,7 @@ describe('BookingController (HTTP)', () => {
   let createBookingDraftUseCase: jest.Mocked<CreateBookingDraftUseCase>;
   let confirmBookingUseCase: jest.Mocked<ConfirmBookingUseCase>;
   let cancelBookingDraftUseCase: jest.Mocked<CancelBookingDraftUseCase>;
+  let listTenantProfessionalBookingsUseCase: jest.Mocked<ListTenantProfessionalBookingsUseCase>;
 
   const tenantId = 'tenant-uuid';
   const tenantProfessionalId = 'tp-uuid';
@@ -61,6 +62,7 @@ describe('BookingController (HTTP)', () => {
           const req = context.switchToHttp().getRequest();
           req.user = { dbUser: { id: 'user-uuid-123' }, uid: 'firebase-uid' };
           req.tenantMembership = { role: TenantUserRole.ADMIN };
+          req.tenant = { timezone: 'America/Sao_Paulo' };
           return true;
         },
       })
@@ -86,6 +88,9 @@ describe('BookingController (HTTP)', () => {
     createBookingDraftUseCase = moduleFixture.get(CreateBookingDraftUseCase);
     confirmBookingUseCase = moduleFixture.get(ConfirmBookingUseCase);
     cancelBookingDraftUseCase = moduleFixture.get(CancelBookingDraftUseCase);
+    listTenantProfessionalBookingsUseCase = moduleFixture.get(
+      ListTenantProfessionalBookingsUseCase,
+    );
   });
 
   afterAll(async () => {
@@ -103,6 +108,29 @@ describe('BookingController (HTTP)', () => {
     cancelBookingDraftUseCase.run.mockResolvedValue(
       mockBookingEntity(BookingStatus.CANCELLED) as any,
     );
+    listTenantProfessionalBookingsUseCase.run.mockResolvedValue([]);
+  });
+
+  describe(`GET ${basePath}`, () => {
+    it('lista agenda do profissional com date e status', () => {
+      return request(app.getHttpServer())
+        .get(basePath)
+        .query({ date: '2099-06-15', status: BookingStatus.CONFIRMED })
+        .expect(200)
+        .expect(() => {
+          expect(listTenantProfessionalBookingsUseCase.run).toHaveBeenCalledWith(
+            {
+              tenantId,
+              tenantProfessionalId,
+              timezone: 'America/Sao_Paulo',
+              userId: 'user-uuid-123',
+              callerRole: TenantUserRole.ADMIN,
+              date: '2099-06-15',
+              status: BookingStatus.CONFIRMED,
+            },
+          );
+        });
+    });
   });
 
   describe(`POST ${basePath}/draft`, () => {

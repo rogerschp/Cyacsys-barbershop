@@ -1,14 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { getDataSourceToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { getRepositoryToken, getDataSourceToken } from '@nestjs/typeorm';
 import { BookingRepository } from 'src/repository/booking/booking.repository';
 import { BookingEntity } from 'src/modules/booking/entities/booking.entity';
 import { BookingStatus } from 'src/modules/booking/entities/booking-status.enum';
 
 describe('BookingRepository', () => {
   let repository: BookingRepository;
-  let rootBookingRepo: jest.Mocked<Pick<Repository<BookingEntity>, 'findOne'>>;
+  let listQb: Record<string, jest.Mock>;
+  let activeQb: Record<string, jest.Mock>;
+  let rootBookingRepo: {
+    findOne: jest.Mock;
+    createQueryBuilder: jest.Mock;
+  };
   let mockQb: {
     where: jest.Mock;
     andWhere: jest.Mock;
@@ -39,6 +42,24 @@ describe('BookingRepository', () => {
       getOne: jest.fn(),
     };
 
+    listQb = {
+      leftJoinAndSelect: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      getMany: jest.fn().mockResolvedValue([]),
+      getOne: jest.fn().mockResolvedValue(null),
+      getCount: jest.fn().mockResolvedValue(0),
+    };
+
+    activeQb = {
+      select: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      getMany: jest.fn().mockResolvedValue([]),
+    };
+
     txRepo = {
       findOne: jest.fn(),
       createQueryBuilder: jest.fn().mockReturnValue(mockQb),
@@ -60,6 +81,14 @@ describe('BookingRepository', () => {
 
     rootBookingRepo = {
       findOne: jest.fn(),
+      createQueryBuilder: jest.fn((alias?: string) => {
+        if (alias === 'b') {
+          // Heuristic: callers that select startsAt use active/overlap qb;
+          // listOps uses leftJoinAndSelect first.
+          return listQb;
+        }
+        return listQb;
+      }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -183,6 +212,23 @@ describe('BookingRepository', () => {
       ).rejects.toThrow('BOOKING_NOT_FOUND');
     });
 
+    it('lança BOOKING_INVALID_STATUS quando status esperado diverge', async () => {
+      txRepo.findOne.mockResolvedValue({
+        id: bookingId,
+        status: BookingStatus.CONFIRMED,
+      } as BookingEntity);
+
+      await expect(
+        repository.updateStatus(
+          bookingId,
+          tenantId,
+          tenantProfessionalId,
+          BookingStatus.DRAFT,
+          BookingStatus.CONFIRMED,
+        ),
+      ).rejects.toThrow('BOOKING_INVALID_STATUS');
+    });
+
     it('lança BOOKING_SLOT_CONFLICT na confirmação com overlap', async () => {
       const current = {
         id: bookingId,
@@ -230,6 +276,206 @@ describe('BookingRepository', () => {
 
       expect(mockQb.getOne).not.toHaveBeenCalled();
       expect(out.status).toBe(BookingStatus.CANCELLED);
+    });
+  });
+
+  describe('findActiveByTenantProfessionalBetween', () => {
+    it('retorna ranges ativos no intervalo', async () => {
+      rootBookingRepo.createQueryBuilder = jest.fn().mockReturnValue(activeQb);
+      activeQb.getMany.mockResolvedValue([
+        { startsAt, endsAt },
+      ] as BookingEntity[]);
+
+      const out = await repository.findActiveByTenantProfessionalBetween(
+        tenantId,
+        tenantProfessionalId,
+        startsAt,
+        endsAt,
+      );
+
+      expect(out).toEqual([{ startsAt, endsAt }]);
+      expect(activeQb.andWhere).toHaveBeenCalled();
+    });
+  });
+
+  describe('findByClientUserId', () => {
+    it('lista sem filtro de status', async () => {
+      const qb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        leftJoin: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([{ id: 'b1' }]),
+      };
+      rootBookingRepo.createQueryBuilder = jest.fn().mockReturnValue(qb);
+
+      const out = await repository.findByClientUserId('user-1');
+      expect(out).toEqual([{ id: 'b1' }]);
+      expect(qb.andWhere).not.toHaveBeenCalledWith(
+        'b.status = :status',
+        expect.anything(),
+      );
+    });
+
+    it('filtra por status quando informado', async () => {
+      const qb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        leftJoin: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([]),
+      };
+      rootBookingRepo.createQueryBuilder = jest.fn().mockReturnValue(qb);
+
+      await repository.findByClientUserId('user-1', {
+        status: BookingStatus.CONFIRMED,
+      });
+      expect(qb.andWhere).toHaveBeenCalledWith('b.status = :status', {
+        status: BookingStatus.CONFIRMED,
+      });
+    });
+  });
+
+  describe('findActiveCustomerTimeOverlap', () => {
+    it('filtra por USER e retorna overlap', async () => {
+      const qb = {
+        select: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue({ startsAt, endsAt }),
+      };
+      rootBookingRepo.createQueryBuilder = jest.fn().mockReturnValue(qb);
+
+      const out = await repository.findActiveCustomerTimeOverlap({
+        tenantId,
+        identity: {
+          kind: 'USER',
+          key: 'user:u1',
+          userId: 'u1',
+        },
+        startsAt,
+        endsAt,
+        excludeBookingId: 'ex-1',
+      });
+
+      expect(out).toEqual({ startsAt, endsAt });
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        'b.client_user_id = :clientUserId',
+        { clientUserId: 'u1' },
+      );
+      expect(qb.andWhere).toHaveBeenCalledWith('b.id != :excludeBookingId', {
+        excludeBookingId: 'ex-1',
+      });
+    });
+
+    it('filtra por GUEST e retorna null quando sem overlap', async () => {
+      const qb = {
+        select: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(null),
+      };
+      rootBookingRepo.createQueryBuilder = jest.fn().mockReturnValue(qb);
+
+      const out = await repository.findActiveCustomerTimeOverlap({
+        tenantId,
+        identity: {
+          kind: 'GUEST',
+          key: 'guest:5511999999999',
+          phone: '5511999999999',
+        },
+        startsAt,
+        endsAt,
+      });
+
+      expect(out).toBeNull();
+      expect(qb.andWhere).toHaveBeenCalledWith('b.guest_phone = :guestPhone', {
+        guestPhone: '5511999999999',
+      });
+    });
+  });
+
+  describe('countActiveByCustomerIdentity', () => {
+    it('conta ativos por USER com exclude', async () => {
+      const qb = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getCount: jest.fn().mockResolvedValue(2),
+      };
+      rootBookingRepo.createQueryBuilder = jest.fn().mockReturnValue(qb);
+
+      const count = await repository.countActiveByCustomerIdentity({
+        tenantId,
+        identity: { kind: 'USER', key: 'user:u1', userId: 'u1' },
+        excludeBookingId: 'b1',
+      });
+
+      expect(count).toBe(2);
+      expect(qb.andWhere).toHaveBeenCalledWith('b.id != :excludeBookingId', {
+        excludeBookingId: 'b1',
+      });
+    });
+
+    it('conta ativos por GUEST sem exclude', async () => {
+      const qb = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getCount: jest.fn().mockResolvedValue(1),
+      };
+      rootBookingRepo.createQueryBuilder = jest.fn().mockReturnValue(qb);
+
+      const count = await repository.countActiveByCustomerIdentity({
+        tenantId,
+        identity: {
+          kind: 'GUEST',
+          key: 'guest:5511',
+          phone: '5511',
+        },
+      });
+
+      expect(count).toBe(1);
+      expect(qb.andWhere).toHaveBeenCalledWith('b.guest_phone = :guestPhone', {
+        guestPhone: '5511',
+      });
+    });
+  });
+
+  describe('listOpsBookings', () => {
+    it('lista sem filtros opcionais', async () => {
+      listQb.getMany.mockResolvedValue([{ id: 'b1' }]);
+      rootBookingRepo.createQueryBuilder = jest.fn().mockReturnValue(listQb);
+
+      const out = await repository.listOpsBookings({ tenantId });
+      expect(out).toEqual([{ id: 'b1' }]);
+      expect(listQb.andWhere).not.toHaveBeenCalled();
+    });
+
+    it('aplica filtros de profissional, range e status', async () => {
+      rootBookingRepo.createQueryBuilder = jest.fn().mockReturnValue(listQb);
+      const rangeStart = new Date('2099-06-15T03:00:00.000Z');
+      const rangeEnd = new Date('2099-06-16T03:00:00.000Z');
+
+      await repository.listOpsBookings({
+        tenantId,
+        tenantProfessionalId,
+        rangeStart,
+        rangeEnd,
+        status: BookingStatus.CONFIRMED,
+      });
+
+      expect(listQb.andWhere).toHaveBeenCalledWith(
+        'b.tenant_professional_id = :tpId',
+        { tpId: tenantProfessionalId },
+      );
+      expect(listQb.andWhere).toHaveBeenCalledWith(
+        'b.starts_at >= :rangeStart AND b.starts_at < :rangeEnd',
+        { rangeStart, rangeEnd },
+      );
+      expect(listQb.andWhere).toHaveBeenCalledWith('b.status = :status', {
+        status: BookingStatus.CONFIRMED,
+      });
     });
   });
 });
