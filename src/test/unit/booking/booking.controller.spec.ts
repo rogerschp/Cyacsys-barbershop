@@ -5,6 +5,7 @@ import { BookingController } from 'src/modules/booking/booking.controller';
 import { CreateBookingDraftUseCase } from 'src/modules/booking/use-cases/create-booking-draft.use-case';
 import { ConfirmBookingUseCase } from 'src/modules/booking/use-cases/confirm-booking.use-case';
 import { CancelBookingDraftUseCase } from 'src/modules/booking/use-cases/cancel-booking-draft.use-case';
+import { ListTenantProfessionalBookingsUseCase } from 'src/modules/booking/use-cases/list-tenant-professional-bookings.use-case';
 import { BearerAuthGuard } from 'src/modules/auth/guards/bearer-auth.guard';
 import { TenantInterceptor } from 'src/common/interceptors/tenant.interceptor';
 import { TenantMembershipGuard } from 'src/common/guards/tenant-membership.guard';
@@ -18,6 +19,7 @@ describe('BookingController (HTTP)', () => {
   let createBookingDraftUseCase: jest.Mocked<CreateBookingDraftUseCase>;
   let confirmBookingUseCase: jest.Mocked<ConfirmBookingUseCase>;
   let cancelBookingDraftUseCase: jest.Mocked<CancelBookingDraftUseCase>;
+  let listTenantProfessionalBookingsUseCase: jest.Mocked<ListTenantProfessionalBookingsUseCase>;
 
   const tenantId = 'tenant-uuid';
   const tenantProfessionalId = 'tp-uuid';
@@ -43,6 +45,7 @@ describe('BookingController (HTTP)', () => {
     const mockCreate = { run: jest.fn() };
     const mockConfirm = { run: jest.fn() };
     const mockCancel = { run: jest.fn() };
+    const mockList = { run: jest.fn() };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [BookingController],
@@ -50,6 +53,7 @@ describe('BookingController (HTTP)', () => {
         { provide: CreateBookingDraftUseCase, useValue: mockCreate },
         { provide: ConfirmBookingUseCase, useValue: mockConfirm },
         { provide: CancelBookingDraftUseCase, useValue: mockCancel },
+        { provide: ListTenantProfessionalBookingsUseCase, useValue: mockList },
       ],
     })
       .overrideGuard(BearerAuthGuard)
@@ -58,6 +62,7 @@ describe('BookingController (HTTP)', () => {
           const req = context.switchToHttp().getRequest();
           req.user = { dbUser: { id: 'user-uuid-123' }, uid: 'firebase-uid' };
           req.tenantMembership = { role: TenantUserRole.ADMIN };
+          req.tenant = { timezone: 'America/Sao_Paulo' };
           return true;
         },
       })
@@ -83,6 +88,9 @@ describe('BookingController (HTTP)', () => {
     createBookingDraftUseCase = moduleFixture.get(CreateBookingDraftUseCase);
     confirmBookingUseCase = moduleFixture.get(ConfirmBookingUseCase);
     cancelBookingDraftUseCase = moduleFixture.get(CancelBookingDraftUseCase);
+    listTenantProfessionalBookingsUseCase = moduleFixture.get(
+      ListTenantProfessionalBookingsUseCase,
+    );
   });
 
   afterAll(async () => {
@@ -100,6 +108,29 @@ describe('BookingController (HTTP)', () => {
     cancelBookingDraftUseCase.run.mockResolvedValue(
       mockBookingEntity(BookingStatus.CANCELLED) as any,
     );
+    listTenantProfessionalBookingsUseCase.run.mockResolvedValue([]);
+  });
+
+  describe(`GET ${basePath}`, () => {
+    it('lista agenda do profissional com date e status', () => {
+      return request(app.getHttpServer())
+        .get(basePath)
+        .query({ date: '2099-06-15', status: BookingStatus.CONFIRMED })
+        .expect(200)
+        .expect(() => {
+          expect(listTenantProfessionalBookingsUseCase.run).toHaveBeenCalledWith(
+            {
+              tenantId,
+              tenantProfessionalId,
+              timezone: 'America/Sao_Paulo',
+              userId: 'user-uuid-123',
+              callerRole: TenantUserRole.ADMIN,
+              date: '2099-06-15',
+              status: BookingStatus.CONFIRMED,
+            },
+          );
+        });
+    });
   });
 
   describe(`POST ${basePath}/draft`, () => {
@@ -204,6 +235,7 @@ describe('BookingController (HTTP) — user/tenant opcionais', () => {
     const mockCreate = { run: jest.fn() };
     const mockConfirm = { run: jest.fn() };
     const mockCancel = { run: jest.fn() };
+    const mockList = { run: jest.fn() };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [BookingController],
@@ -211,6 +243,7 @@ describe('BookingController (HTTP) — user/tenant opcionais', () => {
         { provide: CreateBookingDraftUseCase, useValue: mockCreate },
         { provide: ConfirmBookingUseCase, useValue: mockConfirm },
         { provide: CancelBookingDraftUseCase, useValue: mockCancel },
+        { provide: ListTenantProfessionalBookingsUseCase, useValue: mockList },
       ],
     })
       .overrideGuard(BearerAuthGuard)

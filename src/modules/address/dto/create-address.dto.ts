@@ -3,9 +3,10 @@ import {
   IsNotEmpty,
   IsString,
   MaxLength,
-  Matches,
   IsOptional,
 } from 'class-validator';
+import { IsCep } from 'src/common/validators/is-cep.decorator';
+import { NormalizeCep } from 'src/common/transformers/brazilian-document.transformers';
 
 export class CreateAddressDto {
   @ApiProperty({ example: 'Rua 26 de março' })
@@ -32,12 +33,14 @@ export class CreateAddressDto {
   @MaxLength(2)
   state: string;
 
-  @ApiProperty({ example: '04001-000' })
+  @ApiProperty({
+    example: '04001-000',
+    description: 'CEP (aceita 04001000 ou 04001-000; normalizado para #####-###)',
+  })
+  @NormalizeCep()
   @IsString()
   @IsNotEmpty()
-  @Matches(/^\d{5}-\d{3}$/, {
-    message: 'zipCode deve estar no formato 00000-000',
-  })
+  @IsCep()
   zipCode: string;
 
   @ApiProperty({ example: 'Brazil' })

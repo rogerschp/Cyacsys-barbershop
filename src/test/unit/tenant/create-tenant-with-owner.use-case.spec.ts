@@ -10,6 +10,10 @@ import { getDataSourceToken } from '@nestjs/typeorm';
 describe('CreateTenantWithOwnerUseCase', () => {
   let useCase: CreateTenantWithOwnerUseCase;
   let tenantRepository: jest.Mocked<TenantRepository>;
+  let addressRepository: {
+    create: jest.Mock;
+    softDelete: jest.Mock;
+  };
   let dataSource: {
     transaction: jest.Mock;
   };
@@ -57,6 +61,10 @@ describe('CreateTenantWithOwnerUseCase', () => {
     const mockRepo = {
       existsBySlug: jest.fn().mockResolvedValue(false),
     };
+    const mockAddressRepo = {
+      create: jest.fn(),
+      softDelete: jest.fn(),
+    };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateTenantWithOwnerUseCase,
@@ -64,10 +72,7 @@ describe('CreateTenantWithOwnerUseCase', () => {
         { provide: TenantRepository, useValue: mockRepo },
         {
           provide: AddressRepository,
-          useValue: {
-            create: jest.fn(),
-            softDelete: jest.fn(),
-          },
+          useValue: mockAddressRepo,
         },
         {
           provide: CreateFreeSubscriptionUseCase,
@@ -81,6 +86,7 @@ describe('CreateTenantWithOwnerUseCase', () => {
     tenantRepository = module.get(
       TenantRepository,
     ) as jest.Mocked<TenantRepository>;
+    addressRepository = module.get(AddressRepository);
   });
   it('deve estar definido', () => {
     expect(useCase).toBeDefined();
@@ -97,6 +103,39 @@ describe('CreateTenantWithOwnerUseCase', () => {
       );
       expect(dataSource.transaction).toHaveBeenCalled();
       expect(result).toEqual(mockTenant);
+    });
+
+    it('deve criar endereço e passar addressId ao tenant', async () => {
+      addressRepository.create.mockResolvedValue({
+        id: 'addr-uuid',
+      });
+      const tenantRepoCreate = jest.fn().mockReturnValue(mockTenant);
+      const tenantRepoSave = jest.fn().mockResolvedValue(mockTenant);
+      mockManager.getRepository.mockImplementation((entity: any) => {
+        if (entity.name === 'TenantEntity') {
+          return { create: tenantRepoCreate, save: tenantRepoSave };
+        }
+        return { create: jest.fn().mockReturnValue({}), save: jest.fn() };
+      });
+
+      await useCase.run('user-uuid', {
+        name: 'Barbearia Nova',
+        slug: 'barbearia-nova',
+        telephone: '5511999999999',
+        address: {
+          street: 'Rua A',
+          number: '1',
+          city: 'São Paulo',
+          state: 'SP',
+          zipCode: '01001-000',
+          country: 'Brazil',
+        },
+      });
+
+      expect(addressRepository.create).toHaveBeenCalled();
+      expect(tenantRepoCreate).toHaveBeenCalledWith(
+        expect.objectContaining({ addressId: 'addr-uuid' }),
+      );
     });
     it('deve lancar ConflictException quando slug ja existe', async () => {
       tenantRepository.existsBySlug.mockResolvedValue(true);

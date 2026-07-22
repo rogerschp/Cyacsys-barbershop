@@ -66,6 +66,7 @@ describe('TenantRepository', () => {
       const result = await repository.findBySlug('barbearia-do-vitinho');
       expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
         where: { slug: 'barbearia-do-vitinho' },
+        relations: ['address'],
       });
       expect(result).toEqual(mockTenant);
     });
@@ -74,6 +75,7 @@ describe('TenantRepository', () => {
       const result = await repository.findBySlug('slug-inexistente');
       expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
         where: { slug: 'slug-inexistente' },
+        relations: ['address'],
       });
       expect(result).toBeNull();
     });
@@ -84,6 +86,7 @@ describe('TenantRepository', () => {
       const result = await repository.findById('uuid-123');
       expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
         where: { id: 'uuid-123' },
+        relations: ['address'],
       });
       expect(result).toEqual(mockTenant);
     });
@@ -92,6 +95,7 @@ describe('TenantRepository', () => {
       const result = await repository.findById('id-inexistente');
       expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
         where: { id: 'id-inexistente' },
+        relations: ['address'],
       });
       expect(result).toBeNull();
     });

@@ -33,7 +33,7 @@ export class TenantResponseDto {
   telephone: string;
 
   @ApiPropertyOptional({
-    example: '12345678000199',
+    example: '11222333000181',
     description: 'CNPJ da unidade (se houver)',
   })
   cnpj?: string | null;

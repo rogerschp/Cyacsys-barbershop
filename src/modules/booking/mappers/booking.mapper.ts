@@ -13,6 +13,9 @@ export function mapBookingToResponse(
     endsAt: booking.endsAt.toISOString(),
     status: booking.status,
     clientUserId: booking.clientUserId,
+    guestName: booking.guestName ?? null,
+    guestPhone: booking.guestPhone ?? null,
+    guestEmail: booking.guestEmail ?? null,
     createdAt: booking.createdAt.toISOString(),
     updatedAt: booking.updatedAt.toISOString(),
   };

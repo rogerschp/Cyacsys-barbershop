@@ -1,6 +1,5 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import {
-  ApiBearerAuth,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -8,7 +7,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { TenantResolverGuard } from '../../../common/guards/tenant-resolver.guard';
-import { BearerAuthGuard } from '../../auth/guards/bearer-auth.guard';
 import { AvailableSlotsResponseDto } from '../dto/available-slots-response.dto';
 import { GetAvailableSlotsQueryDto } from '../dto/get-available-slots-query.dto';
 import { GetClientAvailableSlotsUseCase } from '../use-cases/get-client-available-slots.use-case';
@@ -17,8 +15,7 @@ import { GetClientAvailableSlotsUseCase } from '../use-cases/get-client-availabl
 @Controller(
   'tenants/:tenantId/tenant-professionals/:tenantProfessionalId/available-slots/public',
 )
-@UseGuards(BearerAuthGuard, TenantResolverGuard)
-@ApiBearerAuth('bearer')
+@UseGuards(TenantResolverGuard)
 export class ClientAvailableSlotsController {
   constructor(
     private readonly getClientAvailableSlotsUseCase: GetClientAvailableSlotsUseCase,
@@ -26,9 +23,9 @@ export class ClientAvailableSlotsController {
 
   @Get()
   @ApiOperation({
-    summary: 'Slots disponíveis para cliente (sem membership)',
+    summary: 'Slots disponíveis (vitrine / guest / cliente)',
     description:
-      'Requer login. Não exige ser membro do tenant. Exclui DRAFT/CONFIRMED e lead time.',
+      'Sem Bearer. Exclui DRAFT/CONFIRMED e lead time. Usado por guest e cliente autenticado.',
   })
   @ApiParam({ name: 'tenantId' })
   @ApiParam({ name: 'tenantProfessionalId' })
