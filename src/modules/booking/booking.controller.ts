@@ -21,7 +21,7 @@ import { TenantRolesGuard } from '../../common/guards/tenant-roles.guard';
 import { BearerAuthGuard } from '../auth/guards/bearer-auth.guard';
 import { TenantUserRole } from '../tenant-user/entities/tenant-user-role.enum';
 import { BookingResponseDto } from './dto/booking-response.dto';
-import { CreateBookingDraftDto } from './dto/create-booking-draft.dto';
+import { CreateOpsBookingDraftDto } from './dto/create-booking-draft.dto';
 import { mapBookingToResponse } from './mappers/booking.mapper';
 import { CancelBookingDraftUseCase } from './use-cases/cancel-booking-draft.use-case';
 import { ConfirmBookingUseCase } from './use-cases/confirm-booking.use-case';
@@ -69,15 +69,17 @@ export class BookingController {
   @ApiOperation({
     summary:
       'Cria rascunho de agendamento (apenas DIRECT_BOOKING; segura o slot até confirmar ou cancelar)',
+    description:
+      'Identidade XOR: clientUserId, ou guestName+guestPhone, ou nenhum (fallback = usuário autenticado).',
   })
   @ApiParam({ name: 'tenantId' })
   @ApiParam({ name: 'tenantProfessionalId' })
-  @ApiBody({ type: CreateBookingDraftDto })
+  @ApiBody({ type: CreateOpsBookingDraftDto })
   @ApiResponse({ status: 201, type: BookingResponseDto })
   async createDraft(
     @Param('tenantId') tenantId: string,
     @Param('tenantProfessionalId') tenantProfessionalId: string,
-    @Body() dto: CreateBookingDraftDto,
+    @Body() dto: CreateOpsBookingDraftDto,
     @Req() req: RequestWithUserAndMembership,
   ) {
     const booking = await this.createBookingDraftUseCase.run(

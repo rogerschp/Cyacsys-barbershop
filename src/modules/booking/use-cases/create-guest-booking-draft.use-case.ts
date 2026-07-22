@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { GetClientAvailableSlotsUseCase } from '../../availability/use-cases/get-client-available-slots.use-case';
-import { CreateBookingDraftDto } from '../dto/create-booking-draft.dto';
+import { CreateGuestBookingDraftDto } from '../dto/create-booking-draft.dto';
 import { BookingEntity } from '../entities/booking.entity';
 import { CustomerResolverService } from '../domain/customer-resolver.service';
 import { CreateBookingDraftForCustomerUseCase } from './create-booking-draft-for-customer.use-case';
 
 @Injectable()
-export class CreateClientBookingDraftUseCase {
+export class CreateGuestBookingDraftUseCase {
   constructor(
     private readonly getClientAvailableSlotsUseCase: GetClientAvailableSlotsUseCase,
     private readonly customerResolver: CustomerResolverService,
@@ -16,12 +16,13 @@ export class CreateClientBookingDraftUseCase {
   async run(
     tenantId: string,
     tenantProfessionalId: string,
-    dto: CreateBookingDraftDto,
-    clientUserId: string,
+    dto: CreateGuestBookingDraftDto,
   ): Promise<BookingEntity> {
     const identity = this.customerResolver.resolve({
-      mode: 'authenticated',
-      userId: clientUserId,
+      mode: 'guest',
+      guestName: dto.guestName,
+      guestPhone: dto.guestPhone,
+      guestEmail: dto.guestEmail,
     });
 
     return this.createBookingDraftForCustomer.run({

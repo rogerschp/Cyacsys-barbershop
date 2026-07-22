@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { BookingEntity } from '../../modules/booking/entities/booking.entity';
 import { BookingStatus } from '../../modules/booking/entities/booking-status.enum';
+import { CustomerIdentity } from '../../modules/booking/domain/customer-identity';
 import {
   ActiveBookingTimeRange,
   CreateBookingDraftData,
+  CustomerActiveQuery,
+  CustomerTimeOverlapQuery,
   IBookingRepository,
 } from '../../modules/booking/interfaces/booking-repository.interface';
 
@@ -77,6 +80,9 @@ export class BookingRepository implements IBookingRepository {
         status: BookingStatus.DRAFT,
         createdByTenantUserId: data.createdByTenantUserId,
         clientUserId: data.clientUserId,
+        guestName: data.guestName,
+        guestPhone: data.guestPhone,
+        guestEmail: data.guestEmail,
       });
       return manager.getRepository(BookingEntity).save(e);
     });
@@ -159,6 +165,66 @@ export class BookingRepository implements IBookingRepository {
       }
       current.status = newStatus;
       return repo.save(current);
+    });
+  }
+
+  async findActiveCustomerTimeOverlap(
+    query: CustomerTimeOverlapQuery,
+  ): Promise<ActiveBookingTimeRange | null> {
+    const qb = this.bookingRepo
+      .createQueryBuilder('b')
+      .select(['b.startsAt', 'b.endsAt'])
+      .where('b.tenant_id = :tenantId', { tenantId: query.tenantId })
+      .andWhere('b.status IN (:...statuses)', { statuses: ACTIVE_STATUSES })
+      .andWhere('b.starts_at < :endsAt AND b.ends_at > :startsAt', {
+        startsAt: query.startsAt,
+        endsAt: query.endsAt,
+      });
+
+    this.applyCustomerIdentityFilter(qb, query.identity);
+
+    if (query.excludeBookingId) {
+      qb.andWhere('b.id != :excludeBookingId', {
+        excludeBookingId: query.excludeBookingId,
+      });
+    }
+
+    const row = await qb.getOne();
+    if (!row) return null;
+    return { startsAt: row.startsAt, endsAt: row.endsAt };
+  }
+
+  async countActiveByCustomerIdentity(
+    query: CustomerActiveQuery,
+  ): Promise<number> {
+    const qb = this.bookingRepo
+      .createQueryBuilder('b')
+      .where('b.tenant_id = :tenantId', { tenantId: query.tenantId })
+      .andWhere('b.status IN (:...statuses)', { statuses: ACTIVE_STATUSES });
+
+    this.applyCustomerIdentityFilter(qb, query.identity);
+
+    if (query.excludeBookingId) {
+      qb.andWhere('b.id != :excludeBookingId', {
+        excludeBookingId: query.excludeBookingId,
+      });
+    }
+
+    return qb.getCount();
+  }
+
+  private applyCustomerIdentityFilter(
+    qb: SelectQueryBuilder<BookingEntity>,
+    identity: CustomerIdentity,
+  ): void {
+    if (identity.kind === 'USER') {
+      qb.andWhere('b.client_user_id = :clientUserId', {
+        clientUserId: identity.userId,
+      });
+      return;
+    }
+    qb.andWhere('b.guest_phone = :guestPhone', {
+      guestPhone: identity.phone,
     });
   }
 }
