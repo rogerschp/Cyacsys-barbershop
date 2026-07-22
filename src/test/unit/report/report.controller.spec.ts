@@ -85,7 +85,22 @@ describe('ReportController (HTTP)', () => {
       .expect(200)
       .expect((res) => {
         expect(res.body.monthlyBreakdown).toEqual([]);
-        expect(getProReport.run).toHaveBeenCalledWith(tenantId);
+        expect(getProReport.run).toHaveBeenCalledWith(tenantId, undefined);
+      });
+  });
+
+  it('GET /tenants/:tenantId/reports/pro?months=1', async () => {
+    getProReport.run.mockResolvedValue({
+      ...standardReport,
+      monthlyBreakdown: [],
+    });
+
+    await request(app.getHttpServer())
+      .get(`/tenants/${tenantId}/reports/pro`)
+      .query({ months: '1' })
+      .expect(200)
+      .expect(() => {
+        expect(getProReport.run).toHaveBeenCalledWith(tenantId, '1');
       });
   });
 
@@ -101,7 +116,23 @@ describe('ReportController (HTTP)', () => {
       .expect(200)
       .expect((res) => {
         expect(res.body.professionalBreakdown).toEqual([]);
-        expect(getEliteReport.run).toHaveBeenCalledWith(tenantId);
+        expect(getEliteReport.run).toHaveBeenCalledWith(tenantId, undefined);
+      });
+  });
+
+  it('GET /tenants/:tenantId/reports/elite?months=3', async () => {
+    getEliteReport.run.mockResolvedValue({
+      ...standardReport,
+      monthlyBreakdown: [],
+      professionalBreakdown: [],
+    });
+
+    await request(app.getHttpServer())
+      .get(`/tenants/${tenantId}/reports/elite`)
+      .query({ months: '3' })
+      .expect(200)
+      .expect(() => {
+        expect(getEliteReport.run).toHaveBeenCalledWith(tenantId, '3');
       });
   });
 
@@ -118,14 +149,18 @@ describe('ReportController (HTTP)', () => {
       .expect(200)
       .expect('Content-Type', /application\/pdf/)
       .expect((res) => {
-        expect(exportReport.run).toHaveBeenCalledWith(tenantId, 'pdf');
+        expect(exportReport.run).toHaveBeenCalledWith(
+          tenantId,
+          'pdf',
+          undefined,
+        );
         expect(Buffer.isBuffer(res.body) || typeof res.body === 'object').toBe(
           true,
         );
       });
   });
 
-  it('GET /tenants/:tenantId/reports/export?format=excel', async () => {
+  it('GET /tenants/:tenantId/reports/export?format=excel&months=1', async () => {
     exportReport.run.mockResolvedValue({
       buffer: Buffer.from('PK-excel'),
       contentType:
@@ -135,10 +170,10 @@ describe('ReportController (HTTP)', () => {
 
     await request(app.getHttpServer())
       .get(`/tenants/${tenantId}/reports/export`)
-      .query({ format: 'excel' })
+      .query({ format: 'excel', months: '1' })
       .expect(200)
       .expect(() => {
-        expect(exportReport.run).toHaveBeenCalledWith(tenantId, 'excel');
+        expect(exportReport.run).toHaveBeenCalledWith(tenantId, 'excel', '1');
       });
   });
 });

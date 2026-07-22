@@ -15,4 +15,16 @@ export class ProfessionalMetricsDto {
 
   @ApiProperty({ example: 3 })
   cancelledBookings: number;
+
+  @ApiProperty({
+    example: 37.33,
+    description: 'Receita / confirmados do profissional',
+  })
+  averageTicket: number;
+
+  @ApiProperty({
+    example: 3.85,
+    description: 'Cancelados / (Confirmados + Cancelados) * 100',
+  })
+  cancellationRate: number;
 }

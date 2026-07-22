@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { DashboardSummaryDto } from './dashboard-summary.dto';
 import { MonthlyMetricsDto } from './monthly-metrics.dto';
 import { ReportPeriodDto } from './report-period.dto';
+import { TopServiceMetricsDto } from './top-service-metrics.dto';
 
 export class ProReportDto {
   @ApiProperty({ type: ReportPeriodDto })
@@ -14,6 +16,12 @@ export class ProReportDto {
 
   @ApiProperty({ example: 18 })
   cancelledBookings: number;
+
+  @ApiProperty({ type: DashboardSummaryDto })
+  dashboard: DashboardSummaryDto;
+
+  @ApiProperty({ type: [TopServiceMetricsDto] })
+  topServices: TopServiceMetricsDto[];
 
   @ApiProperty({ type: [MonthlyMetricsDto] })
   monthlyBreakdown: MonthlyMetricsDto[];

@@ -9,11 +9,13 @@ jest.mock('src/modules/report/utils/report-export.utils', () => ({
   buildExcelReport: jest.fn(),
   buildPdfReport: jest.fn(),
   buildReportFilename: jest.fn(),
+  buildReportExportContext: jest.fn(),
 }));
 
 import {
   buildExcelReport,
   buildPdfReport,
+  buildReportExportContext,
   buildReportFilename,
 } from 'src/modules/report/utils/report-export.utils';
 
@@ -26,10 +28,21 @@ describe('ExportReportUseCase', () => {
     revenue: 100,
     confirmedBookings: 1,
     cancelledBookings: 0,
+    dashboard: {
+      revenue: 100,
+      confirmedBookings: 1,
+      cancelledBookings: 0,
+      cancellationRate: 0,
+      averageTicket: 100,
+      newCustomers: 1,
+      returningCustomers: 0,
+    },
+    topServices: [],
     monthlyBreakdown: [],
     professionalBreakdown: [],
     insights: null,
   };
+  const exportCtx = { filename: 'relatorio-barbearia-x-2026-06.pdf' };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -43,6 +56,7 @@ describe('ExportReportUseCase', () => {
     useCase = module.get(ExportReportUseCase);
     findTenantById.run.mockResolvedValue({
       id: 'tenant-1',
+      name: 'Barbearia X',
       slug: 'barbearia-x',
       timezone: 'America/Sao_Paulo',
     });
@@ -50,6 +64,7 @@ describe('ExportReportUseCase', () => {
     (buildReportFilename as jest.Mock).mockReturnValue(
       'relatorio-barbearia-x-2026-06.pdf',
     );
+    (buildReportExportContext as jest.Mock).mockReturnValue(exportCtx);
     (buildPdfReport as jest.Mock).mockResolvedValue({
       buffer: Buffer.from('pdf'),
       contentType: 'application/pdf',
@@ -76,14 +91,25 @@ describe('ExportReportUseCase', () => {
     jest.restoreAllMocks();
   });
 
-  it('exporta PDF', async () => {
+  it('exporta PDF com contexto do estabelecimento', async () => {
     const result = await useCase.run('tenant-1', 'pdf');
 
-    expect(buildPdfReport).toHaveBeenCalledWith(
-      eliteReport,
-      'relatorio-barbearia-x-2026-06.pdf',
+    expect(getEliteReport.run).toHaveBeenCalledWith('tenant-1', undefined);
+    expect(buildReportExportContext).toHaveBeenCalledWith(
+      expect.objectContaining({
+        report: eliteReport,
+        tenantName: 'Barbearia X',
+        tenantSlug: 'barbearia-x',
+        timezone: 'America/Sao_Paulo',
+      }),
     );
+    expect(buildPdfReport).toHaveBeenCalledWith(exportCtx);
     expect(result.contentType).toBe('application/pdf');
+  });
+
+  it('repassa months ao relatório elite', async () => {
+    await useCase.run('tenant-1', 'excel', 3);
+    expect(getEliteReport.run).toHaveBeenCalledWith('tenant-1', 3);
   });
 
   it('exporta Excel', async () => {
@@ -93,7 +119,7 @@ describe('ExportReportUseCase', () => {
 
     const result = await useCase.run('tenant-1', 'EXCEL');
 
-    expect(buildExcelReport).toHaveBeenCalled();
+    expect(buildExcelReport).toHaveBeenCalledWith(exportCtx);
     expect(result.contentType).toContain('spreadsheetml');
   });
 
