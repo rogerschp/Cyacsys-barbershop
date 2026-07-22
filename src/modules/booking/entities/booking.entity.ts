@@ -18,6 +18,7 @@ import { BookingStatus } from './booking-status.enum';
 
 @Entity('bookings')
 @Index('IDX_bookings_tenant_id', ['tenantId'])
+@Index('IDX_bookings_tenant_starts_at', ['tenantId', 'startsAt'])
 @Index('IDX_bookings_tenant_professional_starts', [
   'tenantProfessionalId',
   'startsAt',
@@ -82,13 +83,34 @@ export class BookingEntity {
   @Column({ name: 'client_user_id', type: 'uuid', nullable: true })
   @ApiProperty({
     nullable: true,
-    description: 'Usuário global para quem o agendamento foi feito',
+    description: 'Usuário autenticado do agendamento (XOR com guest)',
   })
   clientUserId: string | null;
 
   @ManyToOne(() => UserEntity, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'client_user_id' })
   clientUser?: UserEntity | null;
+
+  @Column({ name: 'guest_name', type: 'varchar', nullable: true })
+  @ApiProperty({
+    nullable: true,
+    description: 'Nome do visitante (XOR com clientUserId)',
+  })
+  guestName: string | null;
+
+  @Column({ name: 'guest_phone', type: 'varchar', nullable: true })
+  @ApiProperty({
+    nullable: true,
+    description: 'Telefone normalizado do visitante (XOR com clientUserId)',
+  })
+  guestPhone: string | null;
+
+  @Column({ name: 'guest_email', type: 'varchar', nullable: true })
+  @ApiProperty({
+    nullable: true,
+    description: 'E-mail opcional do visitante',
+  })
+  guestEmail: string | null;
 
   @CreateDateColumn()
   @ApiProperty()

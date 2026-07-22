@@ -86,7 +86,7 @@ export class TenantEntity {
 
   @Column({ nullable: true, length: 14 })
   @ApiProperty({
-    example: '12345678000199',
+    example: '11222333000181',
     description: 'CNPJ da barbearia (apenas números). Opcional.',
     required: false,
     nullable: true,

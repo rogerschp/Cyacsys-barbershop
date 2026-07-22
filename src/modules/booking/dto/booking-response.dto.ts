@@ -26,6 +26,15 @@ export class BookingResponseDto {
   @ApiProperty({ nullable: true })
   clientUserId: string | null;
 
+  @ApiProperty({ nullable: true })
+  guestName: string | null;
+
+  @ApiProperty({ nullable: true })
+  guestPhone: string | null;
+
+  @ApiProperty({ nullable: true })
+  guestEmail: string | null;
+
   @ApiProperty()
   createdAt: string;
 

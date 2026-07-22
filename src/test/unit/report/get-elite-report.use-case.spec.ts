@@ -1,74 +1,73 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DataSource } from 'typeorm';
 import { GetEliteReportUseCase } from 'src/modules/report/use-cases/get-elite-report.use-case';
-import { FindTenantByIdUseCase } from 'src/modules/tenant/use-cases/find-tenant-by-id.use-case';
-
-jest.mock('src/modules/report/utils/report-period.utils', () => ({
-  getReportPeriod: jest.fn(() => ({
-    start: new Date('2026-01-01T03:00:00.000Z'),
-    end: new Date('2026-06-04T23:59:59.999Z'),
-  })),
-  listMonthsInPeriod: jest.fn(() => [{ year: 2026, month: 6 }]),
-}));
-
-jest.mock('src/modules/report/utils/report-query.utils', () => ({
-  fetchBookingTotals: jest.fn(),
-  fetchMonthlyBreakdown: jest.fn(),
-  fetchProfessionalBreakdown: jest.fn(),
-}));
-
-import {
-  getReportPeriod,
-  listMonthsInPeriod,
-} from 'src/modules/report/utils/report-period.utils';
-import {
-  fetchBookingTotals,
-  fetchMonthlyBreakdown,
-  fetchProfessionalBreakdown,
-} from 'src/modules/report/utils/report-query.utils';
+import { ReportService } from 'src/modules/report/services/report.service';
+import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
 
 describe('GetEliteReportUseCase', () => {
   let useCase: GetEliteReportUseCase;
-  const findTenantById = { run: jest.fn() };
+  const reportService = { buildElite: jest.fn() };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GetEliteReportUseCase,
-        { provide: DataSource, useValue: {} },
-        { provide: FindTenantByIdUseCase, useValue: findTenantById },
+        { provide: ReportService, useValue: reportService },
       ],
     }).compile();
 
     useCase = module.get(GetEliteReportUseCase);
-    findTenantById.run.mockResolvedValue({
-      id: 'tenant-1',
-      timezone: 'America/Sao_Paulo',
-    });
-    (fetchBookingTotals as jest.Mock).mockResolvedValue({
+    reportService.buildElite.mockResolvedValue({
+      period: {
+        start: new Date('2026-01-01T03:00:00.000Z'),
+        end: new Date('2026-06-04T23:59:59.999Z'),
+      },
       revenue: 5000,
       confirmedBookings: 120,
       cancelledBookings: 8,
-    });
-    (fetchMonthlyBreakdown as jest.Mock).mockResolvedValue([]);
-    (fetchProfessionalBreakdown as jest.Mock).mockResolvedValue([
-      {
-        tenantProfessionalId: 'tp-1',
-        professionalName: 'João',
-        revenue: 3000,
-        confirmedBookings: 70,
-        cancelledBookings: 2,
+      dashboard: {
+        revenue: 5000,
+        confirmedBookings: 120,
+        cancelledBookings: 8,
+        cancellationRate: 6.25,
+        averageTicket: 41.67,
+        newCustomers: 10,
+        returningCustomers: 20,
       },
-    ]);
+      topServices: [],
+      monthlyBreakdown: [],
+      professionalBreakdown: [
+        {
+          tenantProfessionalId: 'tp-1',
+          professionalName: 'João',
+          revenue: 3000,
+          confirmedBookings: 70,
+          cancelledBookings: 2,
+          averageTicket: 42.86,
+          cancellationRate: 2.78,
+        },
+      ],
+      insights: null,
+    });
   });
 
-  it('retorna relatório ELITE com breakdown por profissional', async () => {
-    const result = await useCase.run('tenant-1');
+  it('usa 6 meses por default', async () => {
+    await useCase.run('tenant-1');
+    expect(reportService.buildElite).toHaveBeenCalledWith('tenant-1', 6);
+  });
 
-    expect(getReportPeriod).toHaveBeenCalledWith('America/Sao_Paulo', 5);
-    expect(listMonthsInPeriod).toHaveBeenCalledWith('America/Sao_Paulo', 5);
-    expect(fetchProfessionalBreakdown).toHaveBeenCalled();
-    expect(result.professionalBreakdown).toHaveLength(1);
-    expect(result.insights).toBeNull();
+  it('aceita months=1, 3 e 6', async () => {
+    await useCase.run('tenant-1', 1);
+    expect(reportService.buildElite).toHaveBeenCalledWith('tenant-1', 1);
+
+    await useCase.run('tenant-1', '3');
+    expect(reportService.buildElite).toHaveBeenCalledWith('tenant-1', 3);
+
+    await useCase.run('tenant-1', 6);
+    expect(reportService.buildElite).toHaveBeenCalledWith('tenant-1', 6);
+  });
+
+  it('rejeita months inválido', async () => {
+    expect(() => useCase.run('tenant-1', 0)).toThrow(BusinessRuleException);
+    expect(() => useCase.run('tenant-1', 13)).toThrow(BusinessRuleException);
   });
 });

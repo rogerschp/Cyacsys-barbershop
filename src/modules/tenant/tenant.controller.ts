@@ -9,7 +9,6 @@ import {
   Query,
   Req,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -21,9 +20,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request } from 'express';
-import { TenantInterceptor } from '../../common/interceptors/tenant.interceptor';
 import { TenantRoles } from '../../common/decorators/tenant-roles.decorator';
 import { TenantMembershipGuard } from '../../common/guards/tenant-membership.guard';
+import { TenantResolverGuard } from '../../common/guards/tenant-resolver.guard';
 import { TenantRolesGuard } from '../../common/guards/tenant-roles.guard';
 import { BearerAuthGuard } from '../auth/guards/bearer-auth.guard';
 import { RequestUser } from '../auth/strategies/bearer-token.strategy';
@@ -138,9 +137,12 @@ export class TenantController {
     return this.createTenantWithOwnerUseCase.run(req.user.dbUser.id, dto);
   }
   @Patch(':id')
-  @UseGuards(BearerAuthGuard)
-  @UseInterceptors(TenantInterceptor)
-  @UseGuards(TenantMembershipGuard, TenantRolesGuard)
+  @UseGuards(
+    BearerAuthGuard,
+    TenantResolverGuard,
+    TenantMembershipGuard,
+    TenantRolesGuard,
+  )
   @TenantRoles(TenantUserRole.OWNER, TenantUserRole.ADMIN)
   @ApiBearerAuth('bearer')
   @ApiOperation({
@@ -169,9 +171,12 @@ export class TenantController {
     return this.updateTenantByIdUseCase.run(id, dto);
   }
   @Delete(':id')
-  @UseGuards(BearerAuthGuard)
-  @UseInterceptors(TenantInterceptor)
-  @UseGuards(TenantMembershipGuard, TenantRolesGuard)
+  @UseGuards(
+    BearerAuthGuard,
+    TenantResolverGuard,
+    TenantMembershipGuard,
+    TenantRolesGuard,
+  )
   @TenantRoles(TenantUserRole.OWNER, TenantUserRole.ADMIN)
   @ApiBearerAuth('bearer')
   @ApiOperation({

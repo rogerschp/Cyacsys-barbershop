@@ -7,6 +7,8 @@ import {
 } from 'class-validator';
 import { CreateAddressDto } from 'src/modules/address/dto/create-address.dto';
 import { Type } from 'class-transformer';
+import { IsPhone } from 'src/common/validators/is-phone.decorator';
+import { NormalizePhone } from 'src/common/transformers/brazilian-document.transformers';
 
 export class UpdateMyUserDto {
   @ApiProperty({ example: 'João Silva', required: false })
@@ -14,9 +16,15 @@ export class UpdateMyUserDto {
   @IsString()
   name?: string;
 
-  @ApiProperty({ example: '5511992834085', required: false })
+  @ApiProperty({
+    example: '5511992834085',
+    required: false,
+    description: 'Telefone. Aceita máscara; normalizado para dígitos com DDI.',
+  })
   @IsOptional()
+  @NormalizePhone()
   @IsString()
+  @IsPhone()
   telephone?: string;
 
   @ApiProperty({ required: false, minLength: 6 })

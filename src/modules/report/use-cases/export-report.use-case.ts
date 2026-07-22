@@ -5,6 +5,7 @@ import { FindTenantByIdUseCase } from '../../tenant/use-cases/find-tenant-by-id.
 import {
   buildExcelReport,
   buildPdfReport,
+  buildReportExportContext,
   buildReportFilename,
   ReportExportFormat,
   ReportExportResult,
@@ -21,11 +22,12 @@ export class ExportReportUseCase {
   async run(
     tenantId: string,
     format: string | undefined,
+    months?: string | number,
   ): Promise<ReportExportResult> {
     const normalizedFormat = this.normalizeFormat(format);
     const [tenant, report] = await Promise.all([
       this.findTenantByIdUseCase.run(tenantId),
-      this.getEliteReportUseCase.run(tenantId),
+      this.getEliteReportUseCase.run(tenantId, months),
     ]);
 
     const now = DateTime.now().setZone(tenant.timezone);
@@ -36,11 +38,20 @@ export class ExportReportUseCase {
       normalizedFormat,
     );
 
+    const ctx = buildReportExportContext({
+      report,
+      filename,
+      tenantName: tenant.name,
+      tenantSlug: tenant.slug,
+      timezone: tenant.timezone,
+      generatedAt: now.toJSDate(),
+    });
+
     if (normalizedFormat === 'pdf') {
-      return buildPdfReport(report, filename);
+      return buildPdfReport(ctx);
     }
 
-    return buildExcelReport(report, filename);
+    return buildExcelReport(ctx);
   }
 
   private normalizeFormat(format: string | undefined): ReportExportFormat {

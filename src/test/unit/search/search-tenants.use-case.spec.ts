@@ -132,6 +132,28 @@ describe('SearchTenantsUseCase', () => {
     expect(dataQb.offset).toHaveBeenCalledWith(10);
   });
 
+  it('aplica filtros de cidade e UF (sem acento e case-insensitive)', async () => {
+    await useCase.run({ city: 'Sao Paulo', state: 'sp' });
+
+    expect(dataQb.andWhere).toHaveBeenCalledWith(
+      'unaccent(LOWER(a.city)) LIKE unaccent(LOWER(:city))',
+      { city: '%Sao Paulo%' },
+    );
+    expect(dataQb.andWhere).toHaveBeenCalledWith(
+      'UPPER(a.state) = UPPER(:state)',
+      { state: 'sp' },
+    );
+  });
+
+  it('ignora city com menos de 2 caracteres', async () => {
+    await useCase.run({ city: 'a' });
+
+    expect(dataQb.andWhere).not.toHaveBeenCalledWith(
+      expect.stringContaining('a.city'),
+      expect.anything(),
+    );
+  });
+
   it('retorna resposta paginada com defaults', async () => {
     dataQb.getRawMany.mockResolvedValue([
       {

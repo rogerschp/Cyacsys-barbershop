@@ -11,14 +11,22 @@ import { BookingEntity } from './entities/booking.entity';
 import { BOOKING_REPOSITORY } from './interfaces/booking-repository.interface';
 import { BookingController } from './booking.controller';
 import { ClientBookingController } from './controllers/client-booking.controller';
+import { GuestBookingController } from './controllers/guest-booking.controller';
+import { TenantBookingsController } from './controllers/tenant-bookings.controller';
 import { UserBookingsController } from './user-bookings.controller';
+import { AssertCustomerBookingPolicies } from './domain/assert-customer-booking-policies';
+import { CustomerResolverService } from './domain/customer-resolver.service';
 import { CancelBookingDraftUseCase } from './use-cases/cancel-booking-draft.use-case';
 import { CancelClientBookingUseCase } from './use-cases/cancel-client-booking.use-case';
 import { ConfirmBookingUseCase } from './use-cases/confirm-booking.use-case';
 import { ConfirmClientBookingUseCase } from './use-cases/confirm-client-booking.use-case';
+import { CreateBookingDraftForCustomerUseCase } from './use-cases/create-booking-draft-for-customer.use-case';
 import { CreateBookingDraftUseCase } from './use-cases/create-booking-draft.use-case';
 import { CreateClientBookingDraftUseCase } from './use-cases/create-client-booking-draft.use-case';
+import { CreateGuestBookingDraftUseCase } from './use-cases/create-guest-booking-draft.use-case';
 import { ListMyBookingsUseCase } from './use-cases/list-my-bookings.use-case';
+import { ListTenantBookingsUseCase } from './use-cases/list-tenant-bookings.use-case';
+import { ListTenantProfessionalBookingsUseCase } from './use-cases/list-tenant-professional-bookings.use-case';
 
 @Module({
   imports: [
@@ -33,19 +41,27 @@ import { ListMyBookingsUseCase } from './use-cases/list-my-bookings.use-case';
   controllers: [
     BookingController,
     ClientBookingController,
+    GuestBookingController,
+    TenantBookingsController,
     UserBookingsController,
   ],
   providers: [
     BookingRepository,
     { provide: BOOKING_REPOSITORY, useClass: BookingRepository },
+    CustomerResolverService,
+    AssertCustomerBookingPolicies,
+    CreateBookingDraftForCustomerUseCase,
     CreateBookingDraftUseCase,
     ConfirmBookingUseCase,
     CancelBookingDraftUseCase,
     CreateClientBookingDraftUseCase,
+    CreateGuestBookingDraftUseCase,
     ConfirmClientBookingUseCase,
     CancelClientBookingUseCase,
     ListMyBookingsUseCase,
+    ListTenantBookingsUseCase,
+    ListTenantProfessionalBookingsUseCase,
   ],
-  exports: [BOOKING_REPOSITORY, ListMyBookingsUseCase],
+  exports: [BOOKING_REPOSITORY, ListMyBookingsUseCase, CustomerResolverService],
 })
 export class BookingModule {}

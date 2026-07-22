@@ -2,9 +2,12 @@ import { DataSource } from 'typeorm';
 import {
   applyRevenueChangePercent,
   fetchBookingTotals,
+  fetchCustomerCounts,
   fetchMonthlyBreakdown,
   fetchProfessionalBreakdown,
+  fetchTopServices,
 } from 'src/modules/report/utils/report-query.utils';
+import { REVENUE_BOOKING_STATUS } from 'src/modules/report/domain/report-booking-status.policy';
 
 describe('report-query.utils', () => {
   const tenantId = 'tenant-1';
@@ -17,7 +20,7 @@ describe('report-query.utils', () => {
   });
 
   describe('fetchBookingTotals', () => {
-    it('mapeia totais da query', async () => {
+    it('usa starts_at e status de receita centralizado', async () => {
       dataSource.query.mockResolvedValue([
         {
           revenue: '1500.50',
@@ -39,9 +42,15 @@ describe('report-query.utils', () => {
         cancelledBookings: 2,
       });
       expect(dataSource.query).toHaveBeenCalledWith(
-        expect.stringContaining('FROM bookings b'),
-        expect.arrayContaining([tenantId, start, end]),
+        expect.stringContaining('b.starts_at BETWEEN'),
+        expect.arrayContaining([
+          tenantId,
+          start,
+          end,
+          REVENUE_BOOKING_STATUS,
+        ]),
       );
+      expect(dataSource.query.mock.calls[0][0]).not.toContain('createdAt');
     });
 
     it('retorna zero quando query não retorna linhas', async () => {
@@ -59,6 +68,59 @@ describe('report-query.utils', () => {
         confirmedBookings: 0,
         cancelledBookings: 0,
       });
+    });
+  });
+
+  describe('fetchTopServices', () => {
+    it('mapeia top 5 serviços ordenados por quantidade', async () => {
+      dataSource.query.mockResolvedValue([
+        {
+          service_id: 's1',
+          service_name: 'Corte',
+          quantity: '12',
+          revenue: '600',
+        },
+      ]);
+
+      const result = await fetchTopServices(
+        dataSource as unknown as DataSource,
+        tenantId,
+        start,
+        end,
+        5,
+      );
+
+      expect(result).toEqual([
+        {
+          serviceId: 's1',
+          serviceName: 'Corte',
+          quantity: 12,
+          revenue: 600,
+        },
+      ]);
+      expect(dataSource.query).toHaveBeenCalledWith(
+        expect.stringContaining('ORDER BY quantity DESC'),
+        expect.arrayContaining([tenantId, start, end, REVENUE_BOOKING_STATUS, 5]),
+      );
+    });
+  });
+
+  describe('fetchCustomerCounts', () => {
+    it('retorna novos e recorrentes', async () => {
+      dataSource.query.mockResolvedValue([
+        { new_customers: '4', returning_customers: '2' },
+      ]);
+
+      const result = await fetchCustomerCounts(
+        dataSource as unknown as DataSource,
+        tenantId,
+        start,
+        end,
+      );
+
+      expect(result).toEqual({ newCustomers: 4, returningCustomers: 2 });
+      expect(dataSource.query.mock.calls[0][0]).toContain('guest:');
+      expect(dataSource.query.mock.calls[0][0]).toContain('user:');
     });
   });
 
@@ -98,7 +160,7 @@ describe('report-query.utils', () => {
   });
 
   describe('fetchMonthlyBreakdown', () => {
-    it('preenche meses sem dados e calcula variação', async () => {
+    it('preenche buckets vazios e usa starts_at', async () => {
       dataSource.query.mockResolvedValue([
         {
           year: '2026',
@@ -106,13 +168,6 @@ describe('report-query.utils', () => {
           revenue: '200',
           confirmed_bookings: '4',
           cancelled_bookings: '1',
-        },
-        {
-          year: '2026',
-          month: '6',
-          revenue: '250',
-          confirmed_bookings: '5',
-          cancelled_bookings: '0',
         },
       ]);
 
@@ -125,26 +180,24 @@ describe('report-query.utils', () => {
         [
           { year: 2026, month: 4 },
           { year: 2026, month: 5 },
-          { year: 2026, month: 6 },
         ],
       );
 
-      expect(result).toHaveLength(3);
+      expect(dataSource.query.mock.calls[0][0]).toContain('b.starts_at');
       expect(result[0].revenue).toBe(0);
       expect(result[1].revenue).toBe(200);
-      expect(result[2].revenueChangePercent).toBe(25);
     });
   });
 
   describe('fetchProfessionalBreakdown', () => {
-    it('mapeia profissionais da query', async () => {
+    it('inclui ticket médio e taxa de cancelamento', async () => {
       dataSource.query.mockResolvedValue([
         {
           tenant_professional_id: 'tp-1',
           professional_name: 'João',
-          revenue: '800',
-          confirmed_bookings: '20',
-          cancelled_bookings: '1',
+          revenue: '1000',
+          confirmed_bookings: '10',
+          cancelled_bookings: '2',
         },
       ]);
 
@@ -155,15 +208,15 @@ describe('report-query.utils', () => {
         end,
       );
 
-      expect(result).toEqual([
-        {
-          tenantProfessionalId: 'tp-1',
-          professionalName: 'João',
-          revenue: 800,
-          confirmedBookings: 20,
-          cancelledBookings: 1,
-        },
-      ]);
+      expect(result[0]).toMatchObject({
+        tenantProfessionalId: 'tp-1',
+        professionalName: 'João',
+        revenue: 1000,
+        confirmedBookings: 10,
+        cancelledBookings: 2,
+        averageTicket: 100,
+        cancellationRate: 16.67,
+      });
     });
   });
 });
