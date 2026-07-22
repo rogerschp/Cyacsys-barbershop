@@ -1,7 +1,9 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsEnum,
+  IsInt,
   IsNumber,
   IsObject,
   IsOptional,
@@ -114,4 +116,24 @@ export class UpdateTenantDto {
   @Min(-180)
   @Max(180)
   longitude?: number | null;
+
+  @ApiPropertyOptional({
+    description:
+      'Permite que o cliente cancele agendamentos CONFIRMED (com antecedência).',
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  clientCanCancelConfirmed?: boolean;
+
+  @ApiPropertyOptional({
+    example: 60,
+    description:
+      'Antecedência mínima em minutos antes de startsAt para cancelar CONFIRMED (0–43200). Presets comuns no front: 60, 120, 720, 1440.',
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(43200)
+  clientCancelConfirmedMinLeadMinutes?: number;
 }

@@ -92,10 +92,38 @@ describe('CancelBookingDraftUseCase', () => {
     expect(bookingRepository.updateStatus).not.toHaveBeenCalled();
   });
 
-  it('lança quando não é rascunho', async () => {
+  it('cancela CONFIRMED sem exigir settings do cliente', async () => {
     bookingRepository.findByIdForTenantProfessional.mockResolvedValue({
       ...draftBooking,
       status: BookingStatus.CONFIRMED,
+    });
+    bookingRepository.updateStatus.mockResolvedValue({
+      ...draftBooking,
+      status: BookingStatus.CANCELLED,
+    });
+
+    const result = await useCase.run(
+      tenantId,
+      tenantProfessionalId,
+      bookingId,
+      userId,
+      TenantUserRole.ADMIN,
+    );
+
+    expect(bookingRepository.updateStatus).toHaveBeenCalledWith(
+      bookingId,
+      tenantId,
+      tenantProfessionalId,
+      BookingStatus.CONFIRMED,
+      BookingStatus.CANCELLED,
+    );
+    expect(result.status).toBe(BookingStatus.CANCELLED);
+  });
+
+  it('lança quando já está CANCELLED', async () => {
+    bookingRepository.findByIdForTenantProfessional.mockResolvedValue({
+      ...draftBooking,
+      status: BookingStatus.CANCELLED,
     });
     await expect(
       useCase.run(

@@ -115,7 +115,11 @@ export class BookingController {
 
   @Patch(':bookingId/cancel')
   @TenantRoles(...BOOKING_ROLES)
-  @ApiOperation({ summary: 'Cancela um rascunho e libera o horário' })
+  @ApiOperation({
+    summary: 'Cancela rascunho ou confirmado e libera o horário (ops)',
+    description:
+      'OWNER/ADMIN/STAFF/BARBER (com escopo de agenda). Sem trava de antecedência do cliente.',
+  })
   @ApiParam({ name: 'tenantId' })
   @ApiParam({ name: 'tenantProfessionalId' })
   @ApiParam({ name: 'bookingId' })

@@ -48,7 +48,7 @@ export async function fetchBookingTotals(
     FROM bookings b
     JOIN services s ON b.service_id = s.id
     WHERE b.tenant_id = $1
-      AND b.created_at BETWEEN $2 AND $3
+      AND b."createdAt" BETWEEN $2 AND $3
     `,
     [tenantId, start, end, BookingStatus.CONFIRMED, BookingStatus.CANCELLED],
   );
@@ -71,15 +71,15 @@ export async function fetchMonthlyBreakdown(
   const rows: RawMonthlyRow[] = await dataSource.query(
     `
     SELECT
-      EXTRACT(YEAR FROM date_trunc('month', timezone($4, b.created_at)))::int AS year,
-      EXTRACT(MONTH FROM date_trunc('month', timezone($4, b.created_at)))::int AS month,
+      EXTRACT(YEAR FROM date_trunc('month', timezone($4, b."createdAt")))::int AS year,
+      EXTRACT(MONTH FROM date_trunc('month', timezone($4, b."createdAt")))::int AS month,
       COALESCE(SUM(CASE WHEN b.status = $5 THEN s.price::numeric ELSE 0 END), 0) AS revenue,
       COUNT(CASE WHEN b.status = $5 THEN 1 END)::int AS confirmed_bookings,
       COUNT(CASE WHEN b.status = $6 THEN 1 END)::int AS cancelled_bookings
     FROM bookings b
     JOIN services s ON b.service_id = s.id
     WHERE b.tenant_id = $1
-      AND b.created_at BETWEEN $2 AND $3
+      AND b."createdAt" BETWEEN $2 AND $3
     GROUP BY year, month
     ORDER BY year, month
     `,
@@ -154,7 +154,7 @@ export async function fetchProfessionalBreakdown(
     JOIN professional_profiles pp ON tp.professional_profile_id = pp.id
     JOIN services s ON b.service_id = s.id
     WHERE b.tenant_id = $1
-      AND b.created_at BETWEEN $2 AND $3
+      AND b."createdAt" BETWEEN $2 AND $3
     GROUP BY tp.id, pp.display_name
     ORDER BY revenue DESC
     `,

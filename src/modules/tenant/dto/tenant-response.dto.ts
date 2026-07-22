@@ -65,4 +65,19 @@ export class TenantResponseDto {
 
   @ApiPropertyOptional({ nullable: true, example: -46.6333094 })
   longitude?: number | null;
+
+  @ApiProperty({
+    description:
+      'Se true, o cliente pode cancelar CONFIRMED respeitando a antecedência.',
+    default: false,
+  })
+  clientCanCancelConfirmed: boolean;
+
+  @ApiProperty({
+    description:
+      'Minutos de antecedência exigidos para o cliente cancelar CONFIRMED.',
+    example: 60,
+    default: 60,
+  })
+  clientCancelConfirmedMinLeadMinutes: number;
 }

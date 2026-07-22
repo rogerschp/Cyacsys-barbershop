@@ -8,7 +8,7 @@ export class AddBookingsReportIndexes1782000000002 implements MigrationInterface
       `CREATE INDEX IF NOT EXISTS "IDX_bookings_status" ON "bookings" ("status")`,
     );
     await queryRunner.query(
-      `CREATE INDEX IF NOT EXISTS "IDX_bookings_created_at" ON "bookings" ("created_at")`,
+      `CREATE INDEX IF NOT EXISTS "IDX_bookings_created_at" ON "bookings" ("createdAt")`,
     );
   }
 
