@@ -8,6 +8,7 @@ import { DeleteTenantByIdUseCase } from 'src/modules/tenant/use-cases/delete-ten
 import { FindTenantByIdUseCase } from 'src/modules/tenant/use-cases/find-tenant-by-id.use-case';
 import { FindTenantBySlugUseCase } from 'src/modules/tenant/use-cases/find-tenant-by-slug.use-case';
 import { UpdateTenantByIdUseCase } from 'src/modules/tenant/use-cases/update-tenant-by-id.use-case';
+import { UpdateTenantLogoUseCase } from 'src/modules/tenant/use-cases/update-tenant-logo.use-case';
 import { ValidateSlugUseCase } from 'src/modules/tenant/use-cases/validate-slug.use-case';
 import { TenantEntity } from 'src/modules/tenant/entities/tenant.entity';
 import { TenantStatus } from 'src/modules/tenant/entities/tenant-status.enum';
@@ -62,6 +63,7 @@ describe('TenantController (HTTP)', () => {
           provide: CreateTenantWithOwnerUseCase,
           useValue: mockCreateWithOwner,
         },
+        { provide: UpdateTenantLogoUseCase, useValue: { run: jest.fn() } },
       ],
     })
       .overrideGuard(BearerAuthGuard)
@@ -89,7 +91,7 @@ describe('TenantController (HTTP)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    await app?.close();
   });
 
   beforeEach(() => {

@@ -140,10 +140,15 @@ describe('TenantRepository', () => {
       const dto = { name: 'Nome Atualizado' };
       const updated = { ...mockTenant, ...dto };
       typeOrmRepo.save.mockResolvedValue(updated);
+      typeOrmRepo.findOne.mockResolvedValue(updated);
       const result = await repository.update('uuid-123', dto);
       expect(typeOrmRepo.save).toHaveBeenCalledWith({
         id: 'uuid-123',
         ...dto,
+      });
+      expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'uuid-123' },
+        relations: ['address', 'logoMedia'],
       });
       expect(result).toEqual(updated);
     });
