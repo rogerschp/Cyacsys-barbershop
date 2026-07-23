@@ -1,6 +1,6 @@
 # Cyacsys API — Beauty & wellness professionals (multi-tenant)
 
-REST API for multi-tenant beauty and wellness businesses: tenants, members, **global professional profiles**, per-establishment links, services, **contextual scheduling**, **bookings**, **reviews**, **subscription plans**, **reports**, **public search**, **tenant theming**, and **Firebase + JWT** authentication.
+REST API for multi-tenant beauty and wellness businesses: tenants, members, **global professional profiles**, per-establishment links, services, **contextual scheduling**, **bookings**, **reviews**, **media upload (Cloudinary)**, **subscription plans**, **reports**, **public search**, **tenant theming**, and **Firebase + JWT** authentication.
 
 Built with [NestJS](https://nestjs.com/), [TypeORM](https://typeorm.io/), and PostgreSQL.
 
@@ -41,6 +41,7 @@ Built with [NestJS](https://nestjs.com/), [TypeORM](https://typeorm.io/), and Po
 | **Services**             | Catalog per tenant                                                                                                                                         |
 | **Availability**         | Working hours, time off, blocks, offered services, **bootstrap week**, slots (`tenantProfessionalId`); `available-slots` excludes DRAFT/CONFIRMED bookings |
 | **Booking**              | Draft / confirm driven by `bookingMode`; linked client user; responses as `BookingResponseDto`                                                             |
+| **Media**                | Hexagonal upload/storage (Cloudinary); paths via `MEDIA_ENV` (`dev/` vs `prod/`); never accept `storagePath` from clients                                  |
 | **API docs**             | Swagger/OpenAPI at `/api`                                                                                                                                  |
 | **Quality**              | DTOs with `class-validator`; TypeORM migrations; unit and e2e tests; CI (lint, test, typecheck, build)                                                     |
 
@@ -97,12 +98,30 @@ Tenant
  ├── Services
  ├── Reviews (tenant target)
  ├── Reports (aggregated from bookings)
- └── Theme (JSONB, optional)
+ ├── Theme (JSONB, optional)
+ └── Media (optional refs; `avatarUrl` string still used)
+
+Media (global table)
+ └── Cloudinary (or future S3) via IStorageProvider
 ```
 
 - Any user can be a client and a professional; there is **no** `isProfessional` flag.
 - Frontend: `GET /users/me` → treat as professional when `professionalProfile !== null`.
 - New tenants receive an **ACTIVE FREE** subscription automatically.
+
+---
+
+## Documentation
+
+Portuguese docs live under [`docs/`](docs/README.md). Start here:
+
+| Audience | Doc |
+|----------|-----|
+| Front / AI handoff | [docs/FRONTEND_API_GUIDE.md](docs/FRONTEND_API_GUIDE.md) |
+| HTTP contracts | [docs/FRONTEND_INTEGRACAO.md](docs/FRONTEND_INTEGRACAO.md) |
+| Backend | [docs/DESENVOLVEDORES.md](docs/DESENVOLVEDORES.md) |
+| Media module | [docs/media.md](docs/media.md) |
+| Product | [docs/PRODUTO_NEGOCIOS.md](docs/PRODUTO_NEGOCIOS.md) |
 
 ---
 
@@ -113,6 +132,7 @@ Tenant
 | NestJS             | HTTP, modules, guards, scheduled jobs |
 | TypeORM            | ORM, PostgreSQL migrations            |
 | Firebase Admin     | Authentication                        |
+| Cloudinary         | Media upload / CDN (`STORAGE_PROVIDER`) |
 | Swagger            | OpenAPI at `/api`                     |
 | Jest + Supertest   | Unit and e2e tests                    |
 | Luxon              | Tenant timezone handling              |
@@ -131,10 +151,12 @@ git clone <repository-url>
 cd cyacsys-barbershop
 yarn install
 cp .envExample .env
-# Set DB_*, FIREBASE_*, and optionally CORS_ORIGINS
+# Set DB_*, FIREBASE_*, MEDIA_*/CLOUDINARY_*, and optionally CORS_ORIGINS
 yarn migration:run
 yarn start:dev
 ```
+
+Prefer a **separate Firebase project** for local vs production when sharing Cloudinary/DB setups would otherwise mix auth identities across environments.
 
 ### Docker (API + PostgreSQL 16)
 
@@ -148,9 +170,12 @@ docker compose up --build
 | Variable         | Purpose                                                 |
 | ---------------- | ------------------------------------------------------- |
 | `DB_*`           | PostgreSQL: `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_DATABASE` |
-| `DB_SSL`         | `true` / `require` para Neon/Render; `false` no Docker local              |
-| `DATABASE_URL`   | Opcional — connection string completa (Neon)                              |
-| `FIREBASE_*`     | Firebase Admin credentials                              |
+| `DB_SSL`         | `true` / `require` for Neon/Render; `false` for local Docker |
+| `DATABASE_URL`   | Optional full connection string (Neon)                  |
+| `FIREBASE_*` / `API_KEY` | Firebase Admin + client API key (exact names; see `.envExample`) |
+| `STORAGE_PROVIDER` | `cloudinary` (default) or `aws` when S3 is implemented |
+| `MEDIA_ENV`      | `dev` (local) or `prod` (Render) — folder root in Cloudinary |
+| `CLOUDINARY_*`   | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` |
 | `CORS_ORIGINS`   | Comma-separated allowed browser origins                 |
 | `PORT`           | HTTP port (default `3000`)                              |
 | `NODE_ENV`       | `production` hides Swagger unless `EXPOSE_SWAGGER=true` |
@@ -191,6 +216,7 @@ If `AvailabilityUseTenantProfessional` fails on a missing `FK_working_hours_barb
 | `1782000000000` | Tenant segment, avatar, coordinates                            |
 | `1782000000001` | Tenant theme (JSONB)                                           |
 | `1782000000002` | Booking indexes for reports                                    |
+| `1787000000000` | Media table (Cloudinary metadata + soft delete)                |
 
 ---
 
@@ -240,11 +266,11 @@ yarn test:search       # search module only
 CI runs lint, unit tests, TypeScript check, and build on push/PR to `master`, `develop`, and feature branches.
 
 ```bash
-npx jest --config jest.config.ts --testPathPattern="professional-profile|tenant-professional|subscription|report|search|tenant-theme"
+npx jest --config jest.config.ts --testPathPattern="professional-profile|tenant-professional|subscription|report|search|tenant-theme|media"
 npx jest --config jest-e2e.json --testPathPattern="booking|availability|report|search|tenant-theme"
 ```
 
-E2e specs live under `src/test/`: `tenant`, `user`, `service`, `professional-profile`, `tenant-professional`, `availability`, `booking`, `report`, `search`, `tenant-theme`.
+E2e specs live under `src/test/`: `tenant`, `user`, `service`, `professional-profile`, `tenant-professional`, `availability`, `booking`, `report`, `search`, `tenant-theme`. Media has unit coverage under `src/test/unit/media/`.
 
 ---
 
@@ -253,12 +279,13 @@ E2e specs live under `src/test/`: `tenant`, `user`, `service`, `professional-pro
 ```
 src/
 ├── common/            # guards, decorators, filters, exceptions
-├── config/
+├── config/            # TypeORM + media.config (MEDIA_ENV)
 ├── database/migrations/
 ├── modules/
 │   ├── auth/
 │   ├── availability/
 │   ├── booking/
+│   ├── media/         # upload + storage (Cloudinary)
 │   ├── professional-profile/
 │   ├── tenant-professional/
 │   ├── firebase/
@@ -280,6 +307,9 @@ docs/                  # Per-module documentation (PT)
 
 | Endpoint                                                  | Notes                                                                                  |
 | --------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `POST /media/upload`                                      | Multipart upload; path from `mediaType` + context; see [docs/media.md](docs/media.md)  |
+| `POST /media` · `GET/DELETE /media/:id`                   | Register existing asset / fetch / soft-delete                                          |
+| `PATCH /users/me/deactivate`                              | Self-service: `INACTIVE` + Firebase disable (not soft-delete)                          |
 | `PATCH /tenants/:id`                                      | Update tenant; includes `segment`, `avatarUrl`, `latitude`/`longitude` (pair required) |
 | `POST .../working-hours/bootstrap-week`                   | Configure full week with `closedDays` and `periods`                                    |
 | `GET .../available-slots`                                 | Returns free slots; excludes DRAFT/CONFIRMED bookings                                  |

@@ -73,13 +73,7 @@ export async function fetchBookingTotals(
     WHERE b.tenant_id = $1
       AND b.starts_at BETWEEN $2 AND $3
     `,
-    [
-      tenantId,
-      start,
-      end,
-      REVENUE_BOOKING_STATUS,
-      CANCELLED_BOOKING_STATUS,
-    ],
+    [tenantId, start, end, REVENUE_BOOKING_STATUS, CANCELLED_BOOKING_STATUS],
   );
 
   return {
@@ -195,13 +189,7 @@ export async function fetchProfessionalBreakdownRaw(
     GROUP BY tp.id, pp.display_name
     ORDER BY revenue DESC
     `,
-    [
-      tenantId,
-      start,
-      end,
-      REVENUE_BOOKING_STATUS,
-      CANCELLED_BOOKING_STATUS,
-    ],
+    [tenantId, start, end, REVENUE_BOOKING_STATUS, CANCELLED_BOOKING_STATUS],
   );
 
   return rows.map((row) => ({

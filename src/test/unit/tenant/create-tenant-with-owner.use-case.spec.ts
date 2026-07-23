@@ -29,7 +29,7 @@ describe('CreateTenantWithOwnerUseCase', () => {
     socialMedia: null,
     cnpj: null,
     segment: null,
-    avatarUrl: null,
+    logoMediaId: null,
     latitude: null,
     longitude: null,
     theme: null,

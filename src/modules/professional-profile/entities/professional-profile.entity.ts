@@ -7,10 +7,12 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   Index,
+  ManyToOne,
   OneToOne,
   JoinColumn,
 } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
+import { MediaEntity } from '../../media/entities/media.entity';
 import { ProfessionalType } from './professional-type.enum';
 import { BookingMode } from './booking-mode.enum';
 
@@ -43,12 +45,16 @@ export class ProfessionalProfileEntity {
   })
   bio: string | null;
 
-  @Column({ name: 'avatar_url' })
+  @Column({ name: 'avatar_media_id', type: 'uuid', nullable: true })
   @ApiProperty({
-    example: 'https://example.com/avatar.jpg',
-    description: 'URL do avatar',
+    nullable: true,
+    description: 'FK para Media (AVATAR do profissional)',
   })
-  avatarUrl: string;
+  avatarMediaId: string | null;
+
+  @ManyToOne(() => MediaEntity, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'avatar_media_id' })
+  avatarMedia?: MediaEntity | null;
 
   @Column({
     name: 'professional_type',

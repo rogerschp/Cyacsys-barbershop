@@ -17,6 +17,7 @@ describe('UserMapper', () => {
     telephone: '5511999999999',
     addressId: null,
     address: null,
+    avatarMediaId: null,
     createdAt: new Date('2021-01-01'),
     updatedAt: new Date('2021-01-01'),
   };
@@ -34,7 +35,8 @@ describe('UserMapper', () => {
         userId: baseUser.id,
         displayName: 'João Pro',
         bio: 'Bio',
-        avatarUrl: 'https://example.com/a.jpg',
+        avatarMediaId: null,
+        avatarMedia: null,
         professionalType: ProfessionalType.BARBER,
         bookingMode: BookingMode.DIRECT_BOOKING,
         whatsappNumber: '5511999999999',

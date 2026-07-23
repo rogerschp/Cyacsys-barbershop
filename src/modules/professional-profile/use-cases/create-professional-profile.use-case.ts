@@ -57,7 +57,7 @@ export class CreateProfessionalProfileUseCase {
       userId,
       displayName: dto.displayName.trim(),
       bio: dto.bio ?? null,
-      avatarUrl: dto.avatarUrl,
+      avatarMediaId: null,
       professionalType: dto.professionalType,
       bookingMode: dto.bookingMode ?? BookingMode.DIRECT_BOOKING,
       whatsappNumber,

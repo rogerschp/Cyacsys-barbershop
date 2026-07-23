@@ -21,7 +21,10 @@ import {
 } from '../interfaces/booking-repository.interface';
 import { assertBookingModeAllowsDraft } from '../utils/assert-booking-mode-allows-draft';
 import { BOOKING_MIN_LEAD_MINUTES } from '../booking-lead.constants';
-import { CustomerIdentity, toBookingIdentityFields } from '../domain/customer-identity';
+import {
+  CustomerIdentity,
+  toBookingIdentityFields,
+} from '../domain/customer-identity';
 import { AssertCustomerBookingPolicies } from '../domain/assert-customer-booking-policies';
 
 @Injectable()

@@ -7,6 +7,7 @@ import { UpdateProfessionalProfileUseCase } from 'src/modules/professional-profi
 import { ActivateProfessionalProfileUseCase } from 'src/modules/professional-profile/use-cases/activate-professional-profile.use-case';
 import { DeactivateProfessionalProfileUseCase } from 'src/modules/professional-profile/use-cases/deactivate-professional-profile.use-case';
 import { GetProfessionalProfileByUserUseCase } from 'src/modules/professional-profile/use-cases/get-professional-profile-by-user.use-case';
+import { UpdateProfessionalProfileAvatarUseCase } from 'src/modules/professional-profile/use-cases/update-professional-profile-avatar.use-case';
 import { BearerAuthGuard } from 'src/modules/auth/guards/bearer-auth.guard';
 import { ProfessionalType } from 'src/modules/professional-profile/entities/professional-type.enum';
 import { BookingMode } from 'src/modules/professional-profile/entities/booking-mode.enum';
@@ -25,7 +26,8 @@ describe('ProfessionalProfileController (HTTP)', () => {
     userId: 'user-uuid-123',
     displayName: 'João Silva',
     bio: null,
-    avatarUrl: 'https://example.com/avatar.jpg',
+    avatarMediaId: null,
+    avatarMedia: null,
     professionalType: ProfessionalType.BARBER,
     bookingMode: BookingMode.DIRECT_BOOKING,
     whatsappNumber: null,
@@ -57,6 +59,10 @@ describe('ProfessionalProfileController (HTTP)', () => {
           useValue: mockActivate,
         },
         { provide: GetProfessionalProfileByUserUseCase, useValue: mockGet },
+        {
+          provide: UpdateProfessionalProfileAvatarUseCase,
+          useValue: { run: jest.fn() },
+        },
       ],
     })
       .overrideGuard(BearerAuthGuard)
@@ -94,7 +100,6 @@ describe('ProfessionalProfileController (HTTP)', () => {
       .post('/users/me/professional-profile')
       .send({
         displayName: 'João Silva',
-        avatarUrl: 'https://example.com/avatar.jpg',
         professionalType: ProfessionalType.BARBER,
         experienceYears: 5,
       })

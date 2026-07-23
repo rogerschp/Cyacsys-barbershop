@@ -15,6 +15,7 @@ import {
 import { Role } from '../../../common/enums/role.enum';
 import { UserStatus } from './user-status.enum';
 import { AddressEntity } from 'src/modules/address/entities/address.entity';
+import { MediaEntity } from '../../media/entities/media.entity';
 import { ProfessionalProfileEntity } from '../../professional-profile/entities/professional-profile.entity';
 @Entity('users')
 export class UserEntity {
@@ -66,6 +67,17 @@ export class UserEntity {
   @ManyToOne(() => AddressEntity, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'address_id' })
   address: AddressEntity | null;
+
+  @Column({ name: 'avatar_media_id', type: 'uuid', nullable: true })
+  @ApiProperty({
+    nullable: true,
+    description: 'FK para Media (USER_AVATAR do cliente)',
+  })
+  avatarMediaId: string | null;
+
+  @ManyToOne(() => MediaEntity, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'avatar_media_id' })
+  avatarMedia?: MediaEntity | null;
 
   @OneToOne(() => ProfessionalProfileEntity, (profile) => profile.user)
   professionalProfile?: ProfessionalProfileEntity | null;

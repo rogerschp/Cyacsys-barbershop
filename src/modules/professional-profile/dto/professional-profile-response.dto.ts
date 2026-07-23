@@ -18,8 +18,19 @@ export class ProfessionalProfileResponseDto {
   })
   bio: string | null;
 
-  @ApiProperty({ example: 'https://example.com/avatar.jpg' })
-  avatarUrl: string;
+  @ApiProperty({
+    nullable: true,
+    description: 'FK da mídia AVATAR do profissional',
+  })
+  avatarMediaId: string | null;
+
+  @ApiProperty({
+    nullable: true,
+    example:
+      'https://res.cloudinary.com/demo/image/upload/v1/professionals/x/avatar',
+    description: 'URL resolvida a partir de avatarMediaId',
+  })
+  avatarUrl: string | null;
 
   @ApiProperty({ enum: ProfessionalType, example: ProfessionalType.BARBER })
   professionalType: ProfessionalType;

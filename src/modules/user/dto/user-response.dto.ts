@@ -19,6 +19,20 @@ export class UserResponseDto {
   role: Role;
   @ApiProperty({ example: '5511932457854' })
   telephone: string;
+
+  @ApiProperty({
+    nullable: true,
+    description: 'FK da mídia USER_AVATAR do cliente',
+  })
+  avatarMediaId: string | null;
+
+  @ApiProperty({
+    nullable: true,
+    description: 'URL resolvida a partir de avatarMediaId',
+    example: 'https://res.cloudinary.com/demo/image/upload/v1/users/x/avatar',
+  })
+  avatarUrl: string | null;
+
   @ApiProperty({ type: AddressResponseDto, nullable: true })
   address: AddressResponseDto | null;
 

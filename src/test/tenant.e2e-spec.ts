@@ -14,6 +14,7 @@ import { CreateTenantUseCase } from '../modules/tenant/use-cases/create-tenant.u
 import { UpdateTenantByIdUseCase } from '../modules/tenant/use-cases/update-tenant-by-id.use-case';
 import { DeleteTenantByIdUseCase } from '../modules/tenant/use-cases/delete-tenant-by-id.use-case';
 import { CreateTenantWithOwnerUseCase } from '../modules/tenant/use-cases/create-tenant-with-owner.use-case';
+import { UpdateTenantLogoUseCase } from '../modules/tenant/use-cases/update-tenant-logo.use-case';
 import { BearerAuthGuard } from '../modules/auth/guards/bearer-auth.guard';
 import { TenantInterceptor } from '../common/interceptors/tenant.interceptor';
 import { TenantMembershipGuard } from '../common/guards/tenant-membership.guard';
@@ -42,7 +43,7 @@ describe('TenantController (e2e)', () => {
     socialMedia: null,
     cnpj: null,
     segment: null,
-    avatarUrl: null,
+    logoMediaId: null,
     latitude: null,
     longitude: null,
     theme: null,
@@ -64,6 +65,7 @@ describe('TenantController (e2e)', () => {
         { provide: UpdateTenantByIdUseCase, useValue: { run: jest.fn() } },
         { provide: DeleteTenantByIdUseCase, useValue: { run: jest.fn() } },
         { provide: CreateTenantWithOwnerUseCase, useValue: { run: jest.fn() } },
+        { provide: UpdateTenantLogoUseCase, useValue: { run: jest.fn() } },
       ],
     })
       .overrideGuard(BearerAuthGuard)

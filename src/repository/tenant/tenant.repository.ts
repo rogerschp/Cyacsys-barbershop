@@ -33,7 +33,10 @@ export class TenantRepository implements ITenantRepository {
   }
 
   findBySlug(slug: string) {
-    return this.repo.findOne({ where: { slug }, relations: ['address'] });
+    return this.repo.findOne({
+      where: { slug },
+      relations: ['address', 'logoMedia'],
+    });
   }
 
   existsBySlug(slug: string) {
@@ -45,11 +48,19 @@ export class TenantRepository implements ITenantRepository {
   }
 
   findById(id: string) {
-    return this.repo.findOne({ where: { id }, relations: ['address'] });
+    return this.repo.findOne({
+      where: { id },
+      relations: ['address', 'logoMedia'],
+    });
   }
 
-  update(id: string, dto: TenantUpdateData) {
-    return this.repo.save({ id, ...dto });
+  async update(id: string, dto: TenantUpdateData) {
+    await this.repo.save({ id, ...dto });
+    const updated = await this.findById(id);
+    if (!updated) {
+      throw new Error(`Tenant ${id} not found after update`);
+    }
+    return updated;
   }
 
   async updateTheme(id: string, theme: TenantThemeData | null): Promise<void> {

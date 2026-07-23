@@ -23,7 +23,9 @@ import { CreateProfessionalProfileUseCase } from './use-cases/create-professiona
 import { DeactivateProfessionalProfileUseCase } from './use-cases/deactivate-professional-profile.use-case';
 import { GetProfessionalProfileByUserUseCase } from './use-cases/get-professional-profile-by-user.use-case';
 import { UpdateProfessionalProfileUseCase } from './use-cases/update-professional-profile.use-case';
+import { UpdateProfessionalProfileAvatarUseCase } from './use-cases/update-professional-profile-avatar.use-case';
 import { ProfessionalProfileMapper } from './mappers/professional-profile.mapper';
+import { LinkMediaDto } from '../media/dto/link-media.dto';
 
 interface RequestWithUser {
   user?: {
@@ -44,6 +46,7 @@ export class ProfessionalProfileController {
     private readonly deactivateProfessionalProfileUseCase: DeactivateProfessionalProfileUseCase,
     private readonly activateProfessionalProfileUseCase: ActivateProfessionalProfileUseCase,
     private readonly getProfessionalProfileByUserUseCase: GetProfessionalProfileByUserUseCase,
+    private readonly updateProfessionalProfileAvatarUseCase: UpdateProfessionalProfileAvatarUseCase,
   ) {}
 
   @Post()
@@ -120,6 +123,24 @@ export class ProfessionalProfileController {
       dto,
     );
     return ProfessionalProfileMapper.toResponse(profile);
+  }
+
+  @Patch('avatar')
+  @ApiOperation({
+    summary: 'Vincula avatar profissional (AVATAR) ao perfil',
+    description:
+      'Valida posse: media.createdByUserId deve ser o usuário logado. Use POST /media/upload com mediaType=AVATAR + professionalId antes.',
+  })
+  @ApiBody({ type: LinkMediaDto })
+  @ApiResponse({ status: 200, type: ProfessionalProfileResponseDto })
+  @ApiResponse({
+    status: 403,
+    description: 'Media does not belong to current user.',
+  })
+  @ApiResponse({ status: 404, description: 'Media ou perfil não encontrado' })
+  async updateAvatar(@Body() dto: LinkMediaDto, @Req() req: RequestWithUser) {
+    const userId = req.user?.dbUser?.id ?? '';
+    return this.updateProfessionalProfileAvatarUseCase.run(userId, dto.mediaId);
   }
 
   @Patch('deactivate')

@@ -38,7 +38,8 @@ describe('ListPublicTenantProfessionalsUseCase', () => {
         professionalProfile: {
           displayName: 'Ana',
           bio: null,
-          avatarUrl: 'https://x/a.png',
+          avatarMediaId: null,
+          avatarMedia: null,
           professionalType: ProfessionalType.BARBER,
           bookingMode: BookingMode.DIRECT_BOOKING,
           whatsappNumber: '5511999999999',

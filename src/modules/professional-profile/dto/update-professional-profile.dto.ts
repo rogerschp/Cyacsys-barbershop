@@ -5,7 +5,6 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUrl,
   MaxLength,
   Min,
 } from 'class-validator';
@@ -26,15 +25,6 @@ export class UpdateProfessionalProfileDto {
   @MaxLength(MAX_DISPLAY_NAME)
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   displayName?: string;
-
-  @ApiProperty({
-    required: false,
-    example: 'https://example.com/avatar.jpg',
-    description: 'URL do avatar (deve ser URL válida)',
-  })
-  @IsOptional()
-  @IsUrl()
-  avatarUrl?: string;
 
   @ApiProperty({ required: false, enum: ProfessionalType })
   @IsOptional()

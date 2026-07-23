@@ -43,12 +43,7 @@ describe('report-query.utils', () => {
       });
       expect(dataSource.query).toHaveBeenCalledWith(
         expect.stringContaining('b.starts_at BETWEEN'),
-        expect.arrayContaining([
-          tenantId,
-          start,
-          end,
-          REVENUE_BOOKING_STATUS,
-        ]),
+        expect.arrayContaining([tenantId, start, end, REVENUE_BOOKING_STATUS]),
       );
       expect(dataSource.query.mock.calls[0][0]).not.toContain('createdAt');
     });
@@ -100,7 +95,13 @@ describe('report-query.utils', () => {
       ]);
       expect(dataSource.query).toHaveBeenCalledWith(
         expect.stringContaining('ORDER BY quantity DESC'),
-        expect.arrayContaining([tenantId, start, end, REVENUE_BOOKING_STATUS, 5]),
+        expect.arrayContaining([
+          tenantId,
+          start,
+          end,
+          REVENUE_BOOKING_STATUS,
+          5,
+        ]),
       );
     });
   });

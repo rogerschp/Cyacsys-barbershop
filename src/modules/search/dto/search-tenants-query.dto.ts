@@ -21,9 +21,7 @@ export class SearchTenantsQueryDto extends BaseSearchQueryDto {
   })
   @IsOptional()
   @IsString()
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   city?: string;
 
   @ApiPropertyOptional({

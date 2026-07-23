@@ -18,12 +18,15 @@ import { DeleteUserUseCase } from './use-cases/delete-user.use-case';
 import { DeactivateMyUserUseCase } from './use-cases/deactivate-my-user.use-case';
 import { AddressModule } from '../address/address.module';
 import { AuthModule } from '../auth/auth.module';
+import { MediaModule } from '../media/media.module';
 import { CheckUserExistsByEmailUseCase } from './use-cases/check-user-exists-by-email.use-case';
+import { UpdateUserAvatarUseCase } from './use-cases/update-user-avatar.use-case';
 @Module({
   imports: [
     TypeOrmModule.forFeature([UserEntity]),
     AddressModule,
     forwardRef(() => AuthModule),
+    MediaModule,
   ],
   controllers: [UserController],
   providers: [
@@ -42,6 +45,7 @@ import { CheckUserExistsByEmailUseCase } from './use-cases/check-user-exists-by-
     ValidateUserAccessUseCase,
     DeleteUserUseCase,
     CheckUserExistsByEmailUseCase,
+    UpdateUserAvatarUseCase,
   ],
   exports: [
     USER_REPOSITORY,

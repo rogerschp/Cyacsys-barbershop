@@ -76,6 +76,7 @@ async function bootstrap() {
     .addTag('subscriptions')
     .addTag('admin-subscriptions')
     .addTag('search')
+    .addTag('media')
     .addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
       'bearer',

@@ -12,6 +12,8 @@ export class UserMapper {
       status: user.status,
       role: user.role,
       telephone: user.telephone,
+      avatarMediaId: user.avatarMediaId ?? null,
+      avatarUrl: user.avatarMedia?.url ?? null,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       address: user.address

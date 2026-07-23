@@ -17,8 +17,8 @@ export class PublicTenantProfessionalResponseDto {
   @ApiPropertyOptional({ nullable: true })
   bio: string | null;
 
-  @ApiProperty()
-  avatarUrl: string;
+  @ApiPropertyOptional({ nullable: true })
+  avatarUrl: string | null;
 
   @ApiProperty({ enum: ProfessionalType })
   professionalType: ProfessionalType;

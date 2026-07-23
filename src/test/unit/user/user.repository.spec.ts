@@ -19,6 +19,7 @@ describe('UserRepository', () => {
     telephone: '5511999999999',
     addressId: null,
     address: null,
+    avatarMediaId: null,
     createdAt: new Date('2021-01-01'),
     updatedAt: new Date('2021-01-01'),
     deletedAt: undefined,
@@ -69,7 +70,12 @@ describe('UserRepository', () => {
       const result = await repository.findByEmail('user@email.com');
       expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
         where: { email: 'user@email.com' },
-        relations: ['address', 'professionalProfile'],
+        relations: [
+          'address',
+          'avatarMedia',
+          'professionalProfile',
+          'professionalProfile.avatarMedia',
+        ],
       });
       expect(result).toEqual(mockUser);
     });
@@ -85,7 +91,12 @@ describe('UserRepository', () => {
       const result = await repository.findById('uuid-123');
       expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
         where: { id: 'uuid-123' },
-        relations: ['address', 'professionalProfile'],
+        relations: [
+          'address',
+          'avatarMedia',
+          'professionalProfile',
+          'professionalProfile.avatarMedia',
+        ],
       });
       expect(result).toEqual(mockUser);
     });

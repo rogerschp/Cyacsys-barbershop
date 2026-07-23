@@ -63,7 +63,8 @@ export class ReportController {
   @Get('pro')
   @RequiresPlan(PlanFeature.REPORTS_INTERMEDIATE)
   @ApiOperation({
-    summary: 'Relatório PRO (janela configurável até 3 meses + breakdown mensal)',
+    summary:
+      'Relatório PRO (janela configurável até 3 meses + breakdown mensal)',
   })
   @ApiParam({ name: 'tenantId', description: 'UUID do tenant' })
   @ApiQuery({
@@ -126,11 +127,7 @@ export class ReportController {
     @Query('format') format: string,
     @Query('months') months?: string,
   ): Promise<StreamableFile> {
-    const result = await this.exportReportUseCase.run(
-      tenantId,
-      format,
-      months,
-    );
+    const result = await this.exportReportUseCase.run(tenantId, format, months);
 
     return new StreamableFile(result.buffer, {
       type: result.contentType,

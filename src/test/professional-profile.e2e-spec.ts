@@ -5,7 +5,9 @@ import { ProfessionalProfileController } from '../modules/professional-profile/p
 import { CreateProfessionalProfileUseCase } from '../modules/professional-profile/use-cases/create-professional-profile.use-case';
 import { UpdateProfessionalProfileUseCase } from '../modules/professional-profile/use-cases/update-professional-profile.use-case';
 import { DeactivateProfessionalProfileUseCase } from '../modules/professional-profile/use-cases/deactivate-professional-profile.use-case';
+import { ActivateProfessionalProfileUseCase } from '../modules/professional-profile/use-cases/activate-professional-profile.use-case';
 import { GetProfessionalProfileByUserUseCase } from '../modules/professional-profile/use-cases/get-professional-profile-by-user.use-case';
+import { UpdateProfessionalProfileAvatarUseCase } from '../modules/professional-profile/use-cases/update-professional-profile-avatar.use-case';
 import { BearerAuthGuard } from '../modules/auth/guards/bearer-auth.guard';
 import { ProfessionalType } from '../modules/professional-profile/entities/professional-type.enum';
 import { BookingMode } from '../modules/professional-profile/entities/booking-mode.enum';
@@ -26,7 +28,8 @@ describe('ProfessionalProfileController (e2e)', () => {
     userId,
     displayName: 'João Silva',
     bio: 'Especialista',
-    avatarUrl: 'https://example.com/avatar.jpg',
+    avatarMediaId: null,
+    avatarMedia: null,
     professionalType: ProfessionalType.BARBER,
     bookingMode: BookingMode.DIRECT_BOOKING,
     whatsappNumber: '5511999999999',
@@ -54,7 +57,15 @@ describe('ProfessionalProfileController (e2e)', () => {
           useValue: { run: jest.fn() },
         },
         {
+          provide: ActivateProfessionalProfileUseCase,
+          useValue: { run: jest.fn() },
+        },
+        {
           provide: GetProfessionalProfileByUserUseCase,
+          useValue: { run: jest.fn() },
+        },
+        {
+          provide: UpdateProfessionalProfileAvatarUseCase,
           useValue: { run: jest.fn() },
         },
       ],
@@ -117,7 +128,6 @@ describe('ProfessionalProfileController (e2e)', () => {
         .post('/users/me/professional-profile')
         .send({
           displayName: 'João Silva',
-          avatarUrl: 'https://example.com/avatar.jpg',
           professionalType: ProfessionalType.BARBER,
           experienceYears: 5,
           whatsappNumber: '+55 11 99999-9999',

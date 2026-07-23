@@ -99,11 +99,11 @@ describe('TenantProfessionalRepository', () => {
 
     expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
       where: { id: 'tp-uuid', tenantId: 'tenant-uuid' },
-      relations: { professionalProfile: true },
+      relations: { professionalProfile: { avatarMedia: true } },
     });
     expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
       where: { tenantId: 'tenant-uuid', professionalProfileId: 'profile-uuid' },
-      relations: { professionalProfile: true },
+      relations: { professionalProfile: { avatarMedia: true } },
     });
   });
 

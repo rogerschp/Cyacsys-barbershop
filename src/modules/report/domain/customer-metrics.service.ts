@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { CustomerCounts, fetchCustomerCounts } from '../utils/report-query.utils';
+import {
+  CustomerCounts,
+  fetchCustomerCounts,
+} from '../utils/report-query.utils';
 
 @Injectable()
 export class CustomerMetricsService {
