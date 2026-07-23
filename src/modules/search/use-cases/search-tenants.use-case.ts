@@ -144,11 +144,7 @@ export class SearchTenantsUseCase {
         'a',
         'a.id = t.address_id AND a."deletedAt" IS NULL',
       )
-      .leftJoin(
-        'media',
-        'm',
-        'm.id = t.logo_media_id AND m."deletedAt" IS NULL',
-      )
+      .leftJoin('media', 'm', 'm.id = t.logo_media_id')
       .leftJoin(
         'reviews',
         'r',
