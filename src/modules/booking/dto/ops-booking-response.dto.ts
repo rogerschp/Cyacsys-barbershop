@@ -23,6 +23,12 @@ export class OpsBookingProfessionalDto {
   tenantProfessionalId: string;
 
   @ApiProperty()
+  professionalProfileId: string;
+
+  @ApiProperty()
+  userId: string;
+
+  @ApiProperty()
   displayName: string;
 }
 

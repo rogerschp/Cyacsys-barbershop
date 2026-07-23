@@ -13,6 +13,8 @@ export function mapToPublicTenantProfessional(
   return {
     id: entity.id,
     tenantId: entity.tenantId,
+    professionalProfileId: profile.id,
+    userId: profile.userId,
     displayName: profile.displayName,
     bio: profile.bio,
     avatarUrl: profile.avatarMedia?.url ?? null,

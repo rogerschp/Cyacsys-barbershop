@@ -46,6 +46,12 @@ export class MyBookingProfessionalDto {
   tenantProfessionalId: string;
 
   @ApiProperty()
+  professionalProfileId: string;
+
+  @ApiProperty()
+  userId: string;
+
+  @ApiProperty()
   displayName: string;
 }
 

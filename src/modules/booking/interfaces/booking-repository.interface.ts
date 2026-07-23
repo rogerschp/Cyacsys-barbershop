@@ -72,6 +72,12 @@ export interface IBookingRepository {
   ): Promise<ActiveBookingTimeRange | null>;
   countActiveByCustomerIdentity(query: CustomerActiveQuery): Promise<number>;
   listOpsBookings(query: ListOpsBookingsQuery): Promise<BookingEntity[]>;
+  completePastConfirmed(now: Date): Promise<number>;
+  existsCompletedForReviewer(params: {
+    reviewerUserId: string;
+    tenantId?: string;
+    professionalProfileId?: string;
+  }): Promise<boolean>;
 }
 
 export const BOOKING_REPOSITORY = Symbol('BOOKING_REPOSITORY');

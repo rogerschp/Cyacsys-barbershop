@@ -2,7 +2,9 @@ import { mapBookingToOpsResponse } from 'src/modules/booking/mappers/ops-booking
 import { BookingStatus } from 'src/modules/booking/entities/booking-status.enum';
 import { BookingEntity } from 'src/modules/booking/entities/booking.entity';
 import { resolveDayRangeUtc } from 'src/modules/booking/utils/resolve-day-range';
+import { resolveOpsDateFilter } from 'src/modules/booking/domain/resolve-ops-date-filter';
 import { ListTenantProfessionalBookingsUseCase } from 'src/modules/booking/use-cases/list-tenant-professional-bookings.use-case';
+import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
 
 describe('ops booking listing', () => {
   describe('mapBookingToOpsResponse', () => {
@@ -16,7 +18,12 @@ describe('ops booking listing', () => {
       status: BookingStatus.CONFIRMED,
       service: { name: 'Corte', durationInMinutes: 30 },
       tenantProfessional: {
-        professionalProfile: { displayName: 'João' },
+        professionalProfileId: 'pp1',
+        professionalProfile: {
+          id: 'pp1',
+          userId: 'pro-user',
+          displayName: 'João',
+        },
       },
     } as unknown as BookingEntity;
 
@@ -68,6 +75,83 @@ describe('ops booking listing', () => {
     });
   });
 
+  describe('resolveOpsDateFilter', () => {
+    it('retorna undefined sem filtros', () => {
+      expect(resolveOpsDateFilter({}, 'America/Sao_Paulo')).toBeUndefined();
+    });
+
+    it('aceita date diário', () => {
+      const range = resolveOpsDateFilter(
+        { date: '2026-07-20' },
+        'America/Sao_Paulo',
+      );
+      expect(range?.rangeStart.toISOString()).toBe('2026-07-20T03:00:00.000Z');
+      expect(range?.rangeEnd.toISOString()).toBe('2026-07-21T03:00:00.000Z');
+    });
+
+    it('aceita from/to semanal', () => {
+      const range = resolveOpsDateFilter(
+        { from: '2026-07-20', to: '2026-07-26' },
+        'America/Sao_Paulo',
+      );
+      expect(range?.rangeStart.toISOString()).toBe('2026-07-20T03:00:00.000Z');
+      expect(range?.rangeEnd.toISOString()).toBe('2026-07-27T03:00:00.000Z');
+    });
+
+    it('rejeita date junto com from/to', () => {
+      try {
+        resolveOpsDateFilter(
+          { date: '2026-07-20', from: '2026-07-20', to: '2026-07-26' },
+          'America/Sao_Paulo',
+        );
+        fail('expected throw');
+      } catch (e) {
+        expect((e as BusinessRuleException).getResponse()).toMatchObject({
+          code: 'BOOKING_INVALID_DATE_FILTER',
+        });
+      }
+    });
+
+    it('rejeita from sem to', () => {
+      try {
+        resolveOpsDateFilter({ from: '2026-07-20' }, 'America/Sao_Paulo');
+        fail('expected throw');
+      } catch (e) {
+        expect((e as BusinessRuleException).getResponse()).toMatchObject({
+          code: 'BOOKING_INVALID_DATE_FILTER',
+        });
+      }
+    });
+
+    it('rejeita from > to', () => {
+      try {
+        resolveOpsDateFilter(
+          { from: '2026-07-26', to: '2026-07-20' },
+          'America/Sao_Paulo',
+        );
+        fail('expected throw');
+      } catch (e) {
+        expect((e as BusinessRuleException).getResponse()).toMatchObject({
+          code: 'BOOKING_INVALID_DATE_FILTER',
+        });
+      }
+    });
+
+    it('rejeita intervalo maior que 31 dias', () => {
+      try {
+        resolveOpsDateFilter(
+          { from: '2026-07-01', to: '2026-08-05' },
+          'America/Sao_Paulo',
+        );
+        fail('expected throw');
+      } catch (e) {
+        expect((e as BusinessRuleException).getResponse()).toMatchObject({
+          code: 'BOOKING_DATE_RANGE_TOO_LARGE',
+        });
+      }
+    });
+  });
+
   describe('ListTenantProfessionalBookingsUseCase', () => {
     it('valida acesso à agenda e filtra por dia/status', async () => {
       const bookingRepository = {
@@ -101,6 +185,39 @@ describe('ops booking listing', () => {
           status: BookingStatus.CONFIRMED,
           rangeStart: expect.any(Date),
           rangeEnd: expect.any(Date),
+        }),
+      );
+    });
+
+    it('filtra por from/to', async () => {
+      const bookingRepository = {
+        listOpsBookings: jest.fn().mockResolvedValue([]),
+      };
+      const tenantProfessionalRepository = {
+        findById: jest.fn().mockResolvedValue({
+          id: 'tp1',
+          professionalProfile: { userId: 'u1' },
+        }),
+      };
+      const useCase = new ListTenantProfessionalBookingsUseCase(
+        bookingRepository as any,
+        tenantProfessionalRepository as any,
+      );
+
+      await useCase.run({
+        tenantId: 't1',
+        tenantProfessionalId: 'tp1',
+        timezone: 'America/Sao_Paulo',
+        userId: 'u1',
+        callerRole: 'OWNER',
+        from: '2026-07-20',
+        to: '2026-07-26',
+      });
+
+      expect(bookingRepository.listOpsBookings).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rangeStart: new Date('2026-07-20T03:00:00.000Z'),
+          rangeEnd: new Date('2026-07-27T03:00:00.000Z'),
         }),
       );
     });
