@@ -145,6 +145,20 @@ describe('SearchTenantsUseCase', () => {
     );
   });
 
+  it('aplica filtro regionalHighlight e ordena por nota primeiro', async () => {
+    await useCase.run({ regionalHighlight: true });
+
+    expect(dataQb.andWhere).toHaveBeenCalledWith(
+      'p.features @> :regionalHighlightFeature::jsonb',
+      {
+        regionalHighlightFeature: JSON.stringify({ regionalHighlight: true }),
+      },
+    );
+    expect(dataQb.orderBy).toHaveBeenCalledWith('average_rating', 'DESC');
+    expect(dataQb.addOrderBy).toHaveBeenCalledWith('total_reviews', 'DESC');
+    expect(dataQb.addOrderBy).toHaveBeenCalledWith('p.sort_weight', 'DESC');
+  });
+
   it('ignora city com menos de 2 caracteres', async () => {
     await useCase.run({ city: 'a' });
 
