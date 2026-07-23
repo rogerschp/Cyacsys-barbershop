@@ -1,17 +1,24 @@
-DB_TYPE=
+DB_TYPE=postgres
 DB_HOST=
-DB_PORT=
+DB_PORT=5432
 DB_USERNAME=
 DB_PASSWORD=
 DB_DATABASE=
 
-PORT=
+# Neon / Render: DB_SSL=true (ou DB_SSLMODE=require)
+# Local Docker Compose: omitir ou DB_SSL=false
+DB_SSL=false
+
+# Alternativa: connection string completa (Neon "DATABASE_URL")
+# DATABASE_URL=postgresql://user:pass@host/db?sslmode=require
+
+PORT=3000
 NODE_ENV=development
 
 FIREBASE_PROJECT_ID=
 API_KEY=
 FIREBASE_SERVICE_ACCOUNT_BASE64=
 
-#CORS — comma-separated; must match browser Origin exactly (scheme + host + port)
+# CORS — comma-separated; must match browser Origin exactly (scheme + host + port)
 # Dev: front on 3001 → include both hostnames if you alternate localhost / 127.0.0.1
 CORS_ORIGINS=http://localhost:3001,http://127.0.0.1:3001
