@@ -17,6 +17,7 @@ describe('UserController (HTTP)', () => {
   let app: INestApplication;
   let adminApp: INestApplication;
   let meApp: INestApplication;
+  let meAppWithoutUserId: INestApplication;
 
   const useCases = {
     findUserByEmailUseCase: { run: jest.fn() },
@@ -110,12 +111,29 @@ describe('UserController (HTTP)', () => {
       .compile();
     meApp = meModule.createNestApplication();
     await meApp.init();
+
+    const meWithoutIdModule = await Test.createTestingModule({
+      controllers: [UserController],
+      providers: baseProviders,
+    })
+      .overrideGuard(BearerAuthGuard)
+      .useValue({
+        canActivate: (context: any) => {
+          const req = context.switchToHttp().getRequest();
+          req.user = { uid: 'firebase-uid' };
+          return true;
+        },
+      })
+      .compile();
+    meAppWithoutUserId = meWithoutIdModule.createNestApplication();
+    await meAppWithoutUserId.init();
   });
 
   afterAll(async () => {
     await app.close();
     await adminApp.close();
     await meApp.close();
+    await meAppWithoutUserId.close();
   });
 
   beforeEach(() => {
@@ -205,6 +223,12 @@ describe('UserController (HTTP)', () => {
           );
         });
     });
+
+    it('retorna 404 quando dbUser.id está ausente', () => {
+      return request(meAppWithoutUserId.getHttpServer())
+        .get('/users/me')
+        .expect(404);
+    });
   });
 
   describe('PATCH /users/me', () => {
@@ -223,6 +247,13 @@ describe('UserController (HTTP)', () => {
             { name: 'Nome Atualizado' },
           );
         });
+    });
+
+    it('retorna 404 quando dbUser.id está ausente', () => {
+      return request(meAppWithoutUserId.getHttpServer())
+        .patch('/users/me')
+        .send({ name: 'Nome' })
+        .expect(404);
     });
   });
 
@@ -243,6 +274,12 @@ describe('UserController (HTTP)', () => {
             'uuid-123',
           );
         });
+    });
+
+    it('retorna 404 quando dbUser.id está ausente', () => {
+      return request(meAppWithoutUserId.getHttpServer())
+        .patch('/users/me/deactivate')
+        .expect(404);
     });
   });
 
