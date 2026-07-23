@@ -35,6 +35,8 @@ import { FindUserByIdUseCase } from './use-cases/find-user-by-id.use-case';
 import { UpdateUserUseCase } from './use-cases/update-user.use-case';
 import { DeleteUserUseCase } from './use-cases/delete-user.use-case';
 import { RequestUser } from '../auth/strategies/bearer-token.strategy';
+import { LinkMediaDto } from '../media/dto/link-media.dto';
+import { UpdateUserAvatarUseCase } from './use-cases/update-user-avatar.use-case';
 
 @ApiTags('users')
 @Controller('users')
@@ -46,6 +48,7 @@ export class UserController {
     private readonly updateUserUseCase: UpdateUserUseCase,
     private readonly deactivateMyUserUseCase: DeactivateMyUserUseCase,
     private readonly deleteUserUseCase: DeleteUserUseCase,
+    private readonly updateUserAvatarUseCase: UpdateUserAvatarUseCase,
   ) {}
 
   @Post()
@@ -158,6 +161,32 @@ export class UserController {
       throw new NotFoundException('User not found');
     }
     return this.deactivateMyUserUseCase.run(userId);
+  }
+
+  @Patch('me/avatar')
+  @UseGuards(BearerAuthGuard)
+  @ApiBearerAuth('bearer')
+  @ApiOperation({
+    summary: 'Vincula avatar do cliente (USER_AVATAR) ao usuário autenticado',
+    description:
+      'Valida posse: media.createdByUserId deve ser o usuário logado. Use POST /media/upload com mediaType=USER_AVATAR antes.',
+  })
+  @ApiBody({ type: LinkMediaDto })
+  @ApiResponse({ status: 200, type: UserResponseDto })
+  @ApiResponse({
+    status: 403,
+    description: 'Media does not belong to current user.',
+  })
+  @ApiResponse({ status: 404, description: 'Media ou usuário não encontrado' })
+  async updateMyAvatar(
+    @Req() req: { user?: RequestUser },
+    @Body() dto: LinkMediaDto,
+  ) {
+    const userId = req.user?.dbUser?.id;
+    if (!userId) {
+      throw new NotFoundException('User not found');
+    }
+    return this.updateUserAvatarUseCase.run(userId, dto.mediaId);
   }
 
   @Get(':id')

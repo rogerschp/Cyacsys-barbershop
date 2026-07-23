@@ -19,6 +19,7 @@ export interface UpdateUserPortInput {
   status?: UserStatus;
   role?: Role;
   passwordHash?: string;
+  avatarMediaId?: string | null;
 }
 export interface IUserRepository {
   create(dto: CreateUserPortInput): Promise<UserEntity>;

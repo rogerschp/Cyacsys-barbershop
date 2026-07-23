@@ -41,7 +41,9 @@ export class TenantProfessionalRepository implements ITenantProfessionalReposito
   ): Promise<TenantProfessionalEntity | null> {
     return this.repo.findOne({
       where: { id, tenantId },
-      relations: { professionalProfile: true },
+      relations: {
+        professionalProfile: { avatarMedia: true },
+      },
     });
   }
 
@@ -51,7 +53,9 @@ export class TenantProfessionalRepository implements ITenantProfessionalReposito
   ): Promise<TenantProfessionalEntity | null> {
     return this.repo.findOne({
       where: { tenantId, professionalProfileId },
-      relations: { professionalProfile: true },
+      relations: {
+        professionalProfile: { avatarMedia: true },
+      },
     });
   }
 
@@ -62,6 +66,7 @@ export class TenantProfessionalRepository implements ITenantProfessionalReposito
     const qb = this.repo
       .createQueryBuilder('tp')
       .innerJoinAndSelect('tp.professionalProfile', 'pp')
+      .leftJoinAndSelect('pp.avatarMedia', 'avatarMedia')
       .where('tp.tenant_id = :tenantId', { tenantId })
       .andWhere('pp.deletedAt IS NULL')
       .orderBy('tp.joined_at', 'DESC');

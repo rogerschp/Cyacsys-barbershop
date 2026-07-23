@@ -20,7 +20,9 @@ describe('CreateBookingDraftUseCase (ops adapter)', () => {
   const userId = 'user-uuid';
 
   beforeEach(async () => {
-    createForCustomer = { run: jest.fn().mockResolvedValue({ status: BookingStatus.DRAFT }) };
+    createForCustomer = {
+      run: jest.fn().mockResolvedValue({ status: BookingStatus.DRAFT }),
+    };
     customerResolver = {
       resolve: jest.fn().mockReturnValue({
         kind: 'USER',

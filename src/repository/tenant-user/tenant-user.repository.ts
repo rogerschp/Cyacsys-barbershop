@@ -40,7 +40,7 @@ export class TenantUserRepository implements ITenantUserRepository {
   async listActiveByUserId(userId: string): Promise<TenantUserEntity[]> {
     return this.repo.find({
       where: { userId, status: TenantUserStatus.ACTIVE },
-      relations: ['tenant'],
+      relations: ['tenant', 'tenant.logoMedia'],
       order: { createdAt: 'ASC' },
     });
   }

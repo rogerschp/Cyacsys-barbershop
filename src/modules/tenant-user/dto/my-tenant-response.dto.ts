@@ -26,6 +26,9 @@ export class MyTenantSummaryDto {
   segment?: TenantSegment | null;
 
   @ApiPropertyOptional({ nullable: true })
+  logoMediaId?: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
   avatarUrl?: string | null;
 
   @ApiProperty({ default: false })

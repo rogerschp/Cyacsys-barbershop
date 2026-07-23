@@ -84,7 +84,7 @@ describe('TenantUserRepository', () => {
       const result = await repository.listActiveByUserId('user-uuid');
       expect(typeOrmRepo.find).toHaveBeenCalledWith({
         where: { userId: 'user-uuid', status: TenantUserStatus.ACTIVE },
-        relations: ['tenant'],
+        relations: ['tenant', 'tenant.logoMedia'],
         order: { createdAt: 'ASC' },
       });
       expect(result).toEqual([mockLink]);

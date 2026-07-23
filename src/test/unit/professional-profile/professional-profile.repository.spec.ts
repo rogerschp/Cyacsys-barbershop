@@ -22,6 +22,7 @@ describe('ProfessionalProfileRepository', () => {
   } as ProfessionalProfileEntity;
 
   const mockQueryBuilder = {
+    leftJoinAndSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     andWhere: jest.fn().mockReturnThis(),
     getOne: jest.fn().mockResolvedValue(null),
@@ -61,7 +62,7 @@ describe('ProfessionalProfileRepository', () => {
     await repository.create({
       userId,
       displayName: 'João',
-      avatarUrl: 'https://example.com/a.jpg',
+      avatarMediaId: null,
       professionalType: ProfessionalType.BARBER,
       experienceYears: 3,
     });
@@ -87,7 +88,7 @@ describe('ProfessionalProfileRepository', () => {
     await repository.create({
       userId,
       displayName: 'João',
-      avatarUrl: 'https://example.com/a.jpg',
+      avatarMediaId: null,
       professionalType: ProfessionalType.TATTOO_ARTIST,
       experienceYears: 3,
       bookingMode: BookingMode.WHATSAPP_ONLY,
@@ -112,6 +113,7 @@ describe('ProfessionalProfileRepository', () => {
     expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
       where: { id: profileId },
       withDeleted: false,
+      relations: ['avatarMedia'],
     });
     expect(result).toBe(mockProfile);
   });
@@ -119,6 +121,10 @@ describe('ProfessionalProfileRepository', () => {
   it('findByUserIdNonDeleted usa query builder', async () => {
     mockQueryBuilder.getOne.mockResolvedValue(mockProfile);
     const result = await repository.findByUserIdNonDeleted(userId);
+    expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledWith(
+      'pp.avatarMedia',
+      'avatarMedia',
+    );
     expect(mockQueryBuilder.where).toHaveBeenCalledWith(
       'pp.user_id = :userId',
       {

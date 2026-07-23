@@ -21,7 +21,10 @@ describe('TenantBookingsController (HTTP)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [TenantBookingsController],
       providers: [
-        { provide: ListTenantBookingsUseCase, useValue: listTenantBookingsUseCase },
+        {
+          provide: ListTenantBookingsUseCase,
+          useValue: listTenantBookingsUseCase,
+        },
       ],
     })
       .overrideGuard(BearerAuthGuard)
@@ -41,7 +44,9 @@ describe('TenantBookingsController (HTTP)', () => {
       .compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true }),
+    );
     await app.init();
   });
 

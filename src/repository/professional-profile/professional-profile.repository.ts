@@ -23,7 +23,7 @@ export class ProfessionalProfileRepository implements IProfessionalProfileReposi
       userId: data.userId,
       displayName: data.displayName,
       bio: data.bio ?? null,
-      avatarUrl: data.avatarUrl,
+      avatarMediaId: data.avatarMediaId ?? null,
       professionalType: data.professionalType,
       bookingMode: data.bookingMode ?? BookingMode.DIRECT_BOOKING,
       whatsappNumber: data.whatsappNumber ?? null,
@@ -31,13 +31,15 @@ export class ProfessionalProfileRepository implements IProfessionalProfileReposi
       experienceYears: data.experienceYears,
       isActive: true,
     });
-    return this.repo.save(entity);
+    const saved = await this.repo.save(entity);
+    return (await this.findById(saved.id)) ?? saved;
   }
 
   async findById(id: string): Promise<ProfessionalProfileEntity | null> {
     return this.repo.findOne({
       where: { id },
       withDeleted: false,
+      relations: ['avatarMedia'],
     });
   }
 
@@ -46,6 +48,7 @@ export class ProfessionalProfileRepository implements IProfessionalProfileReposi
   ): Promise<ProfessionalProfileEntity | null> {
     return this.repo
       .createQueryBuilder('pp')
+      .leftJoinAndSelect('pp.avatarMedia', 'avatarMedia')
       .where('pp.user_id = :userId', { userId })
       .andWhere('pp.deletedAt IS NULL')
       .getOne();
@@ -63,8 +66,8 @@ export class ProfessionalProfileRepository implements IProfessionalProfileReposi
     if (data.bio !== undefined) {
       payload.bio = data.bio;
     }
-    if (data.avatarUrl !== undefined) {
-      payload.avatarUrl = data.avatarUrl;
+    if (data.avatarMediaId !== undefined) {
+      payload.avatarMediaId = data.avatarMediaId;
     }
     if (data.professionalType !== undefined) {
       payload.professionalType = data.professionalType;
@@ -88,6 +91,7 @@ export class ProfessionalProfileRepository implements IProfessionalProfileReposi
     const entity = await this.repo.findOne({
       where: { id, userId },
       withDeleted: false,
+      relations: ['avatarMedia'],
     });
     if (!entity) {
       throw new Error('Professional profile not found after update');

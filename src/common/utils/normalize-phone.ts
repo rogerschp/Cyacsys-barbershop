@@ -34,10 +34,7 @@ export function tryNormalizePhone(raw: unknown): string | null {
 export function normalizePhone(raw: string): string {
   const trimmed = raw?.trim() ?? '';
   if (!trimmed) {
-    throw new BusinessRuleException(
-      'INVALID_PHONE',
-      'Telefone é obrigatório.',
-    );
+    throw new BusinessRuleException('INVALID_PHONE', 'Telefone é obrigatório.');
   }
 
   const normalized = tryNormalizePhone(raw);

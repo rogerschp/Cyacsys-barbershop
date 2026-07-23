@@ -22,7 +22,9 @@ export class ListTenantBookingsUseCase {
     private readonly bookingRepository: IBookingRepository,
   ) {}
 
-  async run(params: ListTenantBookingsParams): Promise<OpsBookingResponseDto[]> {
+  async run(
+    params: ListTenantBookingsParams,
+  ): Promise<OpsBookingResponseDto[]> {
     const range = params.date
       ? resolveDayRangeUtc(params.date, params.timezone)
       : undefined;

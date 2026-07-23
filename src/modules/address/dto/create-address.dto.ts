@@ -1,10 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsString,
-  MaxLength,
-  IsOptional,
-} from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength, IsOptional } from 'class-validator';
 import { IsCep } from 'src/common/validators/is-cep.decorator';
 import { NormalizeCep } from 'src/common/transformers/brazilian-document.transformers';
 
@@ -35,7 +30,8 @@ export class CreateAddressDto {
 
   @ApiProperty({
     example: '04001-000',
-    description: 'CEP (aceita 04001000 ou 04001-000; normalizado para #####-###)',
+    description:
+      'CEP (aceita 04001000 ou 04001-000; normalizado para #####-###)',
   })
   @NormalizeCep()
   @IsString()

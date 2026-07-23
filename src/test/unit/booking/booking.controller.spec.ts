@@ -118,17 +118,17 @@ describe('BookingController (HTTP)', () => {
         .query({ date: '2099-06-15', status: BookingStatus.CONFIRMED })
         .expect(200)
         .expect(() => {
-          expect(listTenantProfessionalBookingsUseCase.run).toHaveBeenCalledWith(
-            {
-              tenantId,
-              tenantProfessionalId,
-              timezone: 'America/Sao_Paulo',
-              userId: 'user-uuid-123',
-              callerRole: TenantUserRole.ADMIN,
-              date: '2099-06-15',
-              status: BookingStatus.CONFIRMED,
-            },
-          );
+          expect(
+            listTenantProfessionalBookingsUseCase.run,
+          ).toHaveBeenCalledWith({
+            tenantId,
+            tenantProfessionalId,
+            timezone: 'America/Sao_Paulo',
+            userId: 'user-uuid-123',
+            callerRole: TenantUserRole.ADMIN,
+            date: '2099-06-15',
+            status: BookingStatus.CONFIRMED,
+          });
         });
     });
   });

@@ -11,6 +11,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { TenantSegment } from 'src/common/enums/tenant-segment.enum';
+import { MediaEntity } from '../../media/entities/media.entity';
 import { TenantStatus } from './tenant-status.enum';
 import { AddressEntity } from 'src/modules/address/entities/address.entity';
 import { TenantThemeData } from '../../tenant-theme/interfaces/tenant-theme-data.interface';
@@ -106,16 +107,16 @@ export class TenantEntity {
   })
   segment: TenantSegment | null;
 
-  @Column({
-    name: 'avatar_url',
-    type: 'varchar',
-    nullable: true,
-  })
+  @Column({ name: 'logo_media_id', type: 'uuid', nullable: true })
   @ApiProperty({
     nullable: true,
-    description: 'URL do avatar/logo do estabelecimento',
+    description: 'FK para Media (LOGO do estabelecimento)',
   })
-  avatarUrl: string | null;
+  logoMediaId: string | null;
+
+  @ManyToOne(() => MediaEntity, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'logo_media_id' })
+  logoMedia?: MediaEntity | null;
 
   @Index()
   @Column({

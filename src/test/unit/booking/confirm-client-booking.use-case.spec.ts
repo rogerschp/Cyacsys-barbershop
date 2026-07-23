@@ -51,9 +51,9 @@ describe('ConfirmClientBookingUseCase', () => {
       startsAt: new Date('2099-01-01T15:00:00.000Z'),
     });
 
-    await expect(useCase.run('t1', 'tp1', 'b1', 'user-2')).rejects.toBeInstanceOf(
-      TenantForbiddenException,
-    );
+    await expect(
+      useCase.run('t1', 'tp1', 'b1', 'user-2'),
+    ).rejects.toBeInstanceOf(TenantForbiddenException);
     expect(repo.updateStatus).not.toHaveBeenCalled();
   });
 });

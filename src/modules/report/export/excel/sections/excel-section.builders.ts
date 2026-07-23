@@ -24,10 +24,22 @@ export class DashboardSectionBuilder implements ExcelExportSection {
     const sheet = workbook.addWorksheet('Dashboard', {
       properties: { defaultRowHeight: 18 },
     });
-    const startRow = writeSheetTitleBlock(sheet, ctx, 'Dashboard — Indicadores');
+    const startRow = writeSheetTitleBlock(
+      sheet,
+      ctx,
+      'Dashboard — Indicadores',
+    );
 
-    const kpis: Array<{ label: string; value: number | string; numFmt?: string }> = [
-      { label: 'Receita', value: ctx.report.dashboard.revenue, numFmt: moneyFormat },
+    const kpis: Array<{
+      label: string;
+      value: number | string;
+      numFmt?: string;
+    }> = [
+      {
+        label: 'Receita',
+        value: ctx.report.dashboard.revenue,
+        numFmt: moneyFormat,
+      },
       {
         label: 'Confirmados',
         value: ctx.report.dashboard.confirmedBookings,
@@ -99,13 +111,7 @@ export class MonthlyRevenueSectionBuilder implements ExcelExportSection {
     const startRow = writeSheetTitleBlock(sheet, ctx, 'Receita Mensal');
     const headerRowNumber = startRow;
     const header = sheet.getRow(headerRowNumber);
-    header.values = [
-      'Mês',
-      'Receita',
-      'Confirmados',
-      'Cancelados',
-      'Variação',
-    ];
+    header.values = ['Mês', 'Receita', 'Confirmados', 'Cancelados', 'Variação'];
     styleHeaderRow(header, 5);
 
     ctx.report.monthlyBreakdown.forEach((month, index) => {
@@ -144,7 +150,11 @@ export class ProfessionalSectionBuilder implements ExcelExportSection {
 
   append(workbook: ExcelJS.Workbook, ctx: ReportExportContext): void {
     const sheet = workbook.addWorksheet('Profissionais');
-    const startRow = writeSheetTitleBlock(sheet, ctx, 'Receita por Profissional');
+    const startRow = writeSheetTitleBlock(
+      sheet,
+      ctx,
+      'Receita por Profissional',
+    );
     const headerRowNumber = startRow;
     const header = sheet.getRow(headerRowNumber);
     header.values = [

@@ -37,7 +37,9 @@ import { ValidateSlugUseCase } from './use-cases/validate-slug.use-case';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { ValidateSlugDto } from './dto/validate-slug.dto';
-import { TenantEntity } from './entities/tenant.entity';
+import { TenantResponseDto } from './dto/tenant-response.dto';
+import { LinkMediaDto } from '../media/dto/link-media.dto';
+import { UpdateTenantLogoUseCase } from './use-cases/update-tenant-logo.use-case';
 @ApiTags('tenants')
 @Controller('tenants')
 export class TenantController {
@@ -49,6 +51,7 @@ export class TenantController {
     private readonly updateTenantByIdUseCase: UpdateTenantByIdUseCase,
     private readonly deleteTenantByIdUseCase: DeleteTenantByIdUseCase,
     private readonly createTenantWithOwnerUseCase: CreateTenantWithOwnerUseCase,
+    private readonly updateTenantLogoUseCase: UpdateTenantLogoUseCase,
   ) {}
   @Get('validate-slug')
   @ApiOperation({ summary: 'Valida disponibilidade de slug' })
@@ -69,7 +72,7 @@ export class TenantController {
   @ApiResponse({
     status: 200,
     description: 'Tenant encontrado',
-    type: TenantEntity,
+    type: TenantResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Tenant não encontrado' })
   findOne(
@@ -84,7 +87,7 @@ export class TenantController {
   @ApiResponse({
     status: 200,
     description: 'Tenant encontrado',
-    type: TenantEntity,
+    type: TenantResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Tenant não encontrado' })
   findBySlug(
@@ -99,7 +102,7 @@ export class TenantController {
   @ApiResponse({
     status: 201,
     description: 'Tenant criado',
-    type: TenantEntity,
+    type: TenantResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos ou slug inválido' })
   @ApiResponse({ status: 409, description: 'Slug já em uso' })
@@ -121,7 +124,7 @@ export class TenantController {
   @ApiResponse({
     status: 201,
     description: 'Tenant criado com o usuário como OWNER',
-    type: TenantEntity,
+    type: TenantResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos ou slug inválido' })
   @ApiResponse({ status: 401, description: 'Não autenticado' })
@@ -154,7 +157,7 @@ export class TenantController {
   @ApiResponse({
     status: 200,
     description: 'Tenant atualizado',
-    type: TenantEntity,
+    type: TenantResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Tenant não encontrado' })
   @ApiResponse({ status: 401, description: 'Não autenticado' })
@@ -170,6 +173,38 @@ export class TenantController {
   ) {
     return this.updateTenantByIdUseCase.run(id, dto);
   }
+
+  @Patch(':id/logo')
+  @UseGuards(
+    BearerAuthGuard,
+    TenantResolverGuard,
+    TenantMembershipGuard,
+    TenantRolesGuard,
+  )
+  @TenantRoles(TenantUserRole.OWNER, TenantUserRole.ADMIN)
+  @ApiBearerAuth('bearer')
+  @ApiOperation({
+    summary: 'Vincula logo (LOGO) ao tenant',
+    description:
+      'Valida posse: media.tenantId deve ser o tenant. Use POST /media/upload com mediaType=LOGO + tenantId antes.',
+  })
+  @ApiParam({ name: 'id', description: 'UUID do tenant' })
+  @ApiBody({ type: LinkMediaDto })
+  @ApiResponse({ status: 200, type: TenantResponseDto })
+  @ApiResponse({
+    status: 403,
+    description: 'Media does not belong to this tenant.',
+  })
+  @ApiResponse({ status: 404, description: 'Media ou tenant não encontrado' })
+  updateLogo(
+    @Param('id')
+    id: string,
+    @Body()
+    dto: LinkMediaDto,
+  ) {
+    return this.updateTenantLogoUseCase.run(id, dto.mediaId);
+  }
+
   @Delete(':id')
   @UseGuards(
     BearerAuthGuard,

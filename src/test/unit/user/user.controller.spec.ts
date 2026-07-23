@@ -8,6 +8,7 @@ import { DeleteUserUseCase } from 'src/modules/user/use-cases/delete-user.use-ca
 import { FindUserByEmailUseCase } from 'src/modules/user/use-cases/find-user-by-email.use-case';
 import { FindUserByIdUseCase } from 'src/modules/user/use-cases/find-user-by-id.use-case';
 import { UpdateUserUseCase } from 'src/modules/user/use-cases/update-user.use-case';
+import { UpdateUserAvatarUseCase } from 'src/modules/user/use-cases/update-user-avatar.use-case';
 import { UserStatus } from 'src/modules/user/entities/user-status.enum';
 import { Role } from 'src/common/enums/role.enum';
 import { ConflictException } from '@nestjs/common';
@@ -26,6 +27,7 @@ describe('UserController (HTTP)', () => {
     updateUserUseCase: { run: jest.fn() },
     deactivateMyUserUseCase: { run: jest.fn() },
     deleteUserUseCase: { run: jest.fn() },
+    updateUserAvatarUseCase: { run: jest.fn() },
   };
 
   const mockUserResponse = {
@@ -37,6 +39,8 @@ describe('UserController (HTTP)', () => {
     role: Role.CLIENT,
     telephone: '5511999999999',
     address: null,
+    avatarMediaId: null,
+    avatarUrl: null,
     professionalProfile: null,
     createdAt: new Date('2021-01-01'),
     updatedAt: new Date('2021-01-01'),
@@ -66,6 +70,10 @@ describe('UserController (HTTP)', () => {
         useValue: useCases.deactivateMyUserUseCase,
       },
       { provide: DeleteUserUseCase, useValue: useCases.deleteUserUseCase },
+      {
+        provide: UpdateUserAvatarUseCase,
+        useValue: useCases.updateUserAvatarUseCase,
+      },
     ];
 
     const publicModule = await Test.createTestingModule({

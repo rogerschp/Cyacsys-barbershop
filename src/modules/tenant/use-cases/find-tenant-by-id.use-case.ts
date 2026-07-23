@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { TenantRepository } from 'src/repository/tenant/tenant.repository';
 import { TenantResponseDto } from '../dto/tenant-response.dto';
+import { TenantMapper } from '../mappers/tenant.mapper';
 
 @Injectable()
 export class FindTenantByIdUseCase {
@@ -9,6 +10,6 @@ export class FindTenantByIdUseCase {
   async run(id: string): Promise<TenantResponseDto> {
     const tenant = await this.repo.findById(id);
     if (!tenant) throw new NotFoundException('Tenant not found!');
-    return tenant;
+    return TenantMapper.toResponse(tenant);
   }
 }

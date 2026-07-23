@@ -7,6 +7,8 @@ import { FindUserByEmailUseCase } from '../modules/user/use-cases/find-user-by-e
 import { CreateUserUseCase } from '../modules/user/use-cases/create-user.use-case';
 import { UpdateUserUseCase } from '../modules/user/use-cases/update-user.use-case';
 import { DeleteUserUseCase } from '../modules/user/use-cases/delete-user.use-case';
+import { DeactivateMyUserUseCase } from '../modules/user/use-cases/deactivate-my-user.use-case';
+import { UpdateUserAvatarUseCase } from '../modules/user/use-cases/update-user-avatar.use-case';
 import { BearerAuthGuard } from '../modules/auth/guards/bearer-auth.guard';
 import { UserRolesGuard } from '../common/guards/user-roles.guard';
 import { Role } from '../common/enums/role.enum';
@@ -27,6 +29,8 @@ describe('UserController (e2e)', () => {
     role: Role.CLIENT,
     telephone: '5511999999999',
     address: null,
+    avatarMediaId: null,
+    avatarUrl: null,
     professionalProfile: null,
     createdAt: new Date('2021-01-01'),
     updatedAt: new Date('2021-01-01'),
@@ -41,6 +45,8 @@ describe('UserController (e2e)', () => {
         { provide: CreateUserUseCase, useValue: { run: jest.fn() } },
         { provide: UpdateUserUseCase, useValue: { run: jest.fn() } },
         { provide: DeleteUserUseCase, useValue: { run: jest.fn() } },
+        { provide: DeactivateMyUserUseCase, useValue: { run: jest.fn() } },
+        { provide: UpdateUserAvatarUseCase, useValue: { run: jest.fn() } },
       ],
     })
       .overrideGuard(BearerAuthGuard)
@@ -91,7 +97,8 @@ describe('UserController (e2e)', () => {
           userId: mockUser.id,
           displayName: 'João Pro',
           bio: null,
-          avatarUrl: 'https://example.com/a.jpg',
+          avatarMediaId: null,
+          avatarUrl: null,
           professionalType: ProfessionalType.BARBER,
           bookingMode: BookingMode.DIRECT_BOOKING,
           whatsappNumber: null,

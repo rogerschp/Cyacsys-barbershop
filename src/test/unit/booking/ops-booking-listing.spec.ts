@@ -62,9 +62,9 @@ describe('ops booking listing', () => {
     });
 
     it('lança para data inválida', () => {
-      expect(() => resolveDayRangeUtc('not-a-date', 'America/Sao_Paulo')).toThrow(
-        /Data inválida/,
-      );
+      expect(() =>
+        resolveDayRangeUtc('not-a-date', 'America/Sao_Paulo'),
+      ).toThrow(/Data inválida/);
     });
   });
 

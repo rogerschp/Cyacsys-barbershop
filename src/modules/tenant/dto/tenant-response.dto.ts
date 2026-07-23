@@ -57,7 +57,16 @@ export class TenantResponseDto {
   @ApiPropertyOptional({ enum: TenantSegment, nullable: true })
   segment?: TenantSegment | null;
 
-  @ApiPropertyOptional({ nullable: true })
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'FK da mídia LOGO do estabelecimento',
+  })
+  logoMediaId?: string | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'URL resolvida a partir de logoMediaId (discovery)',
+  })
   avatarUrl?: string | null;
 
   @ApiPropertyOptional({ nullable: true, example: -23.5505199 })

@@ -19,7 +19,7 @@ describe('TenantRepository', () => {
     socialMedia: null,
     cnpj: null,
     segment: null,
-    avatarUrl: null,
+    logoMediaId: null,
     latitude: null,
     longitude: null,
     theme: null,
@@ -66,7 +66,7 @@ describe('TenantRepository', () => {
       const result = await repository.findBySlug('barbearia-do-vitinho');
       expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
         where: { slug: 'barbearia-do-vitinho' },
-        relations: ['address'],
+        relations: ['address', 'logoMedia'],
       });
       expect(result).toEqual(mockTenant);
     });
@@ -75,7 +75,7 @@ describe('TenantRepository', () => {
       const result = await repository.findBySlug('slug-inexistente');
       expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
         where: { slug: 'slug-inexistente' },
-        relations: ['address'],
+        relations: ['address', 'logoMedia'],
       });
       expect(result).toBeNull();
     });
@@ -86,7 +86,7 @@ describe('TenantRepository', () => {
       const result = await repository.findById('uuid-123');
       expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
         where: { id: 'uuid-123' },
-        relations: ['address'],
+        relations: ['address', 'logoMedia'],
       });
       expect(result).toEqual(mockTenant);
     });
@@ -95,7 +95,7 @@ describe('TenantRepository', () => {
       const result = await repository.findById('id-inexistente');
       expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
         where: { id: 'id-inexistente' },
-        relations: ['address'],
+        relations: ['address', 'logoMedia'],
       });
       expect(result).toBeNull();
     });
@@ -140,10 +140,15 @@ describe('TenantRepository', () => {
       const dto = { name: 'Nome Atualizado' };
       const updated = { ...mockTenant, ...dto };
       typeOrmRepo.save.mockResolvedValue(updated);
+      typeOrmRepo.findOne.mockResolvedValue(updated);
       const result = await repository.update('uuid-123', dto);
       expect(typeOrmRepo.save).toHaveBeenCalledWith({
         id: 'uuid-123',
         ...dto,
+      });
+      expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'uuid-123' },
+        relations: ['address', 'logoMedia'],
       });
       expect(result).toEqual(updated);
     });

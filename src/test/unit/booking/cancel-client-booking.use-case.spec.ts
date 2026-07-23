@@ -41,9 +41,11 @@ describe('CancelClientBookingUseCase', () => {
   beforeEach(async () => {
     bookingRepository = {
       findByIdForTenantProfessional: jest.fn().mockResolvedValue(baseBooking),
-      updateStatus: jest.fn().mockImplementation((_id, _t, _tp, _from, to) =>
-        Promise.resolve({ ...baseBooking, status: to }),
-      ),
+      updateStatus: jest
+        .fn()
+        .mockImplementation((_id, _t, _tp, _from, to) =>
+          Promise.resolve({ ...baseBooking, status: to }),
+        ),
     };
     findTenantByIdUseCase = {
       run: jest.fn().mockResolvedValue({
@@ -114,7 +116,12 @@ describe('CancelClientBookingUseCase', () => {
       clientCancelConfirmedMinLeadMinutes: 60,
     });
     try {
-      await useCase.run(tenantId, tenantProfessionalId, bookingId, clientUserId);
+      await useCase.run(
+        tenantId,
+        tenantProfessionalId,
+        bookingId,
+        clientUserId,
+      );
       expect(true).toBe(false);
     } catch (e) {
       expect(e).toBeInstanceOf(BusinessRuleException);
@@ -137,7 +144,12 @@ describe('CancelClientBookingUseCase', () => {
       clientCancelConfirmedMinLeadMinutes: 60,
     });
     try {
-      await useCase.run(tenantId, tenantProfessionalId, bookingId, clientUserId);
+      await useCase.run(
+        tenantId,
+        tenantProfessionalId,
+        bookingId,
+        clientUserId,
+      );
       expect(true).toBe(false);
     } catch (e) {
       expect(e).toBeInstanceOf(BusinessRuleException);

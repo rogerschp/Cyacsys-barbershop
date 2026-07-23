@@ -30,13 +30,23 @@ export class UserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<UserEntity | null> {
     return this.repo.findOne({
       where: { email },
-      relations: ['address', 'professionalProfile'],
+      relations: [
+        'address',
+        'avatarMedia',
+        'professionalProfile',
+        'professionalProfile.avatarMedia',
+      ],
     });
   }
   async findById(id: string): Promise<UserEntity | null> {
     return this.repo.findOne({
       where: { id },
-      relations: ['address', 'professionalProfile'],
+      relations: [
+        'address',
+        'avatarMedia',
+        'professionalProfile',
+        'professionalProfile.avatarMedia',
+      ],
     });
   }
   async update(id: string, data: UpdateUserPortInput): Promise<void> {

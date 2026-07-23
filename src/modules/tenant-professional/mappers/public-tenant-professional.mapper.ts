@@ -15,7 +15,7 @@ export function mapToPublicTenantProfessional(
     tenantId: entity.tenantId,
     displayName: profile.displayName,
     bio: profile.bio,
-    avatarUrl: profile.avatarUrl,
+    avatarUrl: profile.avatarMedia?.url ?? null,
     professionalType: profile.professionalType,
     bookingMode: profile.bookingMode,
     whatsappNumber: profile.whatsappNumber,

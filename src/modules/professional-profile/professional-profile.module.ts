@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProfessionalProfileRepository } from '../../repository/professional-profile/professional-profile.repository';
 import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../user/user.module';
+import { MediaModule } from '../media/media.module';
 import { ProfessionalProfileEntity } from './entities/professional-profile.entity';
 import { PROFESSIONAL_PROFILE_REPOSITORY } from './interfaces/professional-profile-repository.interface';
 import { ProfessionalProfileController } from './professional-profile.controller';
@@ -12,12 +13,14 @@ import { DeactivateProfessionalProfileUseCase } from './use-cases/deactivate-pro
 import { GetProfessionalProfileByIdUseCase } from './use-cases/get-professional-profile-by-id.use-case';
 import { GetProfessionalProfileByUserUseCase } from './use-cases/get-professional-profile-by-user.use-case';
 import { UpdateProfessionalProfileUseCase } from './use-cases/update-professional-profile.use-case';
+import { UpdateProfessionalProfileAvatarUseCase } from './use-cases/update-professional-profile-avatar.use-case';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ProfessionalProfileEntity]),
     forwardRef(() => AuthModule),
     forwardRef(() => UserModule),
+    MediaModule,
   ],
   controllers: [ProfessionalProfileController],
   providers: [
@@ -32,6 +35,7 @@ import { UpdateProfessionalProfileUseCase } from './use-cases/update-professiona
     ActivateProfessionalProfileUseCase,
     GetProfessionalProfileByUserUseCase,
     GetProfessionalProfileByIdUseCase,
+    UpdateProfessionalProfileAvatarUseCase,
   ],
   exports: [
     PROFESSIONAL_PROFILE_REPOSITORY,

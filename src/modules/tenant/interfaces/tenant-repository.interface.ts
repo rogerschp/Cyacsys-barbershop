@@ -7,6 +7,7 @@ import { TenantThemeData } from '../../tenant-theme/interfaces/tenant-theme-data
 /** Campos persistíveis no update (sem `address` aninhado — use `addressId`). */
 export type TenantUpdateData = Omit<UpdateTenantDto, 'address'> & {
   addressId?: string | null;
+  logoMediaId?: string | null;
 };
 
 export interface ITenantRepository {
