@@ -16,8 +16,6 @@ describe('ReviewRepository', () => {
     targetId: 'tenant-1',
     rating: 5,
     comment: 'Ótimo',
-    isEdited: false,
-    editedAt: null,
     reply: null,
     repliedAt: null,
     repliedByUserId: null,
@@ -31,6 +29,7 @@ describe('ReviewRepository', () => {
     where: jest.fn().mockReturnThis(),
     andWhere: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
+    addOrderBy: jest.fn().mockReturnThis(),
     getMany: jest.fn().mockResolvedValue([mockReview]),
   };
 
@@ -88,6 +87,7 @@ describe('ReviewRepository', () => {
       where: jest.fn().mockReturnThis(),
       andWhere: jest.fn().mockReturnThis(),
       orderBy: jest.fn().mockReturnThis(),
+      addOrderBy: jest.fn().mockReturnThis(),
       getMany: jest.fn().mockResolvedValue([mockReview]),
     };
     const nullAverageStatsQb = {
@@ -126,6 +126,7 @@ describe('ReviewRepository', () => {
       where: jest.fn().mockReturnThis(),
       andWhere: jest.fn().mockReturnThis(),
       orderBy: jest.fn().mockReturnThis(),
+      addOrderBy: jest.fn().mockReturnThis(),
       getMany: jest.fn().mockResolvedValue([]),
     };
     const noStatsQb = {
@@ -154,6 +155,7 @@ describe('ReviewRepository', () => {
       where: jest.fn().mockReturnThis(),
       andWhere: jest.fn().mockReturnThis(),
       orderBy: jest.fn().mockReturnThis(),
+      addOrderBy: jest.fn().mockReturnThis(),
       getMany: jest.fn().mockResolvedValue([]),
     };
     const emptyStatsQb = {
@@ -197,7 +199,7 @@ describe('ReviewRepository', () => {
         targetType: ReviewTargetType.TENANT,
         targetId: 'tenant-1',
       },
-      relations: ['reviewer', 'repliedBy'],
+      relations: ['reviewer', 'repliedBy', 'comments', 'comments.author'],
     });
   });
 

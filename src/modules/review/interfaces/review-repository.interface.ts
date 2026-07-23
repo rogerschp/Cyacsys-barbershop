@@ -1,4 +1,5 @@
 import { ReviewEntity } from '../entities/review.entity';
+import { ReviewCommentEntity } from '../entities/review-comment.entity';
 import { ReviewTargetType } from '../entities/review-target-type.enum';
 
 export interface CreateReviewData {
@@ -12,8 +13,6 @@ export interface CreateReviewData {
 export interface UpdateReviewData {
   rating?: number;
   comment?: string | null;
-  isEdited?: boolean;
-  editedAt?: Date | null;
   reply?: string | null;
   repliedAt?: Date | null;
   repliedByUserId?: string | null;
@@ -47,3 +46,17 @@ export interface IReviewRepository {
 }
 
 export const REVIEW_REPOSITORY = Symbol('REVIEW_REPOSITORY');
+
+export interface CreateReviewCommentData {
+  reviewId: string;
+  authorUserId: string;
+  body: string;
+}
+
+export interface IReviewCommentRepository {
+  create(data: CreateReviewCommentData): Promise<ReviewCommentEntity>;
+  findById(id: string): Promise<ReviewCommentEntity | null>;
+  softDelete(id: string): Promise<void>;
+}
+
+export const REVIEW_COMMENT_REPOSITORY = Symbol('REVIEW_COMMENT_REPOSITORY');

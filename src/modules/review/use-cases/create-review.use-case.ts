@@ -14,6 +14,10 @@ import {
   IProfessionalProfileRepository,
   PROFESSIONAL_PROFILE_REPOSITORY,
 } from '../../professional-profile/interfaces/professional-profile-repository.interface';
+import {
+  BOOKING_REPOSITORY,
+  IBookingRepository,
+} from '../../booking/interfaces/booking-repository.interface';
 import { CreateReviewDto } from '../dto/create-review.dto';
 import { ReviewEntity } from '../entities/review.entity';
 import { ReviewTargetType } from '../entities/review-target-type.enum';
@@ -21,10 +25,16 @@ import {
   IReviewRepository,
   REVIEW_REPOSITORY,
 } from '../interfaces/review-repository.interface';
+import { assertCompletedBookingForReview } from '../domain/assert-completed-booking-for-review';
+
+export interface UpsertReviewResult {
+  review: ReviewEntity;
+  created: boolean;
+}
 
 @Injectable()
-export class CreateReviewUseCase {
-  private readonly logger = new Logger(CreateReviewUseCase.name);
+export class UpsertReviewUseCase {
+  private readonly logger = new Logger(UpsertReviewUseCase.name);
 
   constructor(
     @Inject(REVIEW_REPOSITORY)
@@ -36,6 +46,8 @@ export class CreateReviewUseCase {
     private readonly assertTenantPlanFeatureUseCase: AssertTenantPlanFeatureUseCase,
     @Inject(TENANT_PROFESSIONAL_REPOSITORY)
     private readonly tenantProfessionalRepository: ITenantProfessionalRepository,
+    @Inject(BOOKING_REPOSITORY)
+    private readonly bookingRepository: IBookingRepository,
   ) {}
 
   async run(
@@ -43,7 +55,7 @@ export class CreateReviewUseCase {
     targetType: ReviewTargetType,
     targetId: string,
     dto: CreateReviewDto,
-  ): Promise<ReviewEntity> {
+  ): Promise<UpsertReviewResult> {
     if (dto.rating < 1 || dto.rating > 5) {
       throw new BusinessRuleException(
         'INVALID_RATING',
@@ -54,42 +66,61 @@ export class CreateReviewUseCase {
     await this.assertTargetExists(targetType, targetId);
     await this.assertReviewsPlanAllowed(targetType, targetId);
     await this.assertCanReviewTarget(reviewerUserId, targetType, targetId);
+    await assertCompletedBookingForReview({
+      bookingRepository: this.bookingRepository,
+      reviewerUserId,
+      targetType,
+      targetId,
+    });
 
     const existing = await this.reviewRepository.findActiveByReviewerAndTarget(
       reviewerUserId,
       targetType,
       targetId,
     );
+
+    const comment = dto.comment?.trim() ?? null;
+
     if (existing) {
-      throw new BusinessRuleException(
-        'REVIEW_ALREADY_EXISTS',
-        'Você já avaliou este alvo.',
-      );
+      const review = await this.reviewRepository.update(existing.id, {
+        rating: dto.rating,
+        comment,
+      });
+      this.logger.log({
+        event: 'review_updated',
+        reviewId: review.id,
+        reviewerUserId,
+        targetType,
+        targetId,
+        rating: review.rating,
+        timestamp: new Date().toISOString(),
+      });
+      return { review, created: false };
     }
 
-    const review = await this.reviewRepository.create({
+    const created = await this.reviewRepository.create({
       reviewerUserId,
       targetType,
       targetId,
       rating: dto.rating,
-      comment: dto.comment?.trim() ?? null,
+      comment,
     });
 
     this.logger.log({
       event: 'review_created',
-      reviewId: review.id,
+      reviewId: created.id,
       reviewerUserId,
       targetType,
       targetId,
-      rating: review.rating,
+      rating: created.rating,
       timestamp: new Date().toISOString(),
     });
 
-    const saved = await this.reviewRepository.findById(review.id);
+    const saved = await this.reviewRepository.findById(created.id);
     if (!saved) {
       throw new Error('Review not found after create');
     }
-    return saved;
+    return { review: saved, created: true };
   }
 
   private async assertTargetExists(
@@ -184,3 +215,6 @@ export class CreateReviewUseCase {
     }
   }
 }
+
+/** @deprecated Use UpsertReviewUseCase */
+export { UpsertReviewUseCase as CreateReviewUseCase };

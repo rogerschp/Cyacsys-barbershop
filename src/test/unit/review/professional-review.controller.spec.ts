@@ -5,7 +5,9 @@ import {
   MyProfessionalReviewController,
   ProfessionalReviewByUserController,
 } from 'src/modules/review/controllers/professional-review.controller';
-import { CreateReviewUseCase } from 'src/modules/review/use-cases/create-review.use-case';
+import { UpsertReviewUseCase } from 'src/modules/review/use-cases/create-review.use-case';
+import { CreateReviewCommentUseCase } from 'src/modules/review/use-cases/create-review-comment.use-case';
+import { DeleteReviewCommentUseCase } from 'src/modules/review/use-cases/delete-review-comment.use-case';
 import { ListReviewsUseCase } from 'src/modules/review/use-cases/list-reviews.use-case';
 import { EditReviewUseCase } from 'src/modules/review/use-cases/edit-review.use-case';
 import { ReplyReviewUseCase } from 'src/modules/review/use-cases/reply-review.use-case';
@@ -22,8 +24,6 @@ const mockReviewEntity = {
   targetId: 'profile-1',
   rating: 5,
   comment: null,
-  isEdited: false,
-  editedAt: null,
   reply: null,
   repliedAt: null,
   repliedByUserId: null,
@@ -35,7 +35,9 @@ describe('ProfessionalReview controllers (HTTP)', () => {
   let publicApp: INestApplication;
   let meApp: INestApplication;
 
-  const createReview = { run: jest.fn() };
+  const upsertReview = { run: jest.fn() };
+  const createComment = { run: jest.fn() };
+  const deleteComment = { run: jest.fn() };
   const listReviews = { run: jest.fn() };
   const editReview = { run: jest.fn() };
   const replyReview = { run: jest.fn() };
@@ -58,7 +60,9 @@ describe('ProfessionalReview controllers (HTTP)', () => {
     const publicModule = await Test.createTestingModule({
       controllers: [ProfessionalReviewByUserController],
       providers: [
-        { provide: CreateReviewUseCase, useValue: createReview },
+        { provide: UpsertReviewUseCase, useValue: upsertReview },
+        { provide: CreateReviewCommentUseCase, useValue: createComment },
+        { provide: DeleteReviewCommentUseCase, useValue: deleteComment },
         { provide: ListReviewsUseCase, useValue: listReviews },
         {
           provide: GetProfessionalProfileByUserUseCase,
@@ -124,18 +128,67 @@ describe('ProfessionalReview controllers (HTTP)', () => {
   });
 
   it('POST /users/:userId/professional-profile/reviews cria avaliação', () => {
-    createReview.run.mockResolvedValue(mockReviewEntity);
+    upsertReview.run.mockResolvedValue({
+      created: true,
+      review: mockReviewEntity,
+    });
     return request(publicApp.getHttpServer())
       .post('/users/user-pro/professional-profile/reviews')
       .send({ rating: 5 })
       .expect(201)
       .expect(() => {
-        expect(createReview.run).toHaveBeenCalledWith(
+        expect(upsertReview.run).toHaveBeenCalledWith(
           'user-me',
           ReviewTargetType.PROFESSIONAL,
           'profile-1',
           { rating: 5 },
         );
+      });
+  });
+
+  it('POST review update retorna 200', () => {
+    upsertReview.run.mockResolvedValue({
+      created: false,
+      review: { ...mockReviewEntity, rating: 4 },
+    });
+    return request(publicApp.getHttpServer())
+      .post('/users/user-pro/professional-profile/reviews')
+      .send({ rating: 4 })
+      .expect(200);
+  });
+
+  it('POST comments cria comentário', () => {
+    createComment.run.mockResolvedValue({
+      id: 'c1',
+      reviewId: 'r1',
+      authorUserId: 'user-me',
+      body: 'Oi',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    return request(publicApp.getHttpServer())
+      .post('/users/user-pro/professional-profile/reviews/r1/comments')
+      .send({ body: 'Oi' })
+      .expect(201)
+      .expect(() => {
+        expect(createComment.run).toHaveBeenCalledWith(
+          'r1',
+          'user-me',
+          ReviewTargetType.PROFESSIONAL,
+          'profile-1',
+          { body: 'Oi' },
+        );
+      });
+  });
+
+  it('DELETE comments remove comentário', () => {
+    deleteComment.run.mockResolvedValue(undefined);
+    return request(publicApp.getHttpServer())
+      .delete('/users/user-pro/professional-profile/reviews/r1/comments/c1')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.message).toBe('Comment deleted successfully');
+        expect(deleteComment.run).toHaveBeenCalledWith('c1', 'user-me');
       });
   });
 
@@ -171,7 +224,9 @@ describe('ProfessionalReview controllers (HTTP)', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [ProfessionalReviewByUserController],
       providers: [
-        { provide: CreateReviewUseCase, useValue: createReview },
+        { provide: UpsertReviewUseCase, useValue: upsertReview },
+        { provide: CreateReviewCommentUseCase, useValue: createComment },
+        { provide: DeleteReviewCommentUseCase, useValue: deleteComment },
         { provide: ListReviewsUseCase, useValue: listReviews },
         {
           provide: GetProfessionalProfileByUserUseCase,
@@ -185,12 +240,15 @@ describe('ProfessionalReview controllers (HTTP)', () => {
 
     const isolatedApp = moduleRef.createNestApplication();
     await isolatedApp.init();
-    createReview.run.mockResolvedValue(mockReviewEntity);
+    upsertReview.run.mockResolvedValue({
+      created: true,
+      review: mockReviewEntity,
+    });
     await request(isolatedApp.getHttpServer())
       .post('/users/user-pro/professional-profile/reviews')
       .send({ rating: 5 })
       .expect(201);
-    expect(createReview.run).toHaveBeenCalledWith(
+    expect(upsertReview.run).toHaveBeenCalledWith(
       '',
       ReviewTargetType.PROFESSIONAL,
       'profile-1',

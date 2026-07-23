@@ -478,4 +478,72 @@ describe('BookingRepository', () => {
       });
     });
   });
+
+  describe('completePastConfirmed', () => {
+    it('atualiza CONFIRMED com ends_at no passado', async () => {
+      const execute = jest.fn().mockResolvedValue({ affected: 2 });
+      const updateQb = {
+        update: jest.fn().mockReturnThis(),
+        set: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        execute,
+      };
+      rootBookingRepo.createQueryBuilder = jest.fn().mockReturnValue(updateQb);
+
+      const now = new Date('2099-01-01T00:00:00.000Z');
+      await expect(repository.completePastConfirmed(now)).resolves.toBe(2);
+      expect(updateQb.set).toHaveBeenCalledWith({
+        status: BookingStatus.COMPLETED,
+      });
+      expect(updateQb.andWhere).toHaveBeenCalledWith('ends_at < :now', { now });
+    });
+
+    it('retorna 0 quando affected é undefined', async () => {
+      const updateQb = {
+        update: jest.fn().mockReturnThis(),
+        set: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        execute: jest.fn().mockResolvedValue({}),
+      };
+      rootBookingRepo.createQueryBuilder = jest.fn().mockReturnValue(updateQb);
+      await expect(repository.completePastConfirmed(new Date())).resolves.toBe(
+        0,
+      );
+    });
+  });
+
+  describe('existsCompletedForReviewer', () => {
+    it('filtra por tenant', async () => {
+      listQb.getCount.mockResolvedValue(1);
+      rootBookingRepo.createQueryBuilder = jest.fn().mockReturnValue(listQb);
+
+      await expect(
+        repository.existsCompletedForReviewer({
+          reviewerUserId: 'u1',
+          tenantId,
+        }),
+      ).resolves.toBe(true);
+
+      expect(listQb.andWhere).toHaveBeenCalledWith('b.tenant_id = :tenantId', {
+        tenantId,
+      });
+    });
+
+    it('filtra por professionalProfileId', async () => {
+      listQb.getCount.mockResolvedValue(0);
+      listQb.innerJoin = jest.fn().mockReturnThis();
+      rootBookingRepo.createQueryBuilder = jest.fn().mockReturnValue(listQb);
+
+      await expect(
+        repository.existsCompletedForReviewer({
+          reviewerUserId: 'u1',
+          professionalProfileId: 'pp1',
+        }),
+      ).resolves.toBe(false);
+
+      expect(listQb.innerJoin).toHaveBeenCalled();
+    });
+  });
 });

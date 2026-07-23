@@ -241,6 +241,44 @@ export class BookingRepository implements IBookingRepository {
     return qb.getMany();
   }
 
+  async completePastConfirmed(now: Date): Promise<number> {
+    const result = await this.bookingRepo
+      .createQueryBuilder()
+      .update(BookingEntity)
+      .set({ status: BookingStatus.COMPLETED })
+      .where('status = :status', { status: BookingStatus.CONFIRMED })
+      .andWhere('ends_at < :now', { now })
+      .execute();
+    return result.affected ?? 0;
+  }
+
+  async existsCompletedForReviewer(params: {
+    reviewerUserId: string;
+    tenantId?: string;
+    professionalProfileId?: string;
+  }): Promise<boolean> {
+    const qb = this.bookingRepo
+      .createQueryBuilder('b')
+      .where('b.client_user_id = :reviewerUserId', {
+        reviewerUserId: params.reviewerUserId,
+      })
+      .andWhere('b.status = :status', { status: BookingStatus.COMPLETED });
+
+    if (params.tenantId) {
+      qb.andWhere('b.tenant_id = :tenantId', { tenantId: params.tenantId });
+    }
+
+    if (params.professionalProfileId) {
+      qb.innerJoin('b.tenantProfessional', 'tp').andWhere(
+        'tp.professional_profile_id = :professionalProfileId',
+        { professionalProfileId: params.professionalProfileId },
+      );
+    }
+
+    const count = await qb.getCount();
+    return count > 0;
+  }
+
   private applyCustomerIdentityFilter(
     qb: SelectQueryBuilder<BookingEntity>,
     identity: CustomerIdentity,

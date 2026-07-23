@@ -26,9 +26,7 @@ describe('tenant-search.policy', () => {
 
   describe('resolveTenantSearchOrdering', () => {
     it('usa peso do plano primeiro no marketplace (sem filtro)', () => {
-      expect(
-        resolveTenantSearchOrdering({ hasCoordinates: false }),
-      ).toEqual([
+      expect(resolveTenantSearchOrdering({ hasCoordinates: false })).toEqual([
         { field: 'p.sort_weight', direction: 'DESC' },
         { field: 'average_rating', direction: 'DESC' },
       ]);

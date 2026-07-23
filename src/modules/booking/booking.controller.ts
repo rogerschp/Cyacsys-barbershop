@@ -33,6 +33,7 @@ import { CancelBookingDraftUseCase } from './use-cases/cancel-booking-draft.use-
 import { ConfirmBookingUseCase } from './use-cases/confirm-booking.use-case';
 import { CreateBookingDraftUseCase } from './use-cases/create-booking-draft.use-case';
 import { ListTenantProfessionalBookingsUseCase } from './use-cases/list-tenant-professional-bookings.use-case';
+import { CompleteBookingUseCase } from './use-cases/complete-booking.use-case';
 import { TenantResolverGuard } from '../../common/guards/tenant-resolver.guard';
 
 interface RequestWithUserAndMembership {
@@ -72,6 +73,7 @@ export class BookingController {
     private readonly createBookingDraftUseCase: CreateBookingDraftUseCase,
     private readonly confirmBookingUseCase: ConfirmBookingUseCase,
     private readonly cancelBookingDraftUseCase: CancelBookingDraftUseCase,
+    private readonly completeBookingUseCase: CompleteBookingUseCase,
     private readonly listTenantProfessionalBookingsUseCase: ListTenantProfessionalBookingsUseCase,
   ) {}
 
@@ -81,20 +83,32 @@ export class BookingController {
     summary: 'Lista agendamentos do profissional (agenda ops)',
     description:
       'OWNER/ADMIN/STAFF veem qualquer profissional; BARBER só a própria agenda. ' +
-      'Filtre por dia (fuso do tenant) e/ou status. Ordenado por início asc.',
+      'Filtre por dia (`date`) OU intervalo (`from`+`to`) no fuso do tenant — nunca misture. ' +
+      'Intervalo máximo: 31 dias. Ordenado por início asc.',
   })
   @ApiParam({ name: 'tenantId' })
   @ApiParam({ name: 'tenantProfessionalId' })
   @ApiQuery({
     name: 'date',
     required: false,
-    description: 'Data no fuso do tenant (yyyy-MM-dd)',
+    description:
+      'Um dia no fuso do tenant (yyyy-MM-dd). Mutuamente exclusivo com from/to.',
+  })
+  @ApiQuery({
+    name: 'from',
+    required: false,
+    description: 'Início do intervalo (yyyy-MM-dd). Exige to.',
+  })
+  @ApiQuery({
+    name: 'to',
+    required: false,
+    description: 'Fim do intervalo inclusivo (yyyy-MM-dd). Exige from.',
   })
   @ApiQuery({
     name: 'status',
     required: false,
     enum: BookingStatus,
-    description: 'Filtrar por status (DRAFT, CONFIRMED, CANCELLED)',
+    description: 'Filtrar por status (DRAFT, CONFIRMED, CANCELLED, COMPLETED)',
   })
   @ApiResponse({ status: 200, type: [OpsBookingResponseDto] })
   async list(
@@ -102,6 +116,8 @@ export class BookingController {
     @Param('tenantProfessionalId') tenantProfessionalId: string,
     @Req() req: RequestWithUserAndMembership,
     @Query('date') date?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
     @Query('status', new ParseEnumPipe(BookingStatus, { optional: true }))
     status?: BookingStatus,
   ) {
@@ -112,6 +128,8 @@ export class BookingController {
       userId: req.user?.dbUser?.id ?? '',
       callerRole: req.tenantMembership?.role,
       date,
+      from,
+      to,
       status,
     });
   }
@@ -185,6 +203,33 @@ export class BookingController {
     @Req() req: RequestWithUserAndMembership,
   ) {
     const booking = await this.cancelBookingDraftUseCase.run(
+      tenantId,
+      tenantProfessionalId,
+      bookingId,
+      req.user?.dbUser?.id ?? '',
+      req.tenantMembership?.role,
+    );
+    return mapBookingToResponse(booking);
+  }
+
+  @Patch(':bookingId/complete')
+  @TenantRoles(...BOOKING_ROLES)
+  @ApiOperation({
+    summary: 'Marca agendamento confirmado como concluído (COMPLETED)',
+    description:
+      'CONFIRMED → COMPLETED. Necessário para o cliente poder avaliar. Também há job automático após endsAt.',
+  })
+  @ApiParam({ name: 'tenantId' })
+  @ApiParam({ name: 'tenantProfessionalId' })
+  @ApiParam({ name: 'bookingId' })
+  @ApiResponse({ status: 200, type: BookingResponseDto })
+  async complete(
+    @Param('tenantId') tenantId: string,
+    @Param('tenantProfessionalId') tenantProfessionalId: string,
+    @Param('bookingId') bookingId: string,
+    @Req() req: RequestWithUserAndMembership,
+  ) {
+    const booking = await this.completeBookingUseCase.run(
       tenantId,
       tenantProfessionalId,
       bookingId,

@@ -5,6 +5,7 @@ import { BookingController } from 'src/modules/booking/booking.controller';
 import { CreateBookingDraftUseCase } from 'src/modules/booking/use-cases/create-booking-draft.use-case';
 import { ConfirmBookingUseCase } from 'src/modules/booking/use-cases/confirm-booking.use-case';
 import { CancelBookingDraftUseCase } from 'src/modules/booking/use-cases/cancel-booking-draft.use-case';
+import { CompleteBookingUseCase } from 'src/modules/booking/use-cases/complete-booking.use-case';
 import { ListTenantProfessionalBookingsUseCase } from 'src/modules/booking/use-cases/list-tenant-professional-bookings.use-case';
 import { BearerAuthGuard } from 'src/modules/auth/guards/bearer-auth.guard';
 import { TenantInterceptor } from 'src/common/interceptors/tenant.interceptor';
@@ -19,6 +20,7 @@ describe('BookingController (HTTP)', () => {
   let createBookingDraftUseCase: jest.Mocked<CreateBookingDraftUseCase>;
   let confirmBookingUseCase: jest.Mocked<ConfirmBookingUseCase>;
   let cancelBookingDraftUseCase: jest.Mocked<CancelBookingDraftUseCase>;
+  let completeBookingUseCase: jest.Mocked<CompleteBookingUseCase>;
   let listTenantProfessionalBookingsUseCase: jest.Mocked<ListTenantProfessionalBookingsUseCase>;
 
   const tenantId = 'tenant-uuid';
@@ -45,6 +47,7 @@ describe('BookingController (HTTP)', () => {
     const mockCreate = { run: jest.fn() };
     const mockConfirm = { run: jest.fn() };
     const mockCancel = { run: jest.fn() };
+    const mockComplete = { run: jest.fn() };
     const mockList = { run: jest.fn() };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -53,6 +56,7 @@ describe('BookingController (HTTP)', () => {
         { provide: CreateBookingDraftUseCase, useValue: mockCreate },
         { provide: ConfirmBookingUseCase, useValue: mockConfirm },
         { provide: CancelBookingDraftUseCase, useValue: mockCancel },
+        { provide: CompleteBookingUseCase, useValue: mockComplete },
         { provide: ListTenantProfessionalBookingsUseCase, useValue: mockList },
       ],
     })
@@ -88,6 +92,7 @@ describe('BookingController (HTTP)', () => {
     createBookingDraftUseCase = moduleFixture.get(CreateBookingDraftUseCase);
     confirmBookingUseCase = moduleFixture.get(ConfirmBookingUseCase);
     cancelBookingDraftUseCase = moduleFixture.get(CancelBookingDraftUseCase);
+    completeBookingUseCase = moduleFixture.get(CompleteBookingUseCase);
     listTenantProfessionalBookingsUseCase = moduleFixture.get(
       ListTenantProfessionalBookingsUseCase,
     );
@@ -107,6 +112,9 @@ describe('BookingController (HTTP)', () => {
     );
     cancelBookingDraftUseCase.run.mockResolvedValue(
       mockBookingEntity(BookingStatus.CANCELLED) as any,
+    );
+    completeBookingUseCase.run.mockResolvedValue(
+      mockBookingEntity(BookingStatus.COMPLETED) as any,
     );
     listTenantProfessionalBookingsUseCase.run.mockResolvedValue([]);
   });
@@ -217,6 +225,24 @@ describe('BookingController (HTTP)', () => {
         });
     });
   });
+
+  describe(`PATCH ${basePath}/:id/complete`, () => {
+    it('retorna 200 e chama complete', () => {
+      return request(app.getHttpServer())
+        .patch(`${basePath}/${bookingId}/complete`)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.status).toBe(BookingStatus.COMPLETED);
+          expect(completeBookingUseCase.run).toHaveBeenCalledWith(
+            tenantId,
+            tenantProfessionalId,
+            bookingId,
+            'user-uuid-123',
+            TenantUserRole.ADMIN,
+          );
+        });
+    });
+  });
 });
 
 describe('BookingController (HTTP) — user/tenant opcionais', () => {
@@ -224,6 +250,7 @@ describe('BookingController (HTTP) — user/tenant opcionais', () => {
   let createBookingDraftUseCase: jest.Mocked<CreateBookingDraftUseCase>;
   let confirmBookingUseCase: jest.Mocked<ConfirmBookingUseCase>;
   let cancelBookingDraftUseCase: jest.Mocked<CancelBookingDraftUseCase>;
+  let completeBookingUseCase: jest.Mocked<CompleteBookingUseCase>;
 
   const tenantId = 'tenant-uuid';
   const tenantProfessionalId = 'tp-uuid';
@@ -235,6 +262,7 @@ describe('BookingController (HTTP) — user/tenant opcionais', () => {
     const mockCreate = { run: jest.fn() };
     const mockConfirm = { run: jest.fn() };
     const mockCancel = { run: jest.fn() };
+    const mockComplete = { run: jest.fn() };
     const mockList = { run: jest.fn() };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -243,6 +271,7 @@ describe('BookingController (HTTP) — user/tenant opcionais', () => {
         { provide: CreateBookingDraftUseCase, useValue: mockCreate },
         { provide: ConfirmBookingUseCase, useValue: mockConfirm },
         { provide: CancelBookingDraftUseCase, useValue: mockCancel },
+        { provide: CompleteBookingUseCase, useValue: mockComplete },
         { provide: ListTenantProfessionalBookingsUseCase, useValue: mockList },
       ],
     })
@@ -276,6 +305,7 @@ describe('BookingController (HTTP) — user/tenant opcionais', () => {
     createBookingDraftUseCase = moduleFixture.get(CreateBookingDraftUseCase);
     confirmBookingUseCase = moduleFixture.get(ConfirmBookingUseCase);
     cancelBookingDraftUseCase = moduleFixture.get(CancelBookingDraftUseCase);
+    completeBookingUseCase = moduleFixture.get(CompleteBookingUseCase);
   });
 
   afterAll(async () => {
@@ -306,6 +336,9 @@ describe('BookingController (HTTP) — user/tenant opcionais', () => {
     );
     cancelBookingDraftUseCase.run.mockResolvedValue(
       mockBookingEntity(BookingStatus.CANCELLED) as any,
+    );
+    completeBookingUseCase.run.mockResolvedValue(
+      mockBookingEntity(BookingStatus.COMPLETED) as any,
     );
   });
 
@@ -354,6 +387,21 @@ describe('BookingController (HTTP) — user/tenant opcionais', () => {
       .expect(200)
       .expect(() => {
         expect(cancelBookingDraftUseCase.run).toHaveBeenCalledWith(
+          tenantId,
+          tenantProfessionalId,
+          bookingId,
+          '',
+          undefined,
+        );
+      });
+  });
+
+  it('PATCH complete passa userId vazio e role undefined', () => {
+    return request(app.getHttpServer())
+      .patch(`${basePath}/${bookingId}/complete`)
+      .expect(200)
+      .expect(() => {
+        expect(completeBookingUseCase.run).toHaveBeenCalledWith(
           tenantId,
           tenantProfessionalId,
           bookingId,

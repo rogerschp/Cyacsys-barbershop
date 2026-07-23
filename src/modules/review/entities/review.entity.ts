@@ -7,11 +7,13 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
 import { ReviewTargetType } from './review-target-type.enum';
+import { ReviewCommentEntity } from './review-comment.entity';
 
 @Entity('reviews')
 @Index('IDX_reviews_target', ['targetType', 'targetId'])
@@ -47,12 +49,6 @@ export class ReviewEntity {
   @Column({ type: 'varchar', length: 1000, nullable: true })
   comment: string | null;
 
-  @Column({ name: 'is_edited', default: false })
-  isEdited: boolean;
-
-  @Column({ name: 'edited_at', type: 'timestamp', nullable: true })
-  editedAt: Date | null;
-
   @Column({ type: 'varchar', length: 1000, nullable: true })
   reply: string | null;
 
@@ -65,6 +61,9 @@ export class ReviewEntity {
   @ManyToOne(() => UserEntity, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'replied_by_user_id' })
   repliedBy: UserEntity | null;
+
+  @OneToMany(() => ReviewCommentEntity, (c) => c.review)
+  comments?: ReviewCommentEntity[];
 
   @CreateDateColumn()
   createdAt: Date;

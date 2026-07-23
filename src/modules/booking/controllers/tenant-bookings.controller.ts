@@ -51,25 +51,39 @@ export class TenantBookingsController {
     summary: 'Lista agendamentos do tenant (visão da unidade)',
     description:
       'Visão consolidada da agenda do estabelecimento (OWNER/ADMIN/STAFF). ' +
-      'Filtre por dia (fuso do tenant) e/ou status. Ordenado por início asc.',
+      'Filtre por dia (`date`) OU intervalo (`from`+`to`) no fuso do tenant — nunca misture. ' +
+      'Intervalo máximo: 31 dias. Ordenado por início asc.',
   })
   @ApiParam({ name: 'tenantId' })
   @ApiQuery({
     name: 'date',
     required: false,
-    description: 'Data no fuso do tenant (yyyy-MM-dd)',
+    description:
+      'Um dia no fuso do tenant (yyyy-MM-dd). Mutuamente exclusivo com from/to.',
+  })
+  @ApiQuery({
+    name: 'from',
+    required: false,
+    description: 'Início do intervalo (yyyy-MM-dd). Exige to.',
+  })
+  @ApiQuery({
+    name: 'to',
+    required: false,
+    description: 'Fim do intervalo inclusivo (yyyy-MM-dd). Exige from.',
   })
   @ApiQuery({
     name: 'status',
     required: false,
     enum: BookingStatus,
-    description: 'Filtrar por status (DRAFT, CONFIRMED, CANCELLED)',
+    description: 'Filtrar por status (DRAFT, CONFIRMED, CANCELLED, COMPLETED)',
   })
   @ApiResponse({ status: 200, type: [OpsBookingResponseDto] })
   async list(
     @Param('tenantId') tenantId: string,
     @Req() req: RequestWithTenant,
     @Query('date') date?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
     @Query('status', new ParseEnumPipe(BookingStatus, { optional: true }))
     status?: BookingStatus,
   ) {
@@ -77,6 +91,8 @@ export class TenantBookingsController {
       tenantId,
       timezone: req.tenant?.timezone ?? 'America/Sao_Paulo',
       date,
+      from,
+      to,
       status,
     });
   }
