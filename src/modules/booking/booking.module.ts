@@ -27,6 +27,9 @@ import { CreateGuestBookingDraftUseCase } from './use-cases/create-guest-booking
 import { ListMyBookingsUseCase } from './use-cases/list-my-bookings.use-case';
 import { ListTenantBookingsUseCase } from './use-cases/list-tenant-bookings.use-case';
 import { ListTenantProfessionalBookingsUseCase } from './use-cases/list-tenant-professional-bookings.use-case';
+import { CompleteBookingUseCase } from './use-cases/complete-booking.use-case';
+import { CompletePastBookingsUseCase } from './use-cases/complete-past-bookings.use-case';
+import { CompletePastBookingsJob } from './jobs/complete-past-bookings.job';
 
 @Module({
   imports: [
@@ -54,6 +57,9 @@ import { ListTenantProfessionalBookingsUseCase } from './use-cases/list-tenant-p
     CreateBookingDraftUseCase,
     ConfirmBookingUseCase,
     CancelBookingDraftUseCase,
+    CompleteBookingUseCase,
+    CompletePastBookingsUseCase,
+    CompletePastBookingsJob,
     CreateClientBookingDraftUseCase,
     CreateGuestBookingDraftUseCase,
     ConfirmClientBookingUseCase,

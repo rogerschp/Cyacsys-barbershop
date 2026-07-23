@@ -24,8 +24,6 @@ export class ReviewRepository implements IReviewRepository {
       targetId: data.targetId,
       rating: data.rating,
       comment: data.comment,
-      isEdited: false,
-      editedAt: null,
       reply: null,
       repliedAt: null,
       repliedByUserId: null,
@@ -36,7 +34,7 @@ export class ReviewRepository implements IReviewRepository {
   async findById(id: string): Promise<ReviewEntity | null> {
     return this.repo.findOne({
       where: { id },
-      relations: ['reviewer', 'repliedBy'],
+      relations: ['reviewer', 'repliedBy', 'comments', 'comments.author'],
     });
   }
 
@@ -47,7 +45,7 @@ export class ReviewRepository implements IReviewRepository {
   ): Promise<ReviewEntity | null> {
     return this.repo.findOne({
       where: { id, targetType, targetId },
-      relations: ['reviewer', 'repliedBy'],
+      relations: ['reviewer', 'repliedBy', 'comments', 'comments.author'],
     });
   }
 
@@ -69,10 +67,13 @@ export class ReviewRepository implements IReviewRepository {
       .createQueryBuilder('r')
       .leftJoinAndSelect('r.reviewer', 'reviewer')
       .leftJoinAndSelect('r.repliedBy', 'repliedBy')
+      .leftJoinAndSelect('r.comments', 'comments', 'comments.deletedAt IS NULL')
+      .leftJoinAndSelect('comments.author', 'commentAuthor')
       .where('r.target_type = :targetType', { targetType })
       .andWhere('r.target_id = :targetId', { targetId })
       .andWhere('r.deletedAt IS NULL')
-      .orderBy('r.createdAt', 'DESC');
+      .orderBy('r.createdAt', 'DESC')
+      .addOrderBy('comments.createdAt', 'ASC');
 
     const reviews = await qb.getMany();
 

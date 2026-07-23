@@ -11,6 +11,14 @@ export class PublicTenantProfessionalResponseDto {
   @ApiProperty()
   tenantId: string;
 
+  @ApiProperty({ description: 'ID do professional profile' })
+  professionalProfileId: string;
+
+  @ApiProperty({
+    description: 'userId do dono do perfil (navegação reviews/perfil)',
+  })
+  userId: string;
+
   @ApiProperty()
   displayName: string;
 

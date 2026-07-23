@@ -5,19 +5,23 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
-import { UpdateReviewDto } from '../dto/update-review.dto';
-import { ReviewEntity } from '../entities/review.entity';
+import { CreateReviewCommentDto } from '../dto/create-review-comment.dto';
+import { ReviewCommentEntity } from '../entities/review-comment.entity';
 import { ReviewTargetType } from '../entities/review-target-type.enum';
 import {
+  IReviewCommentRepository,
   IReviewRepository,
+  REVIEW_COMMENT_REPOSITORY,
   REVIEW_REPOSITORY,
 } from '../interfaces/review-repository.interface';
 
 @Injectable()
-export class EditReviewUseCase {
+export class CreateReviewCommentUseCase {
   constructor(
     @Inject(REVIEW_REPOSITORY)
     private readonly reviewRepository: IReviewRepository,
+    @Inject(REVIEW_COMMENT_REPOSITORY)
+    private readonly commentRepository: IReviewCommentRepository,
   ) {}
 
   async run(
@@ -25,8 +29,8 @@ export class EditReviewUseCase {
     userId: string,
     targetType: ReviewTargetType,
     targetId: string,
-    dto: UpdateReviewDto,
-  ): Promise<ReviewEntity> {
+    dto: CreateReviewCommentDto,
+  ): Promise<ReviewCommentEntity> {
     const review = await this.reviewRepository.findByIdAndTarget(
       reviewId,
       targetType,
@@ -36,22 +40,23 @@ export class EditReviewUseCase {
       throw new NotFoundException('Review not found');
     }
     if (review.reviewerUserId !== userId) {
-      throw new ForbiddenException('Only the author can edit this review');
-    }
-
-    if (dto.rating !== undefined && (dto.rating < 1 || dto.rating > 5)) {
-      throw new BusinessRuleException(
-        'INVALID_RATING',
-        'A nota deve estar entre 1 e 5.',
+      throw new ForbiddenException(
+        'Only the review author can add comments to this review',
       );
     }
 
-    return this.reviewRepository.update(reviewId, {
-      rating: dto.rating ?? review.rating,
-      comment:
-        dto.comment !== undefined
-          ? (dto.comment?.trim() ?? null)
-          : review.comment,
+    const body = dto.body?.trim();
+    if (!body) {
+      throw new BusinessRuleException(
+        'INVALID_COMMENT',
+        'O comentário não pode ser vazio.',
+      );
+    }
+
+    return this.commentRepository.create({
+      reviewId,
+      authorUserId: userId,
+      body,
     });
   }
 }

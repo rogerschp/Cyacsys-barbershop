@@ -2,7 +2,9 @@ import { Test } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request = require('supertest');
 import { TenantReviewController } from 'src/modules/review/controllers/tenant-review.controller';
-import { CreateReviewUseCase } from 'src/modules/review/use-cases/create-review.use-case';
+import { UpsertReviewUseCase } from 'src/modules/review/use-cases/create-review.use-case';
+import { CreateReviewCommentUseCase } from 'src/modules/review/use-cases/create-review-comment.use-case';
+import { DeleteReviewCommentUseCase } from 'src/modules/review/use-cases/delete-review-comment.use-case';
 import { ListReviewsUseCase } from 'src/modules/review/use-cases/list-reviews.use-case';
 import { EditReviewUseCase } from 'src/modules/review/use-cases/edit-review.use-case';
 import { ReplyReviewUseCase } from 'src/modules/review/use-cases/reply-review.use-case';
@@ -15,7 +17,9 @@ import { ReviewTargetType } from 'src/modules/review/entities/review-target-type
 
 describe('TenantReviewController (HTTP)', () => {
   let app: INestApplication;
-  const createReview = { run: jest.fn() };
+  const upsertReview = { run: jest.fn() };
+  const createComment = { run: jest.fn() };
+  const deleteComment = { run: jest.fn() };
   const listReviews = { run: jest.fn() };
   const editReview = { run: jest.fn() };
   const replyReview = { run: jest.fn() };
@@ -25,7 +29,9 @@ describe('TenantReviewController (HTTP)', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [TenantReviewController],
       providers: [
-        { provide: CreateReviewUseCase, useValue: createReview },
+        { provide: UpsertReviewUseCase, useValue: upsertReview },
+        { provide: CreateReviewCommentUseCase, useValue: createComment },
+        { provide: DeleteReviewCommentUseCase, useValue: deleteComment },
         { provide: ListReviewsUseCase, useValue: listReviews },
         { provide: EditReviewUseCase, useValue: editReview },
         { provide: ReplyReviewUseCase, useValue: replyReview },
@@ -79,26 +85,88 @@ describe('TenantReviewController (HTTP)', () => {
   });
 
   it('POST /tenants/:tenantId/reviews cria avaliação', () => {
-    createReview.run.mockResolvedValue({
-      id: 'r1',
-      reviewerUserId: 'user-1',
-      reviewer: { name: 'Maria' },
-      targetType: ReviewTargetType.TENANT,
-      targetId: 'tenant-1',
-      rating: 5,
-      comment: null,
-      isEdited: false,
-      editedAt: null,
-      reply: null,
-      repliedAt: null,
-      repliedByUserId: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+    upsertReview.run.mockResolvedValue({
+      created: true,
+      review: {
+        id: 'r1',
+        reviewerUserId: 'user-1',
+        reviewer: { name: 'Maria' },
+        targetType: ReviewTargetType.TENANT,
+        targetId: 'tenant-1',
+        rating: 5,
+        comment: null,
+        reply: null,
+        repliedAt: null,
+        repliedByUserId: null,
+        comments: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     });
     return request(app.getHttpServer())
       .post('/tenants/tenant-1/reviews')
       .send({ rating: 5 })
       .expect(201);
+  });
+
+  it('POST /tenants/:tenantId/reviews atualiza avaliação existente com 200', () => {
+    upsertReview.run.mockResolvedValue({
+      created: false,
+      review: {
+        id: 'r1',
+        reviewerUserId: 'user-1',
+        reviewer: { name: 'Maria' },
+        targetType: ReviewTargetType.TENANT,
+        targetId: 'tenant-1',
+        rating: 4,
+        comment: 'Atualizado',
+        reply: null,
+        repliedAt: null,
+        repliedByUserId: null,
+        comments: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+    return request(app.getHttpServer())
+      .post('/tenants/tenant-1/reviews')
+      .send({ rating: 4, comment: 'Atualizado' })
+      .expect(200);
+  });
+
+  it('POST /tenants/:tenantId/reviews/:id/comments cria comentário', () => {
+    createComment.run.mockResolvedValue({
+      id: 'c1',
+      reviewId: 'r1',
+      authorUserId: 'user-1',
+      body: 'Voltei',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    return request(app.getHttpServer())
+      .post('/tenants/tenant-1/reviews/r1/comments')
+      .send({ body: 'Voltei' })
+      .expect(201)
+      .expect(() => {
+        expect(createComment.run).toHaveBeenCalledWith(
+          'r1',
+          'user-1',
+          ReviewTargetType.TENANT,
+          'tenant-1',
+          { body: 'Voltei' },
+        );
+      });
+  });
+
+  it('DELETE /tenants/:tenantId/reviews/:id/comments/:commentId remove', () => {
+    deleteComment.run.mockResolvedValue(undefined);
+    return request(app.getHttpServer())
+      .delete('/tenants/tenant-1/reviews/r1/comments/c1')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.message).toBe('Comment deleted successfully');
+        expect(deleteComment.run).toHaveBeenCalledWith('c1', 'user-1');
+      });
   });
 
   it('PATCH /tenants/:tenantId/reviews/:id edita avaliação', () => {
@@ -110,11 +178,10 @@ describe('TenantReviewController (HTTP)', () => {
       targetId: 'tenant-1',
       rating: 4,
       comment: 'Atualizado',
-      isEdited: true,
-      editedAt: new Date(),
       reply: null,
       repliedAt: null,
       repliedByUserId: null,
+      comments: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -133,11 +200,10 @@ describe('TenantReviewController (HTTP)', () => {
       targetId: 'tenant-1',
       rating: 5,
       comment: null,
-      isEdited: false,
-      editedAt: null,
       reply: 'Obrigado',
       repliedAt: new Date(),
       repliedByUserId: 'user-1',
+      comments: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -151,7 +217,9 @@ describe('TenantReviewController (HTTP)', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [TenantReviewController],
       providers: [
-        { provide: CreateReviewUseCase, useValue: createReview },
+        { provide: UpsertReviewUseCase, useValue: upsertReview },
+        { provide: CreateReviewCommentUseCase, useValue: createComment },
+        { provide: DeleteReviewCommentUseCase, useValue: deleteComment },
         { provide: ListReviewsUseCase, useValue: listReviews },
         { provide: EditReviewUseCase, useValue: editReview },
         { provide: ReplyReviewUseCase, useValue: replyReview },
@@ -170,27 +238,29 @@ describe('TenantReviewController (HTTP)', () => {
 
     const isolatedApp = moduleRef.createNestApplication();
     await isolatedApp.init();
-    createReview.run.mockResolvedValue({
-      id: 'r1',
-      reviewerUserId: '',
-      reviewer: { name: 'Anon' },
-      targetType: ReviewTargetType.TENANT,
-      targetId: 'tenant-1',
-      rating: 3,
-      comment: null,
-      isEdited: false,
-      editedAt: null,
-      reply: null,
-      repliedAt: null,
-      repliedByUserId: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+    upsertReview.run.mockResolvedValue({
+      created: true,
+      review: {
+        id: 'r1',
+        reviewerUserId: '',
+        reviewer: { name: 'Anon' },
+        targetType: ReviewTargetType.TENANT,
+        targetId: 'tenant-1',
+        rating: 3,
+        comment: null,
+        reply: null,
+        repliedAt: null,
+        repliedByUserId: null,
+        comments: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     });
     await request(isolatedApp.getHttpServer())
       .post('/tenants/tenant-1/reviews')
       .send({ rating: 3 })
       .expect(201);
-    expect(createReview.run).toHaveBeenCalledWith(
+    expect(upsertReview.run).toHaveBeenCalledWith(
       '',
       ReviewTargetType.TENANT,
       'tenant-1',
@@ -213,7 +283,9 @@ describe('TenantReviewController (HTTP)', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [TenantReviewController],
       providers: [
-        { provide: CreateReviewUseCase, useValue: createReview },
+        { provide: UpsertReviewUseCase, useValue: upsertReview },
+        { provide: CreateReviewCommentUseCase, useValue: createComment },
+        { provide: DeleteReviewCommentUseCase, useValue: deleteComment },
         { provide: ListReviewsUseCase, useValue: listReviews },
         { provide: EditReviewUseCase, useValue: editReview },
         { provide: ReplyReviewUseCase, useValue: replyReview },
@@ -240,11 +312,10 @@ describe('TenantReviewController (HTTP)', () => {
       targetId: 'tenant-1',
       rating: 5,
       comment: null,
-      isEdited: false,
-      editedAt: null,
       reply: 'Ok',
       repliedAt: new Date(),
       repliedByUserId: null,
+      comments: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     });

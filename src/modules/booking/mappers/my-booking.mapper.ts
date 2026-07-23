@@ -47,6 +47,11 @@ export function mapBookingToMyBookingResponse(
 
   const professional: MyBookingProfessionalDto = {
     tenantProfessionalId: booking.tenantProfessionalId,
+    professionalProfileId:
+      booking.tenantProfessional?.professionalProfileId ??
+      booking.tenantProfessional?.professionalProfile?.id ??
+      '',
+    userId: booking.tenantProfessional?.professionalProfile?.userId ?? '',
     displayName:
       booking.tenantProfessional?.professionalProfile?.displayName ?? '',
   };

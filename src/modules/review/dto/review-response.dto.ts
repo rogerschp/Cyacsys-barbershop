@@ -1,6 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ReviewTargetType } from '../entities/review-target-type.enum';
 
+export class ReviewCommentResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  reviewId: string;
+
+  @ApiProperty()
+  authorUserId: string;
+
+  @ApiProperty()
+  authorName: string;
+
+  @ApiProperty()
+  body: string;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+
 export class ReviewResponseDto {
   @ApiProperty()
   id: string;
@@ -23,12 +46,6 @@ export class ReviewResponseDto {
   @ApiProperty({ nullable: true })
   comment: string | null;
 
-  @ApiProperty()
-  isEdited: boolean;
-
-  @ApiProperty({ nullable: true })
-  editedAt: Date | null;
-
   @ApiProperty({ nullable: true })
   reply: string | null;
 
@@ -37,6 +54,9 @@ export class ReviewResponseDto {
 
   @ApiProperty({ nullable: true })
   repliedByUserId: string | null;
+
+  @ApiProperty({ type: [ReviewCommentResponseDto] })
+  comments: ReviewCommentResponseDto[];
 
   @ApiProperty()
   createdAt: Date;

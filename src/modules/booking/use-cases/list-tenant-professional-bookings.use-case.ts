@@ -11,7 +11,7 @@ import {
   BOOKING_REPOSITORY,
   IBookingRepository,
 } from '../interfaces/booking-repository.interface';
-import { resolveDayRangeUtc } from '../utils/resolve-day-range';
+import { resolveOpsDateFilter } from '../domain/resolve-ops-date-filter';
 
 export interface ListTenantProfessionalBookingsParams {
   tenantId: string;
@@ -20,6 +20,8 @@ export interface ListTenantProfessionalBookingsParams {
   userId: string;
   callerRole?: string;
   date?: string;
+  from?: string;
+  to?: string;
   status?: BookingStatus;
 }
 
@@ -43,9 +45,10 @@ export class ListTenantProfessionalBookingsUseCase {
       tenantProfessionalRepository: this.tenantProfessionalRepository,
     });
 
-    const range = params.date
-      ? resolveDayRangeUtc(params.date, params.timezone)
-      : undefined;
+    const range = resolveOpsDateFilter(
+      { date: params.date, from: params.from, to: params.to },
+      params.timezone,
+    );
 
     const bookings = await this.bookingRepository.listOpsBookings({
       tenantId: params.tenantId,
