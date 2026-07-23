@@ -9,7 +9,7 @@ export class MonthlyMetricsDto {
 
   @ApiProperty({
     example: 4500.0,
-    description: 'Faturamento (bookings CONFIRMED)',
+    description: 'Faturamento (bookings COMPLETED)',
   })
   revenue: number;
 
