@@ -159,10 +159,9 @@ export class SearchTenantsUseCase {
     }
 
     if (query.city && query.city.trim().length >= 2) {
-      qb.andWhere(
-        'unaccent(LOWER(a.city)) LIKE unaccent(LOWER(:city))',
-        { city: `%${query.city.trim()}%` },
-      );
+      qb.andWhere('unaccent(LOWER(a.city)) LIKE unaccent(LOWER(:city))', {
+        city: `%${query.city.trim()}%`,
+      });
     }
 
     if (query.state) {

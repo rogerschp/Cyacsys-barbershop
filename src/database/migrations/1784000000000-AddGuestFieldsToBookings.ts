@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddGuestFieldsToBookings1784000000000
-  implements MigrationInterface
-{
+export class AddGuestFieldsToBookings1784000000000 implements MigrationInterface {
   name = 'AddGuestFieldsToBookings1784000000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -60,14 +58,8 @@ export class AddGuestFieldsToBookings1784000000000
     await queryRunner.query(
       `ALTER TABLE "bookings" DROP CONSTRAINT "CHK_bookings_customer_xor"`,
     );
-    await queryRunner.query(
-      `ALTER TABLE "bookings" DROP COLUMN "guest_email"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "bookings" DROP COLUMN "guest_phone"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "bookings" DROP COLUMN "guest_name"`,
-    );
+    await queryRunner.query(`ALTER TABLE "bookings" DROP COLUMN "guest_email"`);
+    await queryRunner.query(`ALTER TABLE "bookings" DROP COLUMN "guest_phone"`);
+    await queryRunner.query(`ALTER TABLE "bookings" DROP COLUMN "guest_name"`);
   }
 }

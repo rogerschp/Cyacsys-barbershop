@@ -23,9 +23,7 @@ export class RevenueCalculator {
     if (denominator <= 0) {
       return 0;
     }
-    return (
-      Math.round((cancelledBookings / denominator) * 10000) / 100
-    );
+    return Math.round((cancelledBookings / denominator) * 10000) / 100;
   }
 
   fromTotals(input: RevenueTotalsInput): {
@@ -33,10 +31,7 @@ export class RevenueCalculator {
     cancellationRate: number;
   } {
     return {
-      averageTicket: this.averageTicket(
-        input.revenue,
-        input.confirmedBookings,
-      ),
+      averageTicket: this.averageTicket(input.revenue, input.confirmedBookings),
       cancellationRate: this.cancellationRate(
         input.confirmedBookings,
         input.cancelledBookings,

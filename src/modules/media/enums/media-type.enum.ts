@@ -1,0 +1,10 @@
+export enum MediaType {
+  AVATAR = 'AVATAR',
+  LOGO = 'LOGO',
+  BANNER = 'BANNER',
+  COVER = 'COVER',
+  SERVICE_IMAGE = 'SERVICE_IMAGE',
+  GALLERY = 'GALLERY',
+  DOCUMENT = 'DOCUMENT',
+  OTHER = 'OTHER',
+}

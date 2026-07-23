@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { getTypeOrmConfig } from './config/typeorm.config';
+import mediaConfig from './config/media.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { AvailabilityModule } from './modules/availability/availability.module';
 import { BookingModule } from './modules/booking/booking.module';
@@ -20,11 +21,13 @@ import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { ReportModule } from './modules/report/report.module';
 import { SearchModule } from './modules/search/search.module';
 import { TenantThemeModule } from './modules/tenant-theme/tenant-theme.module';
+import { MediaModule } from './modules/media/media.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [mediaConfig],
     }),
     ThrottlerModule.forRoot([
       {
@@ -54,6 +57,7 @@ import { TenantThemeModule } from './modules/tenant-theme/tenant-theme.module';
     ReportModule,
     SearchModule,
     TenantThemeModule,
+    MediaModule,
   ],
   controllers: [],
   providers: [

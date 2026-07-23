@@ -1,10 +1,5 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import {
-  ApiOperation,
-  ApiParam,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ServiceResponseDto } from '../dto/service-response.dto';
 import { ListPublicTenantServicesUseCase } from '../use-cases/list-public-tenant-services.use-case';
 

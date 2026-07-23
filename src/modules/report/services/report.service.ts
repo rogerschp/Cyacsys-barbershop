@@ -64,12 +64,7 @@ export class ReportService {
     const period = getReportPeriod(tenant.timezone, monthsBack);
 
     const [totals, customers, topServices] = await Promise.all([
-      fetchBookingTotals(
-        this.dataSource,
-        tenantId,
-        period.start,
-        period.end,
-      ),
+      fetchBookingTotals(this.dataSource, tenantId, period.start, period.end),
       this.customerMetricsService.countInPeriod(
         tenantId,
         period.start,

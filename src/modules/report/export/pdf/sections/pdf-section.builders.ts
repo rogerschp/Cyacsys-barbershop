@@ -72,7 +72,12 @@ export class MonthlyRevenueSectionBuilder implements PdfExportSection {
         { key: 'revenue', header: 'Receita', width: 105, align: 'right' },
         { key: 'confirmed', header: 'Confirmados', width: 90, align: 'right' },
         { key: 'cancelled', header: 'Cancelados', width: 90, align: 'right' },
-        { key: 'variation', header: 'Variação %', width: 100.28, align: 'right' },
+        {
+          key: 'variation',
+          header: 'Variação %',
+          width: 100.28,
+          align: 'right',
+        },
       ],
       rows.length
         ? rows

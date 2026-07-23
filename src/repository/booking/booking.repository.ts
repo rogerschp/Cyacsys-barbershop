@@ -214,9 +214,7 @@ export class BookingRepository implements IBookingRepository {
     return qb.getCount();
   }
 
-  async listOpsBookings(
-    query: ListOpsBookingsQuery,
-  ): Promise<BookingEntity[]> {
+  async listOpsBookings(query: ListOpsBookingsQuery): Promise<BookingEntity[]> {
     const qb = this.bookingRepo
       .createQueryBuilder('b')
       .leftJoinAndSelect('b.tenantProfessional', 'tp')

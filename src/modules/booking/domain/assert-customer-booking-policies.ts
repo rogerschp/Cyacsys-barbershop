@@ -23,14 +23,13 @@ export class AssertCustomerBookingPolicies {
   }): Promise<void> {
     const { tenantId, identity, startsAt, endsAt, excludeBookingId } = params;
 
-    const overlap =
-      await this.bookingRepository.findActiveCustomerTimeOverlap({
-        tenantId,
-        identity,
-        startsAt,
-        endsAt,
-        excludeBookingId,
-      });
+    const overlap = await this.bookingRepository.findActiveCustomerTimeOverlap({
+      tenantId,
+      identity,
+      startsAt,
+      endsAt,
+      excludeBookingId,
+    });
     if (overlap) {
       throw new BusinessRuleException(
         'CUSTOMER_TIME_CONFLICT',

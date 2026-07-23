@@ -46,11 +46,7 @@ export class TenantBookingsController {
   ) {}
 
   @Get()
-  @TenantRoles(
-    TenantUserRole.OWNER,
-    TenantUserRole.ADMIN,
-    TenantUserRole.STAFF,
-  )
+  @TenantRoles(TenantUserRole.OWNER, TenantUserRole.ADMIN, TenantUserRole.STAFF)
   @ApiOperation({
     summary: 'Lista agendamentos do tenant (visão da unidade)',
     description:

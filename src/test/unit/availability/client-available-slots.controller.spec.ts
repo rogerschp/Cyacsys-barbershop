@@ -22,7 +22,9 @@ describe('ClientAvailableSlotsController (HTTP)', () => {
       .compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true }),
+    );
     await app.init();
   });
 
@@ -33,9 +35,7 @@ describe('ClientAvailableSlotsController (HTTP)', () => {
   it('GET slots públicos', () => {
     const serviceId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
     return request(app.getHttpServer())
-      .get(
-        '/tenants/t1/tenant-professionals/tp1/available-slots/public',
-      )
+      .get('/tenants/t1/tenant-professionals/tp1/available-slots/public')
       .query({ serviceId, date: '2099-06-15' })
       .expect(200)
       .expect(() => {
