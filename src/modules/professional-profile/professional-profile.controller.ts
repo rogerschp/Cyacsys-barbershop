@@ -18,6 +18,7 @@ import { BearerAuthGuard } from '../auth/guards/bearer-auth.guard';
 import { CreateProfessionalProfileDto } from './dto/create-professional-profile.dto';
 import { ProfessionalProfileResponseDto } from './dto/professional-profile-response.dto';
 import { UpdateProfessionalProfileDto } from './dto/update-professional-profile.dto';
+import { ActivateProfessionalProfileUseCase } from './use-cases/activate-professional-profile.use-case';
 import { CreateProfessionalProfileUseCase } from './use-cases/create-professional-profile.use-case';
 import { DeactivateProfessionalProfileUseCase } from './use-cases/deactivate-professional-profile.use-case';
 import { GetProfessionalProfileByUserUseCase } from './use-cases/get-professional-profile-by-user.use-case';
@@ -41,6 +42,7 @@ export class ProfessionalProfileController {
     private readonly createProfessionalProfileUseCase: CreateProfessionalProfileUseCase,
     private readonly updateProfessionalProfileUseCase: UpdateProfessionalProfileUseCase,
     private readonly deactivateProfessionalProfileUseCase: DeactivateProfessionalProfileUseCase,
+    private readonly activateProfessionalProfileUseCase: ActivateProfessionalProfileUseCase,
     private readonly getProfessionalProfileByUserUseCase: GetProfessionalProfileByUserUseCase,
   ) {}
 
@@ -135,6 +137,24 @@ export class ProfessionalProfileController {
   async deactivate(@Req() req: RequestWithUser) {
     const userId = req.user?.dbUser?.id ?? '';
     const profile = await this.deactivateProfessionalProfileUseCase.run(userId);
+    return ProfessionalProfileMapper.toResponse(profile);
+  }
+
+  @Patch('activate')
+  @ApiOperation({
+    summary: 'Reativa o perfil profissional do usuário autenticado',
+    description: 'Define isActive = true.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Perfil reativado',
+    type: ProfessionalProfileResponseDto,
+  })
+  @ApiResponse({ status: 404, description: 'Professional profile not found' })
+  @ApiResponse({ status: 401, description: 'Não autenticado' })
+  async activate(@Req() req: RequestWithUser) {
+    const userId = req.user?.dbUser?.id ?? '';
+    const profile = await this.activateProfessionalProfileUseCase.run(userId);
     return ProfessionalProfileMapper.toResponse(profile);
   }
 }

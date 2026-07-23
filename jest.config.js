@@ -5,6 +5,8 @@ const config = {
     moduleFileExtensions: ['js', 'json', 'ts'],
     rootDir: '.',
     testRegex: '.*\\.spec\\.ts$',
+    testPathIgnorePatterns: ['/node_modules/', '/.worktrees/'],
+    modulePathIgnorePatterns: ['<rootDir>/.worktrees'],
     transform: {
         '^.+\\.(t|j)s$': 'ts-jest',
     },
@@ -19,12 +21,22 @@ const config = {
     ],
     coveragePathIgnorePatterns: [
         '/node_modules/',
+        '/test/',
         '/dto/',
         '/interfaces/',
         '/factories/',
         '/utils/',
     ],
     coverageDirectory: 'coverage',
+    coverageThreshold: {
+        global: {
+            statements: 80,
+            branches: 80,
+            functions: 80,
+            lines: 80,
+        },
+    },
     testEnvironment: 'node',
 };
 exports.default = config;
+//# sourceMappingURL=jest.config.js.map
