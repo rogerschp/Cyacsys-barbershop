@@ -1,12 +1,7 @@
-import { Injectable } from '@nestjs/common';
 import { TenantForbiddenException } from '../../../common/exceptions/tenant-forbidden.exception';
 import { ReviewTargetType } from '../entities/review-target-type.enum';
 import { IBookingRepository } from '../../booking/interfaces/booking-repository.interface';
 
-/**
- * Só permite avaliar se o usuário tiver ao menos um booking COMPLETED
- * no alvo (tenant ou professional profile).
- */
 export async function assertCompletedBookingForReview(params: {
   bookingRepository: IBookingRepository;
   reviewerUserId: string;

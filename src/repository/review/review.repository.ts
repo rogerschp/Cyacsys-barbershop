@@ -67,11 +67,7 @@ export class ReviewRepository implements IReviewRepository {
       .createQueryBuilder('r')
       .leftJoinAndSelect('r.reviewer', 'reviewer')
       .leftJoinAndSelect('r.repliedBy', 'repliedBy')
-      .leftJoinAndSelect(
-        'r.comments',
-        'comments',
-        'comments.deletedAt IS NULL',
-      )
+      .leftJoinAndSelect('r.comments', 'comments', 'comments.deletedAt IS NULL')
       .leftJoinAndSelect('comments.author', 'commentAuthor')
       .where('r.target_type = :targetType', { targetType })
       .andWhere('r.target_id = :targetId', { targetId })

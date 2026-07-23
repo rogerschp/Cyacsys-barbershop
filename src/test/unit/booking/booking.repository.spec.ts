@@ -508,9 +508,9 @@ describe('BookingRepository', () => {
         execute: jest.fn().mockResolvedValue({}),
       };
       rootBookingRepo.createQueryBuilder = jest.fn().mockReturnValue(updateQb);
-      await expect(
-        repository.completePastConfirmed(new Date()),
-      ).resolves.toBe(0);
+      await expect(repository.completePastConfirmed(new Date())).resolves.toBe(
+        0,
+      );
     });
   });
 

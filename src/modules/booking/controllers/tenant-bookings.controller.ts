@@ -58,7 +58,8 @@ export class TenantBookingsController {
   @ApiQuery({
     name: 'date',
     required: false,
-    description: 'Um dia no fuso do tenant (yyyy-MM-dd). Mutuamente exclusivo com from/to.',
+    description:
+      'Um dia no fuso do tenant (yyyy-MM-dd). Mutuamente exclusivo com from/to.',
   })
   @ApiQuery({
     name: 'from',

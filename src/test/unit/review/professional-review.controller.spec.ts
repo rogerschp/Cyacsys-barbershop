@@ -24,7 +24,7 @@ const mockReviewEntity = {
   targetId: 'profile-1',
   rating: 5,
   comment: null,
-    reply: null,
+  reply: null,
   repliedAt: null,
   repliedByUserId: null,
   createdAt: new Date(),
@@ -128,7 +128,10 @@ describe('ProfessionalReview controllers (HTTP)', () => {
   });
 
   it('POST /users/:userId/professional-profile/reviews cria avaliação', () => {
-    upsertReview.run.mockResolvedValue({ created: true, review: mockReviewEntity });
+    upsertReview.run.mockResolvedValue({
+      created: true,
+      review: mockReviewEntity,
+    });
     return request(publicApp.getHttpServer())
       .post('/users/user-pro/professional-profile/reviews')
       .send({ rating: 5 })
@@ -237,7 +240,10 @@ describe('ProfessionalReview controllers (HTTP)', () => {
 
     const isolatedApp = moduleRef.createNestApplication();
     await isolatedApp.init();
-    upsertReview.run.mockResolvedValue({ created: true, review: mockReviewEntity });
+    upsertReview.run.mockResolvedValue({
+      created: true,
+      review: mockReviewEntity,
+    });
     await request(isolatedApp.getHttpServer())
       .post('/users/user-pro/professional-profile/reviews')
       .send({ rating: 5 })

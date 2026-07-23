@@ -88,20 +88,21 @@ describe('TenantReviewController (HTTP)', () => {
     upsertReview.run.mockResolvedValue({
       created: true,
       review: {
-      id: 'r1',
-      reviewerUserId: 'user-1',
-      reviewer: { name: 'Maria' },
-      targetType: ReviewTargetType.TENANT,
-      targetId: 'tenant-1',
-      rating: 5,
-      comment: null,
-      reply: null,
-      repliedAt: null,
-      repliedByUserId: null,
-      comments: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }});
+        id: 'r1',
+        reviewerUserId: 'user-1',
+        reviewer: { name: 'Maria' },
+        targetType: ReviewTargetType.TENANT,
+        targetId: 'tenant-1',
+        rating: 5,
+        comment: null,
+        reply: null,
+        repliedAt: null,
+        repliedByUserId: null,
+        comments: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
     return request(app.getHttpServer())
       .post('/tenants/tenant-1/reviews')
       .send({ rating: 5 })
@@ -240,20 +241,21 @@ describe('TenantReviewController (HTTP)', () => {
     upsertReview.run.mockResolvedValue({
       created: true,
       review: {
-      id: 'r1',
-      reviewerUserId: '',
-      reviewer: { name: 'Anon' },
-      targetType: ReviewTargetType.TENANT,
-      targetId: 'tenant-1',
-      rating: 3,
-      comment: null,
-      reply: null,
-      repliedAt: null,
-      repliedByUserId: null,
-      comments: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }});
+        id: 'r1',
+        reviewerUserId: '',
+        reviewer: { name: 'Anon' },
+        targetType: ReviewTargetType.TENANT,
+        targetId: 'tenant-1',
+        rating: 3,
+        comment: null,
+        reply: null,
+        repliedAt: null,
+        repliedByUserId: null,
+        comments: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
     await request(isolatedApp.getHttpServer())
       .post('/tenants/tenant-1/reviews')
       .send({ rating: 3 })
