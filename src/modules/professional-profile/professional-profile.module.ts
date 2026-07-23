@@ -6,6 +6,7 @@ import { UserModule } from '../user/user.module';
 import { ProfessionalProfileEntity } from './entities/professional-profile.entity';
 import { PROFESSIONAL_PROFILE_REPOSITORY } from './interfaces/professional-profile-repository.interface';
 import { ProfessionalProfileController } from './professional-profile.controller';
+import { ActivateProfessionalProfileUseCase } from './use-cases/activate-professional-profile.use-case';
 import { CreateProfessionalProfileUseCase } from './use-cases/create-professional-profile.use-case';
 import { DeactivateProfessionalProfileUseCase } from './use-cases/deactivate-professional-profile.use-case';
 import { GetProfessionalProfileByIdUseCase } from './use-cases/get-professional-profile-by-id.use-case';
@@ -28,6 +29,7 @@ import { UpdateProfessionalProfileUseCase } from './use-cases/update-professiona
     CreateProfessionalProfileUseCase,
     UpdateProfessionalProfileUseCase,
     DeactivateProfessionalProfileUseCase,
+    ActivateProfessionalProfileUseCase,
     GetProfessionalProfileByUserUseCase,
     GetProfessionalProfileByIdUseCase,
   ],

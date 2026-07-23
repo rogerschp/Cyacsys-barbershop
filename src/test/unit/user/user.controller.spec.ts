@@ -3,6 +3,7 @@ import { INestApplication, NotFoundException } from '@nestjs/common';
 import request = require('supertest');
 import { UserController } from 'src/modules/user/user.controller';
 import { CreateUserUseCase } from 'src/modules/user/use-cases/create-user.use-case';
+import { DeactivateMyUserUseCase } from 'src/modules/user/use-cases/deactivate-my-user.use-case';
 import { DeleteUserUseCase } from 'src/modules/user/use-cases/delete-user.use-case';
 import { FindUserByEmailUseCase } from 'src/modules/user/use-cases/find-user-by-email.use-case';
 import { FindUserByIdUseCase } from 'src/modules/user/use-cases/find-user-by-id.use-case';
@@ -22,6 +23,7 @@ describe('UserController (HTTP)', () => {
     findUserByIdUseCase: { run: jest.fn() },
     createUserUseCase: { run: jest.fn() },
     updateUserUseCase: { run: jest.fn() },
+    deactivateMyUserUseCase: { run: jest.fn() },
     deleteUserUseCase: { run: jest.fn() },
   };
 
@@ -58,6 +60,10 @@ describe('UserController (HTTP)', () => {
       },
       { provide: CreateUserUseCase, useValue: useCases.createUserUseCase },
       { provide: UpdateUserUseCase, useValue: useCases.updateUserUseCase },
+      {
+        provide: DeactivateMyUserUseCase,
+        useValue: useCases.deactivateMyUserUseCase,
+      },
       { provide: DeleteUserUseCase, useValue: useCases.deleteUserUseCase },
     ];
 
@@ -215,6 +221,26 @@ describe('UserController (HTTP)', () => {
           expect(useCases.updateUserUseCase.run).toHaveBeenCalledWith(
             'uuid-123',
             { name: 'Nome Atualizado' },
+          );
+        });
+    });
+  });
+
+  describe('PATCH /users/me/deactivate', () => {
+    it('deve retornar 200 e a conta desativada', () => {
+      const deactivated = {
+        ...mockUserResponse,
+        status: UserStatus.INACTIVE,
+      };
+      useCases.deactivateMyUserUseCase.run.mockResolvedValue(deactivated);
+
+      return request(meApp.getHttpServer())
+        .patch('/users/me/deactivate')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('status', UserStatus.INACTIVE);
+          expect(useCases.deactivateMyUserUseCase.run).toHaveBeenCalledWith(
+            'uuid-123',
           );
         });
     });

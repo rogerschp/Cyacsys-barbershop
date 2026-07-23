@@ -29,6 +29,7 @@ import { UpdateMyUserDto } from './dto/update-my-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { CreateUserUseCase } from './use-cases/create-user.use-case';
+import { DeactivateMyUserUseCase } from './use-cases/deactivate-my-user.use-case';
 import { FindUserByEmailUseCase } from './use-cases/find-user-by-email.use-case';
 import { FindUserByIdUseCase } from './use-cases/find-user-by-id.use-case';
 import { UpdateUserUseCase } from './use-cases/update-user.use-case';
@@ -43,6 +44,7 @@ export class UserController {
     private readonly findUserByEmailUseCase: FindUserByEmailUseCase,
     private readonly findUserByIdUseCase: FindUserByIdUseCase,
     private readonly updateUserUseCase: UpdateUserUseCase,
+    private readonly deactivateMyUserUseCase: DeactivateMyUserUseCase,
     private readonly deleteUserUseCase: DeleteUserUseCase,
   ) {}
 
@@ -133,6 +135,29 @@ export class UserController {
       throw new NotFoundException('User not found');
     }
     return this.updateUserUseCase.run(userId, dto);
+  }
+
+  @Patch('me/deactivate')
+  @UseGuards(BearerAuthGuard)
+  @ApiBearerAuth('bearer')
+  @ApiOperation({
+    summary: 'Desativa a conta do usuário autenticado',
+    description:
+      'Define status = INACTIVE e desabilita o usuário no Firebase. Não faz soft delete (admin DELETE permanece para remoção). Login posterior falha até um admin reativar.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Conta desativada',
+    type: UserResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Token ausente ou inválido' })
+  @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
+  async deactivateMe(@Req() req: { user?: RequestUser }) {
+    const userId = req.user?.dbUser?.id;
+    if (!userId) {
+      throw new NotFoundException('User not found');
+    }
+    return this.deactivateMyUserUseCase.run(userId);
   }
 
   @Get(':id')

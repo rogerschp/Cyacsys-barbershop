@@ -15,6 +15,7 @@ import { SyncUserWithFirebaseUseCase } from './use-cases/sync-user-with-firebase
 import { UpdateUserUseCase } from './use-cases/update-user.use-case';
 import { ValidateUserAccessUseCase } from './use-cases/validate-user-access.use-case';
 import { DeleteUserUseCase } from './use-cases/delete-user.use-case';
+import { DeactivateMyUserUseCase } from './use-cases/deactivate-my-user.use-case';
 import { AddressModule } from '../address/address.module';
 import { AuthModule } from '../auth/auth.module';
 import { CheckUserExistsByEmailUseCase } from './use-cases/check-user-exists-by-email.use-case';
@@ -37,6 +38,7 @@ import { CheckUserExistsByEmailUseCase } from './use-cases/check-user-exists-by-
     FindUserByFirebaseUidUseCase,
     SyncUserWithFirebaseUseCase,
     UpdateUserUseCase,
+    DeactivateMyUserUseCase,
     ValidateUserAccessUseCase,
     DeleteUserUseCase,
     CheckUserExistsByEmailUseCase,

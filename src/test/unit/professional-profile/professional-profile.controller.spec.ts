@@ -4,6 +4,7 @@ import * as request from 'supertest';
 import { ProfessionalProfileController } from 'src/modules/professional-profile/professional-profile.controller';
 import { CreateProfessionalProfileUseCase } from 'src/modules/professional-profile/use-cases/create-professional-profile.use-case';
 import { UpdateProfessionalProfileUseCase } from 'src/modules/professional-profile/use-cases/update-professional-profile.use-case';
+import { ActivateProfessionalProfileUseCase } from 'src/modules/professional-profile/use-cases/activate-professional-profile.use-case';
 import { DeactivateProfessionalProfileUseCase } from 'src/modules/professional-profile/use-cases/deactivate-professional-profile.use-case';
 import { GetProfessionalProfileByUserUseCase } from 'src/modules/professional-profile/use-cases/get-professional-profile-by-user.use-case';
 import { BearerAuthGuard } from 'src/modules/auth/guards/bearer-auth.guard';
@@ -17,6 +18,7 @@ describe('ProfessionalProfileController (HTTP)', () => {
   let getUseCase: jest.Mocked<GetProfessionalProfileByUserUseCase>;
   let updateUseCase: jest.Mocked<UpdateProfessionalProfileUseCase>;
   let deactivateUseCase: jest.Mocked<DeactivateProfessionalProfileUseCase>;
+  let activateUseCase: jest.Mocked<ActivateProfessionalProfileUseCase>;
 
   const mockProfile: ProfessionalProfileEntity = {
     id: 'profile-uuid',
@@ -38,6 +40,7 @@ describe('ProfessionalProfileController (HTTP)', () => {
     const mockCreate = { run: jest.fn() };
     const mockUpdate = { run: jest.fn() };
     const mockDeactivate = { run: jest.fn() };
+    const mockActivate = { run: jest.fn() };
     const mockGet = { run: jest.fn() };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -48,6 +51,10 @@ describe('ProfessionalProfileController (HTTP)', () => {
         {
           provide: DeactivateProfessionalProfileUseCase,
           useValue: mockDeactivate,
+        },
+        {
+          provide: ActivateProfessionalProfileUseCase,
+          useValue: mockActivate,
         },
         { provide: GetProfessionalProfileByUserUseCase, useValue: mockGet },
       ],
@@ -74,6 +81,7 @@ describe('ProfessionalProfileController (HTTP)', () => {
     getUseCase = moduleFixture.get(GetProfessionalProfileByUserUseCase);
     updateUseCase = moduleFixture.get(UpdateProfessionalProfileUseCase);
     deactivateUseCase = moduleFixture.get(DeactivateProfessionalProfileUseCase);
+    activateUseCase = moduleFixture.get(ActivateProfessionalProfileUseCase);
   });
 
   afterAll(async () => {
@@ -135,5 +143,17 @@ describe('ProfessionalProfileController (HTTP)', () => {
       .expect(200);
     expect(res.body.isActive).toBe(false);
     expect(deactivateUseCase.run).toHaveBeenCalledWith('user-uuid-123');
+  });
+
+  it('PATCH /users/me/professional-profile/activate', async () => {
+    activateUseCase.run.mockResolvedValue({
+      ...mockProfile,
+      isActive: true,
+    });
+    const res = await request(app.getHttpServer())
+      .patch('/users/me/professional-profile/activate')
+      .expect(200);
+    expect(res.body.isActive).toBe(true);
+    expect(activateUseCase.run).toHaveBeenCalledWith('user-uuid-123');
   });
 });
