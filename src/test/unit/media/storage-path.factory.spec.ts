@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 import { ConfigService } from '@nestjs/config';
 import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
 import { StoragePathFactory } from 'src/modules/media/domain/storage-path/storage-path.factory';

@@ -11,19 +11,23 @@ import { UploadedMedia } from '../../interfaces/uploaded-media';
  */
 @Injectable()
 export class AwsS3Provider implements IStorageProvider {
-  async upload(_input: StorageUploadInput): Promise<UploadedMedia> {
+  async upload(input: StorageUploadInput): Promise<UploadedMedia> {
+    void input;
     throw new Error(
       'AwsS3Provider is not implemented yet. Use STORAGE_PROVIDER=cloudinary.',
     );
   }
 
-  async delete(_providerResourceId: string): Promise<void> {
+  async delete(providerResourceId: string): Promise<void> {
+    void providerResourceId;
     throw new Error(
       'AwsS3Provider is not implemented yet. Use STORAGE_PROVIDER=cloudinary.',
     );
   }
 
-  getPublicUrl(_providerResourceId: string, _storagePath?: string): string {
+  getPublicUrl(providerResourceId: string, storagePath?: string): string {
+    void providerResourceId;
+    void storagePath;
     throw new Error(
       'AwsS3Provider is not implemented yet. Use STORAGE_PROVIDER=cloudinary.',
     );
