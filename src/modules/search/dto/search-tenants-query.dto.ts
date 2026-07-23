@@ -1,8 +1,27 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsOptional, IsString, Length } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsOptional,
+  IsString,
+  Length,
+} from 'class-validator';
 import { TenantSegment } from 'src/common/enums/tenant-segment.enum';
 import { BaseSearchQueryDto } from './base-search-query.dto';
+
+function toOptionalBoolean({ value }: { value: unknown }): unknown {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+  if (value === true || value === 'true') {
+    return true;
+  }
+  if (value === false || value === 'false') {
+    return false;
+  }
+  return value;
+}
 
 export class SearchTenantsQueryDto extends BaseSearchQueryDto {
   @ApiPropertyOptional({
@@ -35,4 +54,14 @@ export class SearchTenantsQueryDto extends BaseSearchQueryDto {
     typeof value === 'string' ? value.trim().toUpperCase() : value,
   )
   state?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Filtro por destaque regional do plano (tela de destaques). Quando informado, ordena por nota média primeiro.',
+    example: true,
+  })
+  @IsOptional()
+  @Transform(toOptionalBoolean)
+  @IsBoolean()
+  regionalHighlight?: boolean;
 }

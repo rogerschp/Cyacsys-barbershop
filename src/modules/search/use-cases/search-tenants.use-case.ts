@@ -7,6 +7,10 @@ import { SubscriptionStatus } from 'src/modules/subscription/enums/subscription-
 import { TenantEntity } from 'src/modules/tenant/entities/tenant.entity';
 import { SearchTenantsQueryDto } from '../dto/search-tenants-query.dto';
 import {
+  buildRegionalHighlightFeatureFilter,
+  resolveTenantSearchOrdering,
+} from '../domain/tenant-search.policy';
+import {
   TenantSearchResponse,
   TenantSearchResult,
 } from '../interfaces/search-result.interface';
@@ -90,13 +94,19 @@ export class SearchTenantsUseCase {
       .addGroupBy('a.city')
       .addGroupBy('p.name')
       .addGroupBy('p.sort_weight')
-      .addGroupBy('p.features')
-      .orderBy('p.sort_weight', 'DESC')
-      .addOrderBy('average_rating', 'DESC');
+      .addGroupBy('p.features');
 
-    if (hasCoordinates) {
-      dataQb.addOrderBy('distance_km', 'ASC');
-    }
+    const orderClauses = resolveTenantSearchOrdering({
+      regionalHighlight: query.regionalHighlight,
+      hasCoordinates,
+    });
+    orderClauses.forEach((clause, index) => {
+      if (index === 0) {
+        dataQb.orderBy(clause.field, clause.direction);
+      } else {
+        dataQb.addOrderBy(clause.field, clause.direction);
+      }
+    });
 
     dataQb.limit(limit).offset(offset);
 
@@ -168,6 +178,13 @@ export class SearchTenantsUseCase {
 
     if (query.state) {
       qb.andWhere('UPPER(a.state) = UPPER(:state)', { state: query.state });
+    }
+
+    if (query.regionalHighlight !== undefined) {
+      const featureFilter = buildRegionalHighlightFeatureFilter(
+        query.regionalHighlight,
+      );
+      qb.andWhere(featureFilter.sql, featureFilter.params);
     }
 
     if (textQuery) {
