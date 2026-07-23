@@ -8,7 +8,6 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  IsUrl,
   Max,
   MaxLength,
   Min,
@@ -92,15 +91,6 @@ export class UpdateTenantDto {
   @IsOptional()
   @IsEnum(TenantSegment)
   segment?: TenantSegment | null;
-
-  @ApiPropertyOptional({
-    example: 'https://cdn.example.com/avatar.png',
-    description: 'URL do avatar/logo do estabelecimento',
-  })
-  @IsOptional()
-  @ValidateIf((_, value) => value !== null)
-  @IsUrl()
-  avatarUrl?: string | null;
 
   @ApiPropertyOptional({
     example: -23.5505199,

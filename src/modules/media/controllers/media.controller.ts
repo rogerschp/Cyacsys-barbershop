@@ -67,6 +67,7 @@ export class MediaController {
           type: 'string',
           enum: [
             'AVATAR',
+            'USER_AVATAR',
             'LOGO',
             'BANNER',
             'COVER',

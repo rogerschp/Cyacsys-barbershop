@@ -15,7 +15,9 @@ import { ValidateSlugUseCase } from './use-cases/validate-slug.use-case';
 import { DeleteTenantByIdUseCase } from './use-cases/delete-tenant-by-id.use-case';
 import { CreateTenantUseCase } from './use-cases/create-tenant.use-case';
 import { SubscriptionModule } from '../subscription/subscription.module';
+import { MediaModule } from '../media/media.module';
 import { TENANT_REPOSITORY } from './interfaces/tenant-repository.interface';
+import { UpdateTenantLogoUseCase } from './use-cases/update-tenant-logo.use-case';
 
 @Module({
   imports: [
@@ -24,6 +26,7 @@ import { TENANT_REPOSITORY } from './interfaces/tenant-repository.interface';
     AddressModule,
     forwardRef(() => TenantUserModule),
     forwardRef(() => SubscriptionModule),
+    MediaModule,
   ],
   controllers: [TenantController],
   providers: [
@@ -36,6 +39,7 @@ import { TENANT_REPOSITORY } from './interfaces/tenant-repository.interface';
     DeleteTenantByIdUseCase,
     CreateTenantUseCase,
     CreateTenantWithOwnerUseCase,
+    UpdateTenantLogoUseCase,
     TenantInterceptor,
   ],
   exports: [

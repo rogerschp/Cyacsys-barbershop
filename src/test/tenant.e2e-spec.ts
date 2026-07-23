@@ -42,7 +42,7 @@ describe('TenantController (e2e)', () => {
     socialMedia: null,
     cnpj: null,
     segment: null,
-    avatarUrl: null,
+    logoMediaId: null,
     latitude: null,
     longitude: null,
     theme: null,

@@ -21,7 +21,8 @@ describe('CreateProfessionalProfileUseCase', () => {
     userId,
     displayName: 'João Silva',
     bio: null,
-    avatarUrl: 'https://example.com/avatar.jpg',
+    avatarMediaId: null,
+    avatarMedia: null,
     professionalType: ProfessionalType.BARBER,
     bookingMode: BookingMode.DIRECT_BOOKING,
     whatsappNumber: '5511999999999',
@@ -34,7 +35,6 @@ describe('CreateProfessionalProfileUseCase', () => {
 
   const validDto: CreateProfessionalProfileDto = {
     displayName: 'João Silva',
-    avatarUrl: 'https://example.com/avatar.jpg',
     professionalType: ProfessionalType.BARBER,
     experienceYears: 5,
     whatsappNumber: '+55 11 99999-9999',

@@ -1,5 +1,6 @@
 export enum MediaType {
   AVATAR = 'AVATAR',
+  USER_AVATAR = 'USER_AVATAR',
   LOGO = 'LOGO',
   BANNER = 'BANNER',
   COVER = 'COVER',

@@ -6,7 +6,7 @@ export interface CreateProfessionalProfileData {
   userId: string;
   displayName: string;
   bio?: string | null;
-  avatarUrl: string;
+  avatarMediaId?: string | null;
   professionalType: ProfessionalType;
   bookingMode?: BookingMode;
   whatsappNumber?: string | null;
@@ -17,7 +17,7 @@ export interface CreateProfessionalProfileData {
 export interface UpdateProfessionalProfileData {
   displayName?: string;
   bio?: string | null;
-  avatarUrl?: string;
+  avatarMediaId?: string | null;
   professionalType?: ProfessionalType;
   bookingMode?: BookingMode;
   whatsappNumber?: string | null;

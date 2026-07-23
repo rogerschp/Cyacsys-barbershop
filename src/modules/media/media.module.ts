@@ -15,6 +15,7 @@ import { CreateMediaUseCase } from './use-cases/create-media.use-case';
 import { DeleteMediaUseCase } from './use-cases/delete-media.use-case';
 import { FindMediaByIdUseCase } from './use-cases/find-media-by-id.use-case';
 import { UploadMediaBinaryUseCase } from './use-cases/upload-media-binary.use-case';
+import { AssertLinkableMediaUseCase } from './use-cases/assert-linkable-media.use-case';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { UploadMediaBinaryUseCase } from './use-cases/upload-media-binary.use-ca
     CreateMediaUseCase,
     FindMediaByIdUseCase,
     DeleteMediaUseCase,
+    AssertLinkableMediaUseCase,
   ],
   exports: [
     MEDIA_REPOSITORY,
@@ -59,6 +61,7 @@ import { UploadMediaBinaryUseCase } from './use-cases/upload-media-binary.use-ca
     CreateMediaUseCase,
     FindMediaByIdUseCase,
     DeleteMediaUseCase,
+    AssertLinkableMediaUseCase,
   ],
 })
 export class MediaModule {}

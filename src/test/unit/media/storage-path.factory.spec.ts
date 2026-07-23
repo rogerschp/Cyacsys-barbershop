@@ -19,6 +19,16 @@ describe('StoragePathFactory', () => {
     return new StoragePathFactory(config);
   }
 
+  it('prefixa MEDIA_ENV=dev no path de USER_AVATAR', () => {
+    const factory = createFactory('dev');
+    expect(
+      factory.build({
+        mediaType: MediaType.USER_AVATAR,
+        createdByUserId: professionalId,
+      }),
+    ).toBe(`dev/users/${professionalId}/avatar`);
+  });
+
   it('prefixa MEDIA_ENV=dev no path de LOGO', () => {
     const factory = createFactory('dev');
     expect(

@@ -186,7 +186,7 @@ describe('SearchTenantsUseCase', () => {
           name: 'Barbearia',
           slug: 'barbearia',
           segment: TenantSegment.BARBERSHOP,
-          avatarUrl: 'https://cdn.example.com/a.png',
+          avatarUrl: null,
           city: 'São Paulo',
           averageRating: 4.6,
           totalReviews: 3,

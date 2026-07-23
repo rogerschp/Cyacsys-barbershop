@@ -61,7 +61,7 @@ describe('ProfessionalProfileRepository', () => {
     await repository.create({
       userId,
       displayName: 'João',
-      avatarUrl: 'https://example.com/a.jpg',
+      avatarMediaId: null,
       professionalType: ProfessionalType.BARBER,
       experienceYears: 3,
     });
@@ -87,7 +87,7 @@ describe('ProfessionalProfileRepository', () => {
     await repository.create({
       userId,
       displayName: 'João',
-      avatarUrl: 'https://example.com/a.jpg',
+      avatarMediaId: null,
       professionalType: ProfessionalType.TATTOO_ARTIST,
       experienceYears: 3,
       bookingMode: BookingMode.WHATSAPP_ONLY,

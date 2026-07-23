@@ -41,9 +41,6 @@ export class UpdateProfessionalProfileUseCase {
     if (dto.bio !== undefined) {
       updates.bio = dto.bio ?? null;
     }
-    if (dto.avatarUrl !== undefined) {
-      updates.avatarUrl = dto.avatarUrl;
-    }
     if (dto.professionalType !== undefined) {
       updates.professionalType = dto.professionalType;
     }

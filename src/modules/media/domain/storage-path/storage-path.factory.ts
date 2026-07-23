@@ -15,6 +15,7 @@ import { GalleryStoragePathStrategy } from './strategies/gallery-storage-path.st
 import { LogoStoragePathStrategy } from './strategies/logo-storage-path.strategy';
 import { OtherStoragePathStrategy } from './strategies/other-storage-path.strategy';
 import { ServiceImageStoragePathStrategy } from './strategies/service-image-storage-path.strategy';
+import { UserAvatarStoragePathStrategy } from './strategies/user-avatar-storage-path.strategy';
 
 /**
  * Builds logical storage paths. Always prefixes with MEDIA_ENV (dev|prod)
@@ -27,6 +28,7 @@ export class StoragePathFactory {
   constructor(private readonly config: ConfigService) {
     const list: IStoragePathStrategy[] = [
       new AvatarStoragePathStrategy(),
+      new UserAvatarStoragePathStrategy(),
       new LogoStoragePathStrategy(),
       new BannerStoragePathStrategy(),
       new CoverStoragePathStrategy(),

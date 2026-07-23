@@ -28,7 +28,8 @@ export class ListMyTenantsUseCase {
         telephone: m.tenant.telephone,
         timezone: m.tenant.timezone,
         segment: m.tenant.segment ?? null,
-        avatarUrl: m.tenant.avatarUrl ?? null,
+        logoMediaId: m.tenant.logoMediaId ?? null,
+        avatarUrl: m.tenant.logoMedia?.url ?? null,
         clientCanCancelConfirmed: m.tenant.clientCanCancelConfirmed,
         clientCancelConfirmedMinLeadMinutes:
           m.tenant.clientCancelConfirmedMinLeadMinutes,

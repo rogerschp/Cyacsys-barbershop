@@ -83,7 +83,8 @@ export class SearchTenantsUseCase {
       .addGroupBy('t.name')
       .addGroupBy('t.slug')
       .addGroupBy('t.segment')
-      .addGroupBy('t.avatar_url')
+      .addGroupBy('t.logo_media_id')
+      .addGroupBy('m.url')
       .addGroupBy('t.latitude')
       .addGroupBy('t.longitude')
       .addGroupBy('a.city')
@@ -144,6 +145,11 @@ export class SearchTenantsUseCase {
         'a.id = t.address_id AND a."deletedAt" IS NULL',
       )
       .leftJoin(
+        'media',
+        'm',
+        'm.id = t.logo_media_id AND m."deletedAt" IS NULL',
+      )
+      .leftJoin(
         'reviews',
         'r',
         'r.target_id = t.id AND r.target_type = :targetType AND r."deletedAt" IS NULL',
@@ -197,7 +203,7 @@ export class SearchTenantsUseCase {
       .addSelect('t.name', 'name')
       .addSelect('t.slug', 'slug')
       .addSelect('t.segment', 'segment')
-      .addSelect('t.avatar_url', 'avatar_url')
+      .addSelect('m.url', 'avatar_url')
       .addSelect('a.city', 'city')
       .addSelect('p.name', 'plan_name')
       .addSelect('p.features', 'plan_features')
