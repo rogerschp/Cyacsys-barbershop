@@ -13,7 +13,7 @@ export class SearchController {
   @ApiOperation({
     summary: 'Busca pública de estabelecimentos',
     description:
-      'Lista estabelecimentos elegíveis por nome, slug, segmento e/ou proximidade geográfica. Rota pública, sem autenticação.',
+      'Lista estabelecimentos elegíveis por nome, slug, segmento, localização e/ou destaque regional (`regionalHighlight`). Rota pública, sem autenticação. Com `regionalHighlight`, ordena por nota média primeiro (tela de destaques).',
   })
   @ApiResponse({
     status: 200,

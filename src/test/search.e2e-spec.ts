@@ -97,6 +97,21 @@ describe('SearchController (e2e)', () => {
       );
     });
 
+    it('aceita filtro regionalHighlight para tela de destaques', async () => {
+      await request(app.getHttpServer())
+        .get('/search/tenants')
+        .query({ regionalHighlight: true, city: 'São Paulo', limit: 10 })
+        .expect(200);
+
+      expect(searchTenantsUseCase.run).toHaveBeenCalledWith(
+        expect.objectContaining({
+          regionalHighlight: true,
+          city: 'São Paulo',
+          limit: 10,
+        }),
+      );
+    });
+
     it('propaga erro de regra de negócio do use case', async () => {
       searchTenantsUseCase.run.mockRejectedValueOnce(
         new BusinessRuleException(
