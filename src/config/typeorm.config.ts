@@ -5,9 +5,9 @@ import { join } from 'path';
 
 config();
 
-function resolveSsl(
-  configService: ConfigService,
-): boolean | { rejectUnauthorized: boolean } | undefined {
+type SslOption = boolean | { rejectUnauthorized: boolean };
+
+function resolveSsl(configService: ConfigService): SslOption | undefined {
   const flag = (
     configService.get<string>('DB_SSL') ??
     configService.get<string>('DB_SSLMODE') ??
@@ -16,14 +16,24 @@ function resolveSsl(
     .trim()
     .toLowerCase();
 
-  // Neon / managed Postgres exigem TLS (`sslmode=require`).
   if (['true', '1', 'require', 'verify-full', 'verify-ca'].includes(flag)) {
-    // rejectUnauthorized: false evita falha de CA em runtimes gerenciados (Render + Neon).
+    // Neon + Render: TLS obrigatório; CA intermediária costuma falhar sem isto.
     return { rejectUnauthorized: false };
   }
 
   if (['false', '0', 'disable'].includes(flag)) {
     return false;
+  }
+
+  const host = (
+    configService.get<string>('DB_HOST') ??
+    configService.get<string>('DATABASE_URL') ??
+    ''
+  ).toLowerCase();
+
+  // Fallback: hosts Neon / production sem DB_SSL explícito.
+  if (host.includes('neon.tech') || host.includes('sslmode=require')) {
+    return { rejectUnauthorized: false };
   }
 
   return undefined;
@@ -51,6 +61,8 @@ export const getTypeOrmConfig = (
         : true,
     extra: {
       max: 20,
+      // Alguns caminhos do driver `pg` leem SSL só de `extra`.
+      ...(ssl && typeof ssl === 'object' ? { ssl } : {}),
     },
     ...(ssl !== undefined ? { ssl } : {}),
   };
