@@ -24,7 +24,7 @@ describe('report-query.utils', () => {
       dataSource.query.mockResolvedValue([
         {
           revenue: '1500.50',
-          confirmed_bookings: '10',
+          completed_bookings: '10',
           cancelled_bookings: '2',
         },
       ]);
@@ -38,7 +38,7 @@ describe('report-query.utils', () => {
 
       expect(result).toEqual({
         revenue: 1500.5,
-        confirmedBookings: 10,
+        completedBookings: 10,
         cancelledBookings: 2,
       });
       expect(dataSource.query).toHaveBeenCalledWith(
@@ -60,7 +60,7 @@ describe('report-query.utils', () => {
 
       expect(result).toEqual({
         revenue: 0,
-        confirmedBookings: 0,
+        completedBookings: 0,
         cancelledBookings: 0,
       });
     });
@@ -132,7 +132,7 @@ describe('report-query.utils', () => {
           year: 2026,
           month: 4,
           revenue: 0,
-          confirmedBookings: 0,
+          completedBookings: 0,
           cancelledBookings: 0,
           revenueChangePercent: null,
         },
@@ -140,7 +140,7 @@ describe('report-query.utils', () => {
           year: 2026,
           month: 5,
           revenue: 100,
-          confirmedBookings: 2,
+          completedBookings: 2,
           cancelledBookings: 0,
           revenueChangePercent: null,
         },
@@ -148,7 +148,7 @@ describe('report-query.utils', () => {
           year: 2026,
           month: 6,
           revenue: 150,
-          confirmedBookings: 3,
+          completedBookings: 3,
           cancelledBookings: 1,
           revenueChangePercent: null,
         },
@@ -167,7 +167,7 @@ describe('report-query.utils', () => {
           year: '2026',
           month: '5',
           revenue: '200',
-          confirmed_bookings: '4',
+          completed_bookings: '4',
           cancelled_bookings: '1',
         },
       ]);
@@ -197,7 +197,7 @@ describe('report-query.utils', () => {
           tenant_professional_id: 'tp-1',
           professional_name: 'João',
           revenue: '1000',
-          confirmed_bookings: '10',
+          completed_bookings: '10',
           cancelled_bookings: '2',
         },
       ]);
@@ -213,7 +213,7 @@ describe('report-query.utils', () => {
         tenantProfessionalId: 'tp-1',
         professionalName: 'João',
         revenue: 1000,
-        confirmedBookings: 10,
+        completedBookings: 10,
         cancelledBookings: 2,
         averageTicket: 100,
         cancellationRate: 16.67,

@@ -17,6 +17,8 @@ export interface CreateBookingDraftData {
 
 export interface ListBookingsByClientUserOptions {
   status?: BookingStatus;
+  rangeStart?: Date;
+  rangeEnd?: Date;
 }
 
 export interface ListOpsBookingsQuery {

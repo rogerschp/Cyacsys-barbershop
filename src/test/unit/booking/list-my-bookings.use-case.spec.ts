@@ -6,6 +6,7 @@ import {
 } from 'src/modules/booking/interfaces/booking-repository.interface';
 import { BookingStatus } from 'src/modules/booking/entities/booking-status.enum';
 import { BookingEntity } from 'src/modules/booking/entities/booking.entity';
+import { BusinessRuleException } from 'src/common/exceptions/business-rule.exception';
 
 describe('ListMyBookingsUseCase', () => {
   let useCase: ListMyBookingsUseCase;
@@ -56,17 +57,21 @@ describe('ListMyBookingsUseCase', () => {
           },
         },
         tenantProfessional: {
-          professionalProfile: { displayName: 'João Pro' },
+          professionalProfile: {
+            id: 'pp-1',
+            userId: 'pro-user',
+            displayName: 'João Pro',
+          },
         },
         service: { name: 'Corte', durationInMinutes: 30 },
       } as BookingEntity,
     ]);
 
-    const result = await useCase.run('user-uuid');
+    const result = await useCase.run({ userId: 'user-uuid' });
 
     expect(bookingRepository.findByClientUserId).toHaveBeenCalledWith(
       'user-uuid',
-      { status: undefined },
+      { status: undefined, rangeStart: undefined, rangeEnd: undefined },
     );
     expect(result[0].tenant.name).toBe('Barbearia do Vitinho');
     expect(result[0].tenant.address?.city).toBe('São Paulo');
@@ -74,5 +79,37 @@ describe('ListMyBookingsUseCase', () => {
     expect(result[0].date).toBe('2026-04-06');
     expect(result[0].startTime).toBe('14:00');
     expect(result[0].endTime).toBe('14:30');
+  });
+
+  it('aplica filtro from/to no fuso informado', async () => {
+    bookingRepository.findByClientUserId.mockResolvedValue([]);
+
+    await useCase.run({
+      userId: 'user-uuid',
+      from: '2026-04-01',
+      to: '2026-04-07',
+      timezone: 'America/Sao_Paulo',
+      status: BookingStatus.COMPLETED,
+    });
+
+    expect(bookingRepository.findByClientUserId).toHaveBeenCalledWith(
+      'user-uuid',
+      expect.objectContaining({
+        status: BookingStatus.COMPLETED,
+        rangeStart: expect.any(Date),
+        rangeEnd: expect.any(Date),
+      }),
+    );
+  });
+
+  it('rejeita date junto com from/to', async () => {
+    await expect(
+      useCase.run({
+        userId: 'user-uuid',
+        date: '2026-04-01',
+        from: '2026-04-01',
+        to: '2026-04-07',
+      }),
+    ).rejects.toBeInstanceOf(BusinessRuleException);
   });
 });

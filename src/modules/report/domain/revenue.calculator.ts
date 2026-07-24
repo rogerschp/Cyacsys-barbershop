@@ -2,24 +2,24 @@ import { Injectable } from '@nestjs/common';
 
 export interface RevenueTotalsInput {
   revenue: number;
-  confirmedBookings: number;
+  completedBookings: number;
   cancelledBookings: number;
 }
 
 @Injectable()
 export class RevenueCalculator {
-  averageTicket(revenue: number, confirmedBookings: number): number {
-    if (confirmedBookings <= 0) {
+  averageTicket(revenue: number, completedBookings: number): number {
+    if (completedBookings <= 0) {
       return 0;
     }
-    return Math.round((revenue / confirmedBookings) * 100) / 100;
+    return Math.round((revenue / completedBookings) * 100) / 100;
   }
 
   cancellationRate(
-    confirmedBookings: number,
+    completedBookings: number,
     cancelledBookings: number,
   ): number {
-    const denominator = confirmedBookings + cancelledBookings;
+    const denominator = completedBookings + cancelledBookings;
     if (denominator <= 0) {
       return 0;
     }
@@ -31,9 +31,9 @@ export class RevenueCalculator {
     cancellationRate: number;
   } {
     return {
-      averageTicket: this.averageTicket(input.revenue, input.confirmedBookings),
+      averageTicket: this.averageTicket(input.revenue, input.completedBookings),
       cancellationRate: this.cancellationRate(
-        input.confirmedBookings,
+        input.completedBookings,
         input.cancelledBookings,
       ),
     };

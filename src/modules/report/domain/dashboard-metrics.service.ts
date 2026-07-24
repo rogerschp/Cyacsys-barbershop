@@ -4,7 +4,7 @@ import { RevenueCalculator } from './revenue.calculator';
 
 export interface DashboardInput {
   revenue: number;
-  confirmedBookings: number;
+  completedBookings: number;
   cancelledBookings: number;
   newCustomers: number;
   returningCustomers: number;
@@ -18,7 +18,7 @@ export class DashboardMetricsService {
     const derived = this.revenueCalculator.fromTotals(input);
     return {
       revenue: input.revenue,
-      confirmedBookings: input.confirmedBookings,
+      completedBookings: input.completedBookings,
       cancelledBookings: input.cancelledBookings,
       cancellationRate: derived.cancellationRate,
       averageTicket: derived.averageTicket,
