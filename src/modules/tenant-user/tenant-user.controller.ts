@@ -52,8 +52,10 @@ export class TenantUserController {
   @Post()
   @TenantRoles(TenantUserRole.OWNER, TenantUserRole.ADMIN)
   @ApiOperation({
-    summary: 'Vincula um usuário ao tenant',
+    summary: 'Vincula um usuário ao tenant (deprecated)',
+    deprecated: true,
     description:
+      'Deprecated: use `POST /tenants/:tenantId/team/onboard` (por e-mail). ' +
       'Adiciona um usuário como membro do tenant com o papel indicado. Tenant e usuário devem existir; não permite vínculo duplicado.',
   })
   @ApiParam({ name: 'tenantId', description: 'UUID do tenant' })
