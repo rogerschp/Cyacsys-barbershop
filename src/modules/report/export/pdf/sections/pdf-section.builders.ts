@@ -60,7 +60,7 @@ export class MonthlyRevenueSectionBuilder implements PdfExportSection {
     const rows = ctx.report.monthlyBreakdown.map((month) => ({
       month: formatMonthLabel(month.year, month.month),
       revenue: formatCurrencyBrl(month.revenue),
-      confirmed: formatNumberBr(month.confirmedBookings),
+      completed: formatNumberBr(month.completedBookings),
       cancelled: formatNumberBr(month.cancelledBookings),
       variation: formatPercentBr(month.revenueChangePercent),
     }));
@@ -70,7 +70,7 @@ export class MonthlyRevenueSectionBuilder implements PdfExportSection {
       [
         { key: 'month', header: 'Mês', width: 130 },
         { key: 'revenue', header: 'Receita', width: 105, align: 'right' },
-        { key: 'confirmed', header: 'Confirmados', width: 90, align: 'right' },
+        { key: 'completed', header: 'Concluídos', width: 90, align: 'right' },
         { key: 'cancelled', header: 'Cancelados', width: 90, align: 'right' },
         {
           key: 'variation',
@@ -85,7 +85,7 @@ export class MonthlyRevenueSectionBuilder implements PdfExportSection {
             {
               month: 'Sem dados no período',
               revenue: '—',
-              confirmed: '—',
+              completed: '—',
               cancelled: '—',
               variation: '—',
             },
@@ -104,7 +104,7 @@ export class ProfessionalSectionBuilder implements PdfExportSection {
       .map((professional) => ({
         name: professional.professionalName,
         revenue: formatCurrencyBrl(professional.revenue),
-        appointments: formatNumberBr(professional.confirmedBookings),
+        appointments: formatNumberBr(professional.completedBookings),
         ticket: formatCurrencyBrl(professional.averageTicket),
         cancelled: formatNumberBr(professional.cancelledBookings),
       }));

@@ -82,10 +82,37 @@ describe('UserBookingsController (HTTP)', () => {
       .expect((res) => {
         expect(res.body).toHaveLength(1);
         expect(res.body[0].tenant.name).toBe('Barbearia do Vitinho');
-        expect(listMyBookingsUseCase.run).toHaveBeenCalledWith(
-          'uuid-123',
-          undefined,
-        );
+        expect(listMyBookingsUseCase.run).toHaveBeenCalledWith({
+          userId: 'uuid-123',
+          status: undefined,
+          date: undefined,
+          from: undefined,
+          to: undefined,
+          timezone: undefined,
+        });
+      });
+  });
+
+  it('GET /users/me/bookings repassa from/to/timezone/status', () => {
+    listMyBookingsUseCase.run.mockResolvedValue([]);
+    return request(app.getHttpServer())
+      .get('/users/me/bookings')
+      .query({
+        from: '2026-04-01',
+        to: '2026-04-07',
+        timezone: 'America/Fortaleza',
+        status: BookingStatus.COMPLETED,
+      })
+      .expect(200)
+      .expect(() => {
+        expect(listMyBookingsUseCase.run).toHaveBeenCalledWith({
+          userId: 'uuid-123',
+          status: BookingStatus.COMPLETED,
+          date: undefined,
+          from: '2026-04-01',
+          to: '2026-04-07',
+          timezone: 'America/Fortaleza',
+        });
       });
   });
 

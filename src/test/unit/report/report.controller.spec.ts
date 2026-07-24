@@ -23,7 +23,7 @@ describe('ReportController (HTTP)', () => {
   const standardReport = {
     period: { start: new Date(), end: new Date() },
     revenue: 1000,
-    confirmedBookings: 20,
+    completedBookings: 20,
     cancelledBookings: 2,
     insights: null,
   };

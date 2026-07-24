@@ -29,7 +29,7 @@ export class ProfessionalMetricsService {
         tenantProfessionalId: row.tenantProfessionalId,
         professionalName: row.professionalName,
         revenue: row.revenue,
-        confirmedBookings: row.confirmedBookings,
+        completedBookings: row.completedBookings,
         cancelledBookings: row.cancelledBookings,
         averageTicket: derived.averageTicket,
         cancellationRate: derived.cancellationRate,

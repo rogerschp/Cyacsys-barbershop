@@ -85,7 +85,7 @@ export class ReportService {
     const base: StandardReportDto = {
       period,
       revenue: totals.revenue,
-      confirmedBookings: totals.confirmedBookings,
+      completedBookings: totals.completedBookings,
       cancelledBookings: totals.cancelledBookings,
       dashboard,
       topServices,

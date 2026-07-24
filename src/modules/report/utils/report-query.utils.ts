@@ -10,7 +10,7 @@ import { MonthBucket } from './report-period.utils';
 
 export interface BookingTotals {
   revenue: number;
-  confirmedBookings: number;
+  completedBookings: number;
   cancelledBookings: number;
 }
 
@@ -23,7 +23,7 @@ interface RawMonthlyRow {
   year: string;
   month: string;
   revenue: string;
-  confirmed_bookings: string;
+  completed_bookings: string;
   cancelled_bookings: string;
 }
 
@@ -31,7 +31,7 @@ interface RawProfessionalRow {
   tenant_professional_id: string;
   professional_name: string;
   revenue: string;
-  confirmed_bookings: string;
+  completed_bookings: string;
   cancelled_bookings: string;
 }
 
@@ -66,7 +66,7 @@ export async function fetchBookingTotals(
     `
     SELECT
       COALESCE(SUM(CASE WHEN b.status = $4 THEN s.price::numeric ELSE 0 END), 0) AS revenue,
-      COUNT(CASE WHEN b.status = $4 THEN 1 END)::int AS confirmed_bookings,
+      COUNT(CASE WHEN b.status = $4 THEN 1 END)::int AS completed_bookings,
       COUNT(CASE WHEN b.status = $5 THEN 1 END)::int AS cancelled_bookings
     FROM bookings b
     JOIN services s ON b.service_id = s.id
@@ -78,7 +78,7 @@ export async function fetchBookingTotals(
 
   return {
     revenue: toNumber(row?.revenue),
-    confirmedBookings: toNumber(row?.confirmed_bookings),
+    completedBookings: toNumber(row?.completed_bookings),
     cancelledBookings: toNumber(row?.cancelled_bookings),
   };
 }
@@ -97,7 +97,7 @@ export async function fetchMonthlyBreakdown(
       EXTRACT(YEAR FROM date_trunc('month', timezone($4, b.starts_at)))::int AS year,
       EXTRACT(MONTH FROM date_trunc('month', timezone($4, b.starts_at)))::int AS month,
       COALESCE(SUM(CASE WHEN b.status = $5 THEN s.price::numeric ELSE 0 END), 0) AS revenue,
-      COUNT(CASE WHEN b.status = $5 THEN 1 END)::int AS confirmed_bookings,
+      COUNT(CASE WHEN b.status = $5 THEN 1 END)::int AS completed_bookings,
       COUNT(CASE WHEN b.status = $6 THEN 1 END)::int AS cancelled_bookings
     FROM bookings b
     JOIN services s ON b.service_id = s.id
@@ -128,7 +128,7 @@ export async function fetchMonthlyBreakdown(
       year: bucket.year,
       month: bucket.month,
       revenue: toNumber(row?.revenue),
-      confirmedBookings: toNumber(row?.confirmed_bookings),
+      completedBookings: toNumber(row?.completed_bookings),
       cancelledBookings: toNumber(row?.cancelled_bookings),
       revenueChangePercent: null as number | null,
     };
@@ -168,7 +168,7 @@ export async function fetchProfessionalBreakdownRaw(
     tenantProfessionalId: string;
     professionalName: string;
     revenue: number;
-    confirmedBookings: number;
+    completedBookings: number;
     cancelledBookings: number;
   }>
 > {
@@ -178,7 +178,7 @@ export async function fetchProfessionalBreakdownRaw(
       tp.id AS tenant_professional_id,
       pp.display_name AS professional_name,
       COALESCE(SUM(CASE WHEN b.status = $4 THEN s.price::numeric ELSE 0 END), 0) AS revenue,
-      COUNT(CASE WHEN b.status = $4 THEN 1 END)::int AS confirmed_bookings,
+      COUNT(CASE WHEN b.status = $4 THEN 1 END)::int AS completed_bookings,
       COUNT(CASE WHEN b.status = $5 THEN 1 END)::int AS cancelled_bookings
     FROM bookings b
     JOIN tenant_professionals tp ON b.tenant_professional_id = tp.id
@@ -196,7 +196,7 @@ export async function fetchProfessionalBreakdownRaw(
     tenantProfessionalId: row.tenant_professional_id,
     professionalName: row.professional_name,
     revenue: toNumber(row.revenue),
-    confirmedBookings: toNumber(row.confirmed_bookings),
+    completedBookings: toNumber(row.completed_bookings),
     cancelledBookings: toNumber(row.cancelled_bookings),
   }));
 }
@@ -308,12 +308,12 @@ export async function fetchProfessionalBreakdown(
     end,
   );
   return rows.map((row) => {
-    const denominator = row.confirmedBookings + row.cancelledBookings;
+    const denominator = row.completedBookings + row.cancelledBookings;
     return {
       ...row,
       averageTicket:
-        row.confirmedBookings > 0
-          ? Math.round((row.revenue / row.confirmedBookings) * 100) / 100
+        row.completedBookings > 0
+          ? Math.round((row.revenue / row.completedBookings) * 100) / 100
           : 0,
       cancellationRate:
         denominator > 0

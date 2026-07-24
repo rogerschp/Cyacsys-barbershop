@@ -15,9 +15,9 @@ export class StandardReportDto {
 
   @ApiProperty({
     example: 85,
-    description: 'Compat: espelha dashboard.confirmedBookings',
+    description: 'Compat: espelha dashboard.completedBookings',
   })
-  confirmedBookings: number;
+  completedBookings: number;
 
   @ApiProperty({
     example: 5,

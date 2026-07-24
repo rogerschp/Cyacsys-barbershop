@@ -306,8 +306,8 @@ export function dashboardKpiCards(ctx: ReportExportContext): PdfKpiCard[] {
   return [
     { label: 'Receita total', value: formatCurrencyBrl(d.revenue) },
     {
-      label: 'Atendimentos confirmados',
-      value: formatNumberBr(d.confirmedBookings),
+      label: 'Atendimentos concluídos',
+      value: formatNumberBr(d.completedBookings),
     },
     { label: 'Cancelamentos', value: formatNumberBr(d.cancelledBookings) },
     { label: 'Ticket médio', value: formatCurrencyBrl(d.averageTicket) },

@@ -58,7 +58,7 @@ describe('ReportService', () => {
     });
     (fetchBookingTotals as jest.Mock).mockResolvedValue({
       revenue: 1000,
-      confirmedBookings: 10,
+      completedBookings: 10,
       cancelledBookings: 0,
     });
     customerMetrics.countInPeriod.mockResolvedValue({

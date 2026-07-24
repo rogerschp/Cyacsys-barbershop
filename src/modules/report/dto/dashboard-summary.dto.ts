@@ -5,14 +5,14 @@ export class DashboardSummaryDto {
   revenue: number;
 
   @ApiProperty({ example: 85 })
-  confirmedBookings: number;
+  completedBookings: number;
 
   @ApiProperty({ example: 5 })
   cancelledBookings: number;
 
   @ApiProperty({
     example: 5.56,
-    description: 'Cancelados / (Confirmados + Cancelados) * 100',
+    description: 'Cancelados / (Concluídos + Cancelados) * 100',
   })
   cancellationRate: number;
 
