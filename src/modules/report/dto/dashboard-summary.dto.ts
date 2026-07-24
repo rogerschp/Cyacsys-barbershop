@@ -18,14 +18,14 @@ export class DashboardSummaryDto {
 
   @ApiProperty({
     example: 37.65,
-    description: 'Receita / atendimentos válidos (CONFIRMED)',
+    description: 'Receita / atendimentos válidos (COMPLETED)',
   })
   averageTicket: number;
 
   @ApiProperty({
     example: 12,
     description:
-      'Clientes cujo primeiro atendimento (CONFIRMED) caiu no período',
+      'Clientes cujo primeiro atendimento (COMPLETED) caiu no período',
   })
   newCustomers: number;
 
