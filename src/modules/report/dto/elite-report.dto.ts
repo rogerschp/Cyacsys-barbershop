@@ -13,7 +13,7 @@ export class EliteReportDto {
   revenue: number;
 
   @ApiProperty({ example: 480 })
-  confirmedBookings: number;
+  completedBookings: number;
 
   @ApiProperty({ example: 32 })
   cancelledBookings: number;

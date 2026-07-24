@@ -21,11 +21,11 @@ describe('GetStandardReportUseCase', () => {
         end: new Date('2026-06-04T23:59:59.999Z'),
       },
       revenue: 500,
-      confirmedBookings: 12,
+      completedBookings: 12,
       cancelledBookings: 1,
       dashboard: {
         revenue: 500,
-        confirmedBookings: 12,
+        completedBookings: 12,
         cancelledBookings: 1,
         cancellationRate: 7.69,
         averageTicket: 41.67,

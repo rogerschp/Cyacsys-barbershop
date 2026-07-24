@@ -12,7 +12,7 @@ export class ProReportDto {
   revenue: number;
 
   @ApiProperty({ example: 245 })
-  confirmedBookings: number;
+  completedBookings: number;
 
   @ApiProperty({ example: 18 })
   cancelledBookings: number;

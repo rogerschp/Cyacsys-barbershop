@@ -32,13 +32,37 @@ export class UserBookingsController {
   @ApiOperation({
     summary: 'Lista agendamentos do usuário autenticado',
     description:
-      'Retorna estabelecimento (nome, telefone, endereço), profissional, serviço, data e horário no fuso do tenant.',
+      'Retorna estabelecimento, profissional, serviço e horário no fuso do tenant. ' +
+      'Filtre por dia (`date`) OU intervalo (`from`+`to`) — nunca misture. ' +
+      'Máximo 31 dias. Dias interpretados no `timezone` (default America/Sao_Paulo).',
+  })
+  @ApiQuery({
+    name: 'date',
+    required: false,
+    description:
+      'Um dia (yyyy-MM-dd). Mutuamente exclusivo com from/to.',
+  })
+  @ApiQuery({
+    name: 'from',
+    required: false,
+    description: 'Início do intervalo (yyyy-MM-dd). Exige to.',
+  })
+  @ApiQuery({
+    name: 'to',
+    required: false,
+    description: 'Fim do intervalo inclusivo (yyyy-MM-dd). Exige from.',
+  })
+  @ApiQuery({
+    name: 'timezone',
+    required: false,
+    description:
+      'IANA TZ para date/from/to (default America/Sao_Paulo). Útil quando há bookings em tenants com fusos diferentes.',
   })
   @ApiQuery({
     name: 'status',
     required: false,
     enum: BookingStatus,
-    description: 'Filtrar por status (DRAFT, CONFIRMED, CANCELLED)',
+    description: 'Filtrar por status (DRAFT, CONFIRMED, CANCELLED, COMPLETED)',
   })
   @ApiResponse({
     status: 200,
@@ -48,6 +72,10 @@ export class UserBookingsController {
   @ApiResponse({ status: 401, description: 'Token ausente ou inválido' })
   async listMyBookings(
     @Req() req: { user?: RequestUser },
+    @Query('date') date?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('timezone') timezone?: string,
     @Query('status', new ParseEnumPipe(BookingStatus, { optional: true }))
     status?: BookingStatus,
   ) {
@@ -55,6 +83,13 @@ export class UserBookingsController {
     if (!userId) {
       throw new NotFoundException('User not found');
     }
-    return this.listMyBookingsUseCase.run(userId, status);
+    return this.listMyBookingsUseCase.run({
+      userId,
+      status,
+      date,
+      from,
+      to,
+      timezone,
+    });
   }
 }

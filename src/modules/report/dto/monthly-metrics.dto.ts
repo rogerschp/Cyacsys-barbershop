@@ -14,7 +14,7 @@ export class MonthlyMetricsDto {
   revenue: number;
 
   @ApiProperty({ example: 120 })
-  confirmedBookings: number;
+  completedBookings: number;
 
   @ApiProperty({ example: 8 })
   cancelledBookings: number;

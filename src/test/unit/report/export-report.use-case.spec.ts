@@ -26,11 +26,11 @@ describe('ExportReportUseCase', () => {
   const eliteReport = {
     period: { start: new Date(), end: new Date() },
     revenue: 100,
-    confirmedBookings: 1,
+    completedBookings: 1,
     cancelledBookings: 0,
     dashboard: {
       revenue: 100,
-      confirmedBookings: 1,
+      completedBookings: 1,
       cancelledBookings: 0,
       cancellationRate: 0,
       averageTicket: 100,

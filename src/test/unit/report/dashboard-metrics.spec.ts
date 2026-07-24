@@ -22,7 +22,7 @@ describe('DashboardMetricsService', () => {
     const service = new DashboardMetricsService(new RevenueCalculator());
     const dashboard = service.build({
       revenue: 1000,
-      confirmedBookings: 10,
+      completedBookings: 10,
       cancelledBookings: 2,
       newCustomers: 3,
       returningCustomers: 4,
@@ -30,7 +30,7 @@ describe('DashboardMetricsService', () => {
 
     expect(dashboard).toEqual({
       revenue: 1000,
-      confirmedBookings: 10,
+      completedBookings: 10,
       cancelledBookings: 2,
       cancellationRate: 16.67,
       averageTicket: 100,

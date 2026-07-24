@@ -91,7 +91,11 @@ export class BookingRepository implements IBookingRepository {
 
   async findByClientUserId(
     clientUserId: string,
-    options?: { status?: BookingStatus },
+    options?: {
+      status?: BookingStatus;
+      rangeStart?: Date;
+      rangeEnd?: Date;
+    },
   ): Promise<BookingEntity[]> {
     const qb = this.bookingRepo
       .createQueryBuilder('b')
@@ -109,6 +113,13 @@ export class BookingRepository implements IBookingRepository {
 
     if (options?.status) {
       qb.andWhere('b.status = :status', { status: options.status });
+    }
+
+    if (options?.rangeStart && options?.rangeEnd) {
+      qb.andWhere('b.starts_at >= :rangeStart AND b.starts_at < :rangeEnd', {
+        rangeStart: options.rangeStart,
+        rangeEnd: options.rangeEnd,
+      });
     }
 
     return qb.getMany();

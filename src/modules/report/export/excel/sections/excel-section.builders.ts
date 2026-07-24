@@ -41,8 +41,8 @@ export class DashboardSectionBuilder implements ExcelExportSection {
         numFmt: moneyFormat,
       },
       {
-        label: 'Confirmados',
-        value: ctx.report.dashboard.confirmedBookings,
+        label: 'Concluídos',
+        value: ctx.report.dashboard.completedBookings,
         numFmt: integerFormat,
       },
       {
@@ -111,7 +111,7 @@ export class MonthlyRevenueSectionBuilder implements ExcelExportSection {
     const startRow = writeSheetTitleBlock(sheet, ctx, 'Receita Mensal');
     const headerRowNumber = startRow;
     const header = sheet.getRow(headerRowNumber);
-    header.values = ['Mês', 'Receita', 'Confirmados', 'Cancelados', 'Variação'];
+    header.values = ['Mês', 'Receita', 'Concluídos', 'Cancelados', 'Variação'];
     styleHeaderRow(header, 5);
 
     ctx.report.monthlyBreakdown.forEach((month, index) => {
@@ -119,7 +119,7 @@ export class MonthlyRevenueSectionBuilder implements ExcelExportSection {
       row.values = [
         formatMonthLabel(month.year, month.month),
         month.revenue,
-        month.confirmedBookings,
+        month.completedBookings,
         month.cancelledBookings,
         month.revenueChangePercent == null
           ? null
@@ -175,7 +175,7 @@ export class ProfessionalSectionBuilder implements ExcelExportSection {
       row.values = [
         professional.professionalName,
         professional.revenue,
-        professional.confirmedBookings,
+        professional.completedBookings,
         professional.averageTicket,
         professional.cancelledBookings,
       ];

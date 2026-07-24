@@ -30,7 +30,7 @@ describe('ReportController (e2e)', () => {
       end: '2026-06-04T23:59:59.999Z',
     },
     revenue: 2500,
-    confirmedBookings: 45,
+    completedBookings: 45,
     cancelledBookings: 3,
     insights: null,
   };

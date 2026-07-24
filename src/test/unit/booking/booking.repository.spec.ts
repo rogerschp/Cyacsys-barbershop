@@ -336,6 +336,26 @@ describe('BookingRepository', () => {
         status: BookingStatus.CONFIRMED,
       });
     });
+
+    it('filtra por intervalo de starts_at quando informado', async () => {
+      const qb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        leftJoin: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([]),
+      };
+      rootBookingRepo.createQueryBuilder = jest.fn().mockReturnValue(qb);
+      const rangeStart = new Date('2026-04-01T03:00:00.000Z');
+      const rangeEnd = new Date('2026-04-08T03:00:00.000Z');
+
+      await repository.findByClientUserId('user-1', { rangeStart, rangeEnd });
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        'b.starts_at >= :rangeStart AND b.starts_at < :rangeEnd',
+        { rangeStart, rangeEnd },
+      );
+    });
   });
 
   describe('findActiveCustomerTimeOverlap', () => {
