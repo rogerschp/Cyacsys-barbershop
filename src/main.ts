@@ -69,6 +69,7 @@ async function bootstrap() {
     .addTag('tenant-professionals')
     .addTag('tenants')
     .addTag('tenant-user')
+    .addTag('team')
     .addTag('services')
     .addTag('availability')
     .addTag('booking')

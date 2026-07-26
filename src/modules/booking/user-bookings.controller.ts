@@ -39,8 +39,7 @@ export class UserBookingsController {
   @ApiQuery({
     name: 'date',
     required: false,
-    description:
-      'Um dia (yyyy-MM-dd). Mutuamente exclusivo com from/to.',
+    description: 'Um dia (yyyy-MM-dd). Mutuamente exclusivo com from/to.',
   })
   @ApiQuery({
     name: 'from',

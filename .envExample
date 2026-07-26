@@ -27,6 +27,9 @@ CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 
+# Notifications (default: mock — logs only, no real delivery)
+NOTIFICATION_PROVIDER=mock
+
 # CORS — comma-separated; must match browser Origin exactly (scheme + host + port)
 # Dev: front on 3001 → include both hostnames if you alternate localhost / 127.0.0.1
 CORS_ORIGINS=http://localhost:3001,http://127.0.0.1:3001

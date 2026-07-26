@@ -47,6 +47,7 @@ import { UpdateTenantProfessionalStatusUseCase } from './use-cases/update-tenant
     TENANT_PROFESSIONAL_REPOSITORY,
     GetTenantProfessionalUseCase,
     ListTenantProfessionalsUseCase,
+    LinkProfessionalToTenantUseCase,
   ],
 })
 export class TenantProfessionalModule {}

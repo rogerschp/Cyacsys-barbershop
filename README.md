@@ -1,6 +1,6 @@
 # Cyacsys API — Beauty & wellness professionals (multi-tenant)
 
-REST API for multi-tenant beauty and wellness businesses: tenants, members, **global professional profiles**, per-establishment links, services, **contextual scheduling**, **bookings**, **reviews**, **media upload (Cloudinary)**, **subscription plans**, **reports**, **public search**, **tenant theming**, and **Firebase + JWT** authentication.
+REST API for multi-tenant beauty and wellness businesses: tenants, members, **team invitations**, **notifications (mock)**, **global professional profiles**, per-establishment links, services, **contextual scheduling**, **bookings**, **reviews**, **media upload (Cloudinary)**, **subscription plans**, **reports**, **public search**, **tenant theming**, and **Firebase + JWT** authentication.
 
 Built with [NestJS](https://nestjs.com/), [TypeORM](https://typeorm.io/), and PostgreSQL.
 
@@ -121,6 +121,8 @@ Portuguese docs live under [`docs/`](docs/README.md). Start here:
 | HTTP contracts | [docs/FRONTEND_INTEGRACAO.md](docs/FRONTEND_INTEGRACAO.md) |
 | Backend | [docs/DESENVOLVEDORES.md](docs/DESENVOLVEDORES.md) |
 | Media module | [docs/media.md](docs/media.md) |
+| Team / invitations | [docs/team.md](docs/team.md) |
+| Notifications | [docs/notification.md](docs/notification.md) |
 | Product | [docs/PRODUTO_NEGOCIOS.md](docs/PRODUTO_NEGOCIOS.md) |
 
 ---
@@ -286,6 +288,7 @@ src/
 │   ├── availability/
 │   ├── booking/
 │   ├── media/         # upload + storage (Cloudinary)
+│   ├── notification/  # event → router → template → provider → record
 │   ├── professional-profile/
 │   ├── tenant-professional/
 │   ├── firebase/
@@ -294,6 +297,7 @@ src/
 │   ├── search/
 │   ├── service/
 │   ├── subscription/
+│   ├── team/          # onboard + invitations
 │   ├── tenant/
 │   ├── tenant-theme/
 │   ├── tenant-user/
@@ -307,6 +311,8 @@ docs/                  # Per-module documentation (PT)
 
 | Endpoint                                                  | Notes                                                                                  |
 | --------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `POST /tenants/:tenantId/team/onboard`                    | Add member by email or create invitation (OWNER/ADMIN)                                 |
+| `GET /tenants/:tenantId/team`                             | List members                                                                           |
 | `POST /media/upload`                                      | Multipart upload; path from `mediaType` + context; see [docs/media.md](docs/media.md)  |
 | `POST /media` · `GET/DELETE /media/:id`                   | Register existing asset / fetch / soft-delete                                          |
 | `PATCH /users/me/deactivate`                              | Self-service: `INACTIVE` + Firebase disable (not soft-delete)                          |
