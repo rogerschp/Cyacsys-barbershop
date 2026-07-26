@@ -44,6 +44,15 @@ export class TenantUserRepository implements ITenantUserRepository {
       order: { createdAt: 'ASC' },
     });
   }
+
+  async listByTenantId(tenantId: string): Promise<TenantUserEntity[]> {
+    return this.repo.find({
+      where: { tenantId },
+      relations: ['user'],
+      order: { createdAt: 'ASC' },
+    });
+  }
+
   async deleteByTenantAndUser(tenantId: string, userId: string): Promise<void> {
     await this.repo.delete({ tenantId, userId });
   }

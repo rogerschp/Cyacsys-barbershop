@@ -22,6 +22,8 @@ import { ReportModule } from './modules/report/report.module';
 import { SearchModule } from './modules/search/search.module';
 import { TenantThemeModule } from './modules/tenant-theme/tenant-theme.module';
 import { MediaModule } from './modules/media/media.module';
+import { NotificationModule } from './modules/notification/notification.module';
+import { TeamModule } from './modules/team/team.module';
 
 @Module({
   imports: [
@@ -58,6 +60,8 @@ import { MediaModule } from './modules/media/media.module';
     SearchModule,
     TenantThemeModule,
     MediaModule,
+    NotificationModule,
+    TeamModule,
   ],
   controllers: [],
   providers: [

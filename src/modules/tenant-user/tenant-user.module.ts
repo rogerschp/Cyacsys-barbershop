@@ -55,6 +55,7 @@ import { ListMyTenantsUseCase } from './use-cases/list-my-tenants.use-case';
     ValidateMembershipByUserIdAndTenantIdUseCase,
     FindOptionalMembershipByTenantAndUserUseCase,
     RemoveUserFromTenantByUserIdAndTenantIdUseCase,
+    TENANT_USER_REPOSITORY,
     TENANT_MEMBERSHIP_RESOLVER,
     TenantMembershipGuard,
     TenantRolesGuard,

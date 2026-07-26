@@ -16,12 +16,7 @@ function resolveMediaEnv(raw: string | undefined): MediaEnv {
   return 'dev';
 }
 
-export default registerAs(
-  'media',
-  (): MediaConfig => ({
-    env: resolveMediaEnv(process.env.MEDIA_ENV),
-    storageProvider: (
-      process.env.STORAGE_PROVIDER ?? 'cloudinary'
-    ).toLowerCase(),
-  }),
-);
+export default registerAs('media', (): MediaConfig => ({
+  env: resolveMediaEnv(process.env.MEDIA_ENV),
+  storageProvider: (process.env.STORAGE_PROVIDER ?? 'cloudinary').toLowerCase(),
+}));
