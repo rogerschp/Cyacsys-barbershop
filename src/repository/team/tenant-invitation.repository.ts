@@ -9,9 +9,7 @@ import {
 } from '../../modules/team/interfaces/tenant-invitation-repository.interface';
 
 @Injectable()
-export class TenantInvitationRepository
-  implements ITenantInvitationRepository
-{
+export class TenantInvitationRepository implements ITenantInvitationRepository {
   constructor(
     @InjectRepository(TenantInvitationEntity)
     private readonly repo: Repository<TenantInvitationEntity>,

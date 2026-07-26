@@ -11,8 +11,9 @@ export class MockNotificationProvider implements INotificationProvider {
 
   async dispatch(
     prepared: PreparedNotification,
-    _options?: DispatchNotificationOptions,
+    options?: DispatchNotificationOptions,
   ): Promise<void> {
+    void options;
     const lines = [
       '========================',
       'Notification',

@@ -8,9 +8,11 @@ import {
 @Injectable()
 export class TelegramNotificationProvider implements INotificationProvider {
   async dispatch(
-    _prepared: PreparedNotification,
-    _options?: DispatchNotificationOptions,
+    prepared: PreparedNotification,
+    options?: DispatchNotificationOptions,
   ): Promise<void> {
+    void prepared;
+    void options;
     throw new NotImplementedException('TelegramNotificationProvider');
   }
 }

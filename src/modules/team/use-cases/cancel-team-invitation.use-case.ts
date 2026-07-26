@@ -1,8 +1,4 @@
-import {
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
 import { FindTenantByIdUseCase } from '../../tenant/use-cases/find-tenant-by-id.use-case';
 import { TeamInvitationResponseDto } from '../dto/team-response.dto';

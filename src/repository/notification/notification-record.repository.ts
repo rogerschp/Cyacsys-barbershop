@@ -8,9 +8,7 @@ import {
 } from '../../modules/notification/interfaces/notification-record-repository.interface';
 
 @Injectable()
-export class NotificationRecordRepository
-  implements INotificationRecordRepository
-{
+export class NotificationRecordRepository implements INotificationRecordRepository {
   constructor(
     @InjectRepository(NotificationRecordEntity)
     private readonly repo: Repository<NotificationRecordEntity>,

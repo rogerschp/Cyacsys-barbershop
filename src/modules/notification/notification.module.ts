@@ -15,10 +15,7 @@ import { TemplateRenderer } from './templates/template.renderer';
 import { DispatchNotificationUseCase } from './use-cases/dispatch-notification.use-case';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([NotificationRecordEntity]),
-    ConfigModule,
-  ],
+  imports: [TypeOrmModule.forFeature([NotificationRecordEntity]), ConfigModule],
   providers: [
     NotificationRouter,
     TemplateRenderer,

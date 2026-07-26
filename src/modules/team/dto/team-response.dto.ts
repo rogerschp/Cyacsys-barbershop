@@ -63,7 +63,8 @@ export class OnboardTeamMemberResponseDto {
   invitation?: TeamInvitationResponseDto;
 
   @ApiPropertyOptional({
-    description: 'Preenchido quando BARBER com professional profile foi vinculado',
+    description:
+      'Preenchido quando BARBER com professional profile foi vinculado',
   })
   tenantProfessionalId?: string;
 }
