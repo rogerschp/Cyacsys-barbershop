@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
+import { PaginatedOptionsDto } from '../../common/dto/paginated-options.dto';
+import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto';
 import { TenantSubscriptionEntity } from '../../modules/subscription/entities/tenant-subscription.entity';
 import { SubscriptionStatus } from '../../modules/subscription/enums/subscription-status.enum';
 import {
@@ -49,9 +51,24 @@ export class TenantSubscriptionRepository implements ITenantSubscriptionReposito
   ): Promise<TenantSubscriptionEntity | null> {
     return this.repo.findOne({
       where: { tenantId },
-      relations: ['plan'],
+      relations: ['plan', 'tenant'],
       withDeleted: false,
     });
+  }
+
+  async findPaginatedWithPlanAndTenant(
+    options: PaginatedOptionsDto,
+  ): Promise<PaginatedResponseDto<TenantSubscriptionEntity>> {
+    const first = options.first ?? 0;
+    const rows = options.rows ?? 10;
+    const [data, total] = await this.repo.findAndCount({
+      relations: ['plan', 'tenant'],
+      withDeleted: false,
+      order: { createdAt: 'DESC' },
+      skip: first,
+      take: rows,
+    });
+    return new PaginatedResponseDto({ data, total }, { first, rows });
   }
 
   async update(

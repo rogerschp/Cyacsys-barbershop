@@ -7,6 +7,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { getTypeOrmConfig } from './config/typeorm.config';
 import mediaConfig from './config/media.config';
 import { AuthModule } from './modules/auth/auth.module';
+import { AdminModule } from './modules/admin/admin.module';
 import { AvailabilityModule } from './modules/availability/availability.module';
 import { BookingModule } from './modules/booking/booking.module';
 import { ProfessionalProfileModule } from './modules/professional-profile/professional-profile.module';
@@ -56,6 +57,7 @@ import { TeamModule } from './modules/team/team.module';
     UserModule,
     ReviewModule,
     SubscriptionModule,
+    AdminModule,
     ReportModule,
     SearchModule,
     TenantThemeModule,
