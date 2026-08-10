@@ -52,7 +52,7 @@ Built with [NestJS](https://nestjs.com/), [TypeORM](https://typeorm.io/), and Po
 | **Plans**          | FREE, STANDARD, PRO, ELITE — public catalog at `GET /plans`                                                       |
 | **Subscriptions**  | Auto FREE plan on tenant creation; current subscription + history per tenant                                      |
 | **Plan gating**    | `SubscriptionGuard` + `@RequiresPlan()` on reports and theme; `AssertTenantPlanFeatureUseCase` on review creation |
-| **Admin billing**  | SUPER_ADMIN manual activation and forced expiration (testing)                                                     |
+| **Admin billing**  | SUPER_ADMIN platform API (`/admin/subscriptions/*`) — list/get/history + activate/expire |
 | **Expiration job** | Daily cron downgrades expired paid plans                                                                          |
 
 ### Discovery & reputation
@@ -294,6 +294,7 @@ src/
 │   ├── firebase/
 │   ├── report/
 │   ├── review/
+│   ├── admin/           # platform SUPER_ADMIN API
 │   ├── search/
 │   ├── service/
 │   ├── subscription/
@@ -323,7 +324,10 @@ docs/                  # Per-module documentation (PT)
 | `GET /tenants/:tenantId/reports/export?format=pdf\|excel` | ELITE export                                                                           |
 | `GET /search/tenants?lat=&lng=&radius=`                   | Geo search (max 50 km)                                                                 |
 | `PUT /tenants/:tenantId/theme`                            | OWNER/ADMIN; requires customization feature                                            |
+| `GET /admin/subscriptions`                                | SUPER_ADMIN; paginated (`first`/`rows`)                                                |
+| `GET /admin/subscriptions/:tenantId` (+ `/history`)       | SUPER_ADMIN; no tenant membership required                                             |
 | `POST /admin/subscriptions/activate`                      | SUPER_ADMIN only                                                                       |
+| `POST /admin/subscriptions/expire-now`                    | SUPER_ADMIN only                                                                       |
 
 ---
 

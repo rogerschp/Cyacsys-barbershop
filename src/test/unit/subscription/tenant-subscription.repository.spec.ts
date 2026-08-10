@@ -133,10 +133,35 @@ describe('TenantSubscriptionRepository', () => {
       const result = await repository.findByTenantIdWithPlan('tenant-uuid');
       expect(typeOrmRepo.findOne).toHaveBeenCalledWith({
         where: { tenantId: 'tenant-uuid' },
-        relations: ['plan'],
+        relations: ['plan', 'tenant'],
         withDeleted: false,
       });
       expect(result).toEqual(mockSubscription);
+    });
+  });
+
+  describe('findPaginatedWithPlanAndTenant', () => {
+    it('pagina com first/rows e retorna PaginatedResponseDto', async () => {
+      const findAndCount = jest.fn().mockResolvedValue([[mockSubscription], 1]);
+      (typeOrmRepo as any).findAndCount = findAndCount;
+
+      const result = await repository.findPaginatedWithPlanAndTenant({
+        first: 0,
+        rows: 10,
+      });
+
+      expect(findAndCount).toHaveBeenCalledWith({
+        relations: ['plan', 'tenant'],
+        withDeleted: false,
+        order: { createdAt: 'DESC' },
+        skip: 0,
+        take: 10,
+      });
+      expect(result.data).toEqual([mockSubscription]);
+      expect(result.total).toBe(1);
+      expect(result.first).toBe(0);
+      expect(result.rows).toBe(10);
+      expect(result.page).toBe(1);
     });
   });
 

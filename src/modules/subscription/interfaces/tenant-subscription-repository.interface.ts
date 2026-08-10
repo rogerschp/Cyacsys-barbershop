@@ -1,4 +1,6 @@
 import { EntityManager } from 'typeorm';
+import { PaginatedOptionsDto } from '../../../common/dto/paginated-options.dto';
+import { PaginatedResponseDto } from '../../../common/dto/paginated-response.dto';
 import { TenantSubscriptionEntity } from '../entities/tenant-subscription.entity';
 import { SubscriptionStatus } from '../enums/subscription-status.enum';
 
@@ -31,6 +33,9 @@ export interface ITenantSubscriptionRepository {
   findByTenantIdWithPlan(
     tenantId: string,
   ): Promise<TenantSubscriptionEntity | null>;
+  findPaginatedWithPlanAndTenant(
+    options: PaginatedOptionsDto,
+  ): Promise<PaginatedResponseDto<TenantSubscriptionEntity>>;
   update(
     id: string,
     data: UpdateTenantSubscriptionData,

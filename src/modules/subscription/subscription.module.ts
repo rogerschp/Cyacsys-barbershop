@@ -6,7 +6,6 @@ import { TenantSubscriptionRepository } from '../../repository/subscription/tena
 import { AuthModule } from '../auth/auth.module';
 import { TenantModule } from '../tenant/tenant.module';
 import { TenantUserModule } from '../tenant-user/tenant-user.module';
-import { AdminSubscriptionController } from './controllers/admin-subscription.controller';
 import { PlanController } from './controllers/plan.controller';
 import { TenantSubscriptionController } from './controllers/tenant-subscription.controller';
 import { PlanEntity } from './entities/plan.entity';
@@ -38,11 +37,7 @@ import { AssertTenantPlanFeatureUseCase } from './use-cases/assert-tenant-plan-f
     forwardRef(() => TenantModule),
     forwardRef(() => TenantUserModule),
   ],
-  controllers: [
-    PlanController,
-    TenantSubscriptionController,
-    AdminSubscriptionController,
-  ],
+  controllers: [PlanController, TenantSubscriptionController],
   providers: [
     { provide: PLAN_REPOSITORY, useClass: PlanRepository },
     {
@@ -70,6 +65,8 @@ import { AssertTenantPlanFeatureUseCase } from './use-cases/assert-tenant-plan-f
     TENANT_SUBSCRIPTION_REPOSITORY,
     SUBSCRIPTION_HISTORY_REPOSITORY,
     CreateFreeSubscriptionUseCase,
+    ActivateSubscriptionUseCase,
+    ExpireSubscriptionsUseCase,
     SubscriptionGuard,
     AssertTenantPlanFeatureUseCase,
     ChangePlanUseCase,
