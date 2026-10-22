@@ -39,6 +39,8 @@ CORS_ORIGINS=http://localhost:3001,http://127.0.0.1:3001
 NOTIFICATION_EMAIL_PROVIDER=mock
 NOTIFICATION_PROCESSOR_ENABLED=true
 # Telegram (bot via @BotFather). Usuário vincula em GET /notifications/telegram/link
+# Um bot por ambiente (um bot = um webhook): dev=@CiacsysDevBot, prd=@CiacsysBot.
+# Webhook: setWebhook 1x para https://<api-publica>/notifications/telegram/webhook (docs/notification.md)
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_BOT_USERNAME=
 TELEGRAM_WEBHOOK_SECRET=
