@@ -1,4 +1,11 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
+import { NotificationEvent } from '../../notification/domain/notification-event.enum';
+import { DispatchNotificationUseCase } from '../../notification/use-cases/dispatch-notification.use-case';
 import { DateTime } from 'luxon';
 import { QueryFailedError } from 'typeorm';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
@@ -21,6 +28,8 @@ export class ConfirmBookingUseCase {
     private readonly bookingRepository: IBookingRepository,
     @Inject(TENANT_PROFESSIONAL_REPOSITORY)
     private readonly tenantProfessionalRepository: ITenantProfessionalRepository,
+    @Optional()
+    private readonly dispatchNotification?: DispatchNotificationUseCase,
   ) {}
 
   async run(
@@ -63,13 +72,33 @@ export class ConfirmBookingUseCase {
     }
 
     try {
-      return await this.bookingRepository.updateStatus(
+      const updated = await this.bookingRepository.updateStatus(
         bookingId,
         tenantId,
         tenantProfessionalId,
         BookingStatus.DRAFT,
         BookingStatus.CONFIRMED,
       );
+      if (this.dispatchNotification && updated.clientUserId) {
+        try {
+          await this.dispatchNotification.run({
+            event: NotificationEvent.BOOKING_CONFIRMED,
+            recipientUserId: updated.clientUserId,
+            tenantId: updated.tenantId,
+            idempotencyKey: `booking:${updated.id}:BOOKING_CONFIRMED`,
+            payload: {
+              bookingId: updated.id,
+              tenantId: updated.tenantId,
+              tenantProfessionalId: updated.tenantProfessionalId,
+              startsAt:
+                updated.startsAt?.toISOString?.() ?? String(updated.startsAt),
+            },
+          });
+        } catch {
+          /* notificação nunca derruba o booking */
+        }
+      }
+      return updated;
     } catch (e: unknown) {
       if (e instanceof Error && e.message === 'BOOKING_SLOT_CONFLICT') {
         throw new BusinessRuleException(

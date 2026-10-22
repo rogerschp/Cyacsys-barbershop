@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { LessThanOrEqual, Repository } from 'typeorm';
+import { NotificationRecordStatus } from '../../modules/notification/domain/notification-record-status.enum';
 import { NotificationRecordEntity } from '../../modules/notification/entities/notification-record.entity';
 import {
   CreateNotificationRecordData,
@@ -24,7 +25,49 @@ export class NotificationRecordRepository implements INotificationRecordReposito
       status: data.status,
       errorMessage: data.errorMessage ?? null,
       payload: data.payload ?? null,
+      userId: data.userId ?? null,
+      tenantId: data.tenantId ?? null,
+      attempts: data.attempts ?? 0,
+      providerMessageId: data.providerMessageId ?? null,
+      sentAt: data.sentAt ?? null,
+      nextRetryAt: data.nextRetryAt ?? null,
+      idempotencyKey: data.idempotencyKey ?? null,
     });
     return this.repo.save(entity);
+  }
+
+  async findByIdempotencyKey(
+    key: string,
+  ): Promise<NotificationRecordEntity | null> {
+    return this.repo.findOne({ where: { idempotencyKey: key } });
+  }
+
+  async findDueForRetry(
+    limit: number,
+    now: Date,
+  ): Promise<NotificationRecordEntity[]> {
+    return this.repo.find({
+      where: [
+        {
+          status: NotificationRecordStatus.PENDING,
+          nextRetryAt: LessThanOrEqual(now),
+        },
+        {
+          status: NotificationRecordStatus.FAILED,
+          nextRetryAt: LessThanOrEqual(now),
+        },
+      ],
+      order: { createdAt: 'ASC' },
+      take: limit,
+    });
+  }
+
+  async update(
+    id: string,
+    data: Partial<CreateNotificationRecordData>,
+  ): Promise<void> {
+    await this.repo.update(id, {
+      ...data,
+    } as Partial<NotificationRecordEntity>);
   }
 }

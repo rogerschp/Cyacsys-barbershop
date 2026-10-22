@@ -7,7 +7,13 @@ import { TenantProfessionalModule } from '../tenant-professional/tenant-professi
 import { ServiceModule } from '../service/service.module';
 import { TenantModule } from '../tenant/tenant.module';
 import { TenantUserModule } from '../tenant-user/tenant-user.module';
+import { TenantProfessionalEntity } from '../tenant-professional/entities/tenant-professional.entity';
+import { TenantEntity } from '../tenant/entities/tenant.entity';
+import { ServiceEntity } from '../service/entities/service.entity';
+import { UserEntity } from '../user/entities/user.entity';
 import { BookingEntity } from './entities/booking.entity';
+import { NotifyProfessionalNewBookingService } from './use-cases/notify-professional-new-booking.service';
+import { NotificationModule } from '../notification/notification.module';
 import { BOOKING_REPOSITORY } from './interfaces/booking-repository.interface';
 import { BookingController } from './booking.controller';
 import { ClientBookingController } from './controllers/client-booking.controller';
@@ -33,13 +39,20 @@ import { CompletePastBookingsJob } from './jobs/complete-past-bookings.job';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([BookingEntity]),
+    TypeOrmModule.forFeature([
+      BookingEntity,
+      TenantProfessionalEntity,
+      TenantEntity,
+      ServiceEntity,
+      UserEntity,
+    ]),
     forwardRef(() => AuthModule),
     forwardRef(() => TenantModule),
     forwardRef(() => TenantUserModule),
     forwardRef(() => TenantProfessionalModule),
     forwardRef(() => ServiceModule),
     forwardRef(() => AvailabilityModule),
+    NotificationModule,
   ],
   controllers: [
     BookingController,
@@ -60,6 +73,7 @@ import { CompletePastBookingsJob } from './jobs/complete-past-bookings.job';
     CompleteBookingUseCase,
     CompletePastBookingsUseCase,
     CompletePastBookingsJob,
+    NotifyProfessionalNewBookingService,
     CreateClientBookingDraftUseCase,
     CreateGuestBookingDraftUseCase,
     ConfirmClientBookingUseCase,

@@ -1,6 +1,6 @@
 # Cyacsys API — Beauty & wellness professionals (multi-tenant)
 
-REST API for multi-tenant beauty and wellness businesses: tenants, members, **team invitations**, **notifications (mock)**, **global professional profiles**, per-establishment links, services, **contextual scheduling**, **bookings**, **reviews**, **media upload (Cloudinary)**, **subscription plans**, **reports**, **public search**, **tenant theming**, and **Firebase + JWT** authentication.
+REST API for multi-tenant beauty and wellness businesses: tenants, members, **team invitations**, **notifications (multi-channel: Telegram + FCM push, WhatsApp plugável por env)**, **global professional profiles**, per-establishment links, services, **contextual scheduling**, **bookings**, **reviews**, **media upload (Cloudinary)**, **subscription plans**, **reports**, **public search**, **tenant theming**, and **Firebase + JWT** authentication.
 
 Built with [NestJS](https://nestjs.com/), [TypeORM](https://typeorm.io/), and PostgreSQL.
 
@@ -179,6 +179,9 @@ docker compose up --build
 | `MEDIA_ENV`      | `dev` (local) or `prod` (Render) — folder root in Cloudinary |
 | `CLOUDINARY_*`   | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` |
 | `CORS_ORIGINS`   | Comma-separated allowed browser origins                 |
+| `TELEGRAM_*`     | Bot Telegram: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_WEBHOOK_SECRET` (ver `docs/notification.md`) |
+| `NOTIFICATION_*` | `NOTIFICATION_EMAIL_PROVIDER`, `NOTIFICATION_PROCESSOR_ENABLED`, `NOTIFICATION_CHANNELS_<EVENTO>` (canais por evento) |
+| `WHATSAPP_*`     | Meta Cloud API (provider pronto, desligado): credenciais + `WHATSAPP_TEMPLATE_<EVENTO>` |
 | `PORT`           | HTTP port (default `3000`)                              |
 | `NODE_ENV`       | `production` hides Swagger unless `EXPOSE_SWAGGER=true` |
 | `EXPOSE_SWAGGER` | Set `true` in production to expose `/api`               |
@@ -219,6 +222,8 @@ If `AvailabilityUseTenantProfessional` fails on a missing `FK_working_hours_barb
 | `1782000000001` | Tenant theme (JSONB)                                           |
 | `1782000000002` | Booking indexes for reports                                    |
 | `1787000000000` | Media table (Cloudinary metadata + soft delete)                |
+| `1800000000000` | Notification records table                                       |
+| `1802000000000` | Notification channels: device tokens, preferences, Telegram link, outbox |
 
 ---
 
@@ -288,7 +293,7 @@ src/
 │   ├── availability/
 │   ├── booking/
 │   ├── media/         # upload + storage (Cloudinary)
-│   ├── notification/  # event → router → template → provider → record
+│   ├── notification/  # event → router → resolver → template → provider (registry) → outbox/retry + /notifications/*
 │   ├── professional-profile/
 │   ├── tenant-professional/
 │   ├── firebase/

@@ -1,4 +1,11 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
+import { NotificationEvent } from '../../notification/domain/notification-event.enum';
+import { DispatchNotificationUseCase } from '../../notification/use-cases/dispatch-notification.use-case';
 import { DateTime } from 'luxon';
 import { BusinessRuleException } from '../../../common/exceptions/business-rule.exception';
 import { BookingEntity } from '../entities/booking.entity';
@@ -8,12 +15,17 @@ import {
   IBookingRepository,
 } from '../interfaces/booking-repository.interface';
 import { assertBookingOwnedByClient } from '../utils/assert-booking-owned-by-client';
+import { NotifyProfessionalNewBookingService } from './notify-professional-new-booking.service';
 
 @Injectable()
 export class ConfirmClientBookingUseCase {
   constructor(
     @Inject(BOOKING_REPOSITORY)
     private readonly bookingRepository: IBookingRepository,
+    @Optional()
+    private readonly dispatchNotification?: DispatchNotificationUseCase,
+    @Optional()
+    private readonly notifyProfessionalNewBooking?: NotifyProfessionalNewBookingService,
   ) {}
 
   async run(
@@ -49,13 +61,17 @@ export class ConfirmClientBookingUseCase {
     }
 
     try {
-      return await this.bookingRepository.updateStatus(
+      const updated = await this.bookingRepository.updateStatus(
         bookingId,
         tenantId,
         tenantProfessionalId,
         BookingStatus.DRAFT,
         BookingStatus.CONFIRMED,
       );
+      await this.notifyConfirmed(updated);
+      // Novo agendamento com o profissional → Telegram/Push pra ele.
+      await this.notifyProfessionalNewBooking?.run(updated);
+      return updated;
     } catch (e: unknown) {
       if (e instanceof Error && e.message === 'BOOKING_SLOT_CONFLICT') {
         throw new BusinessRuleException(
@@ -73,6 +89,27 @@ export class ConfirmClientBookingUseCase {
         throw new NotFoundException('Booking not found');
       }
       throw e;
+    }
+  }
+
+  private async notifyConfirmed(booking: BookingEntity): Promise<void> {
+    if (!this.dispatchNotification || !booking.clientUserId) return;
+    try {
+      await this.dispatchNotification.run({
+        event: NotificationEvent.BOOKING_CONFIRMED,
+        recipientUserId: booking.clientUserId,
+        tenantId: booking.tenantId,
+        idempotencyKey: `booking:${booking.id}:BOOKING_CONFIRMED`,
+        payload: {
+          bookingId: booking.id,
+          tenantId: booking.tenantId,
+          tenantProfessionalId: booking.tenantProfessionalId,
+          startsAt:
+            booking.startsAt?.toISOString?.() ?? String(booking.startsAt),
+        },
+      });
+    } catch {
+      /* notificação nunca derruba o booking */
     }
   }
 }

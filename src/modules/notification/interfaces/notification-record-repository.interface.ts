@@ -10,10 +10,26 @@ export interface CreateNotificationRecordData {
   status: NotificationRecordStatus;
   errorMessage?: string | null;
   payload?: Record<string, unknown> | null;
+  userId?: string | null;
+  tenantId?: string | null;
+  attempts?: number;
+  providerMessageId?: string | null;
+  sentAt?: Date | null;
+  nextRetryAt?: Date | null;
+  idempotencyKey?: string | null;
 }
 
 export interface INotificationRecordRepository {
   create(data: CreateNotificationRecordData): Promise<NotificationRecordEntity>;
+  findByIdempotencyKey(key: string): Promise<NotificationRecordEntity | null>;
+  findDueForRetry(
+    limit: number,
+    now: Date,
+  ): Promise<NotificationRecordEntity[]>;
+  update(
+    id: string,
+    data: Partial<CreateNotificationRecordData>,
+  ): Promise<void>;
 }
 
 export const NOTIFICATION_RECORD_REPOSITORY = Symbol(

@@ -11,7 +11,8 @@ describe('NotificationRecordRepository', () => {
   let repository: NotificationRecordRepository;
   let typeOrmRepo: jest.Mocked<
     Pick<Repository<NotificationRecordEntity>, 'create' | 'save'>
-  >;
+  > &
+    Record<string, jest.Mock>;
 
   beforeEach(async () => {
     const mockTypeOrmRepo = {
@@ -52,7 +53,32 @@ describe('NotificationRecordRepository', () => {
       status: NotificationRecordStatus.SENT,
       errorMessage: null,
       payload: { tenantName: 'Shop' },
+      userId: null,
+      tenantId: null,
+      attempts: 0,
+      providerMessageId: null,
+      sentAt: null,
+      nextRetryAt: null,
+      idempotencyKey: null,
     });
     expect(result).toBe(entity);
+  });
+
+  it('update e findDueForRetry delegam ao TypeORM', async () => {
+    typeOrmRepo.find = jest.fn().mockResolvedValue([{ id: 'r1' }]);
+    typeOrmRepo.update = jest.fn().mockResolvedValue(undefined);
+    const now = new Date();
+    await expect(repository.findDueForRetry(10, now)).resolves.toEqual([
+      { id: 'r1' },
+    ]);
+    expect(typeOrmRepo.find).toHaveBeenCalledWith(
+      expect.objectContaining({ take: 10, order: { createdAt: 'ASC' } }),
+    );
+    await repository.update('r1', { status: NotificationRecordStatus.SENT });
+    expect(typeOrmRepo.update).toHaveBeenCalledWith('r1', { status: 'SENT' });
+    typeOrmRepo.findOne = jest.fn().mockResolvedValue({ id: 'r2' });
+    await expect(repository.findByIdempotencyKey('k1')).resolves.toEqual({
+      id: 'r2',
+    });
   });
 });

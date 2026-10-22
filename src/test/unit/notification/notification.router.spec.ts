@@ -10,4 +10,22 @@ describe('NotificationRouter', () => {
       NotificationChannel.EMAIL,
     ]);
   });
+
+  it('mapeia BOOKING_CONFIRMED para PUSH + TELEGRAM', () => {
+    expect(router.resolve(NotificationEvent.BOOKING_CONFIRMED)).toEqual([
+      NotificationChannel.PUSH,
+      NotificationChannel.TELEGRAM,
+    ]);
+  });
+
+  it('env NOTIFICATION_CHANNELS_<EVENTO> liga o WhatsApp sem mudar código', () => {
+    const withWhats = new NotificationRouter({
+      get: jest.fn().mockReturnValue('PUSH,TELEGRAM,WHATSAPP'),
+    } as never);
+    expect(withWhats.resolve(NotificationEvent.BOOKING_CONFIRMED)).toEqual([
+      NotificationChannel.PUSH,
+      NotificationChannel.TELEGRAM,
+      NotificationChannel.WHATSAPP,
+    ]);
+  });
 });
