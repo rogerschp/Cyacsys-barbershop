@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { GetClientAvailableSlotsUseCase } from '../../availability/use-cases/get-client-available-slots.use-case';
 import { CreateGuestBookingDraftDto } from '../dto/create-booking-draft.dto';
 import { BookingEntity } from '../entities/booking.entity';
 import { CustomerResolverService } from '../domain/customer-resolver.service';
 import { CreateBookingDraftForCustomerUseCase } from './create-booking-draft-for-customer.use-case';
+import { NotifyProfessionalNewBookingService } from './notify-professional-new-booking.service';
 
 @Injectable()
 export class CreateGuestBookingDraftUseCase {
@@ -11,6 +12,8 @@ export class CreateGuestBookingDraftUseCase {
     private readonly getClientAvailableSlotsUseCase: GetClientAvailableSlotsUseCase,
     private readonly customerResolver: CustomerResolverService,
     private readonly createBookingDraftForCustomer: CreateBookingDraftForCustomerUseCase,
+    @Optional()
+    private readonly notifyProfessionalNewBooking?: NotifyProfessionalNewBookingService,
   ) {}
 
   async run(
@@ -25,7 +28,7 @@ export class CreateGuestBookingDraftUseCase {
       guestEmail: dto.guestEmail,
     });
 
-    return this.createBookingDraftForCustomer.run({
+    const booking = await this.createBookingDraftForCustomer.run({
       tenantId,
       tenantProfessionalId,
       dto,
@@ -39,5 +42,8 @@ export class CreateGuestBookingDraftUseCase {
           dto.date,
         ),
     });
+    // Pedido de agendamento chegou → Telegram/Push pro profissional.
+    await this.notifyProfessionalNewBooking?.run(booking);
+    return booking;
   }
 }

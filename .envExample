@@ -33,3 +33,29 @@ NOTIFICATION_PROVIDER=mock
 # CORS — comma-separated; must match browser Origin exactly (scheme + host + port)
 # Dev: front on 3001 → include both hostnames if you alternate localhost / 127.0.0.1
 CORS_ORIGINS=http://localhost:3001,http://127.0.0.1:3001
+
+# Notifications — multi-canal (registry por canal)
+# EMAIL: mock (default) | resend | ses  (legado NOTIFICATION_PROVIDER ainda aceito)
+NOTIFICATION_EMAIL_PROVIDER=mock
+NOTIFICATION_PROCESSOR_ENABLED=true
+# Telegram (bot via @BotFather). Usuário vincula em GET /notifications/telegram/link
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_BOT_USERNAME=
+TELEGRAM_WEBHOOK_SECRET=
+# WhatsApp (Meta Cloud API) — provider pronto, desligado.
+# Para ligar SEM mudar código: preencher as 2 credenciais e adicionar
+# WHATSAPP na variavel do evento desejado (ver NOTIFICATION_CHANNELS_*).
+WHATSAPP_PHONE_NUMBER_ID=
+WHATSAPP_ACCESS_TOKEN=
+# WHATSAPP_API_VERSION=v21.0
+# WHATSAPP_TEMPLATE_LANG=pt_BR
+# Templates aprovados na Meta (fora da janela de 24h):
+# WHATSAPP_TEMPLATE_BOOKING_CONFIRMED=booking_confirmed
+# WHATSAPP_TEMPLATE_BOOKING_CANCELLED=booking_cancelled
+# WHATSAPP_TEMPLATE_BOOKING_CREATED=booking_created
+
+# Canais por evento (sobrescreve o padrao PUSH,TELEGRAM).
+# Ligar WhatsApp no futuro = so adicionar WHATSAPP aqui:
+# NOTIFICATION_CHANNELS_BOOKING_CONFIRMED=PUSH,TELEGRAM,WHATSAPP
+# NOTIFICATION_CHANNELS_BOOKING_CANCELLED=PUSH,TELEGRAM,WHATSAPP
+# NOTIFICATION_CHANNELS_BOOKING_CREATED=PUSH,TELEGRAM,WHATSAPP

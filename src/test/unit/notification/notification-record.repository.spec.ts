@@ -52,6 +52,13 @@ describe('NotificationRecordRepository', () => {
       status: NotificationRecordStatus.SENT,
       errorMessage: null,
       payload: { tenantName: 'Shop' },
+      userId: null,
+      tenantId: null,
+      attempts: 0,
+      providerMessageId: null,
+      sentAt: null,
+      nextRetryAt: null,
+      idempotencyKey: null,
     });
     expect(result).toBe(entity);
   });

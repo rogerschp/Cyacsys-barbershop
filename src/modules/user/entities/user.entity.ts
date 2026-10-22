@@ -60,6 +60,14 @@ export class UserEntity {
     description: 'Telefone para contato do usuario',
   })
   telephone: string;
+  @Column({ name: 'telegram_chat_id', type: 'varchar', length: 64, nullable: true })
+  @ApiProperty({ nullable: true, description: 'Chat ID do Telegram após vínculo via bot (/start)' })
+  telegramChatId: string | null;
+
+  @Column({ name: 'telegram_linked_at', type: 'timestamptz', nullable: true })
+  @ApiProperty({ nullable: true, description: 'Quando o Telegram foi vinculado' })
+  telegramLinkedAt: Date | null;
+
   @Column({ name: 'address_id', nullable: true })
   @ApiProperty({ nullable: true, description: 'FK para o endereço do usuário' })
   addressId: string | null;

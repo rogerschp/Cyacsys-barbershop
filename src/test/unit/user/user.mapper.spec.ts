@@ -14,7 +14,7 @@ describe('UserMapper', () => {
     passwordHash: null,
     status: UserStatus.ACTIVE,
     role: Role.CLIENT,
-    telephone: '5511999999999',
+    telegramChatId: null, telegramLinkedAt: null, telephone: '5511999999999',
     addressId: null,
     address: null,
     avatarMediaId: null,
