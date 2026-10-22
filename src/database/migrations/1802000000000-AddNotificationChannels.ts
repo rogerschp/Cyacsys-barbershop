@@ -96,23 +96,53 @@ export class AddNotificationChannels1802000000000 implements MigrationInterface 
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_notification_records_status_next_retry"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "UQ_notification_records_idempotency"`);
-    await queryRunner.query(`ALTER TABLE "notification_records" DROP COLUMN IF EXISTS "updated_at"`);
-    await queryRunner.query(`ALTER TABLE "notification_records" DROP COLUMN IF EXISTS "idempotency_key"`);
-    await queryRunner.query(`ALTER TABLE "notification_records" DROP COLUMN IF EXISTS "next_retry_at"`);
-    await queryRunner.query(`ALTER TABLE "notification_records" DROP COLUMN IF EXISTS "sent_at"`);
-    await queryRunner.query(`ALTER TABLE "notification_records" DROP COLUMN IF EXISTS "provider_message_id"`);
-    await queryRunner.query(`ALTER TABLE "notification_records" DROP COLUMN IF EXISTS "attempts"`);
-    await queryRunner.query(`ALTER TABLE "notification_records" DROP COLUMN IF EXISTS "tenant_id"`);
-    await queryRunner.query(`ALTER TABLE "notification_records" DROP COLUMN IF EXISTS "user_id"`);
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "IDX_notification_records_status_next_retry"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "UQ_notification_records_idempotency"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "notification_records" DROP COLUMN IF EXISTS "updated_at"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "notification_records" DROP COLUMN IF EXISTS "idempotency_key"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "notification_records" DROP COLUMN IF EXISTS "next_retry_at"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "notification_records" DROP COLUMN IF EXISTS "sent_at"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "notification_records" DROP COLUMN IF EXISTS "provider_message_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "notification_records" DROP COLUMN IF EXISTS "attempts"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "notification_records" DROP COLUMN IF EXISTS "tenant_id"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "notification_records" DROP COLUMN IF EXISTS "user_id"`,
+    );
     await queryRunner.query(`DROP TABLE IF EXISTS "notification_link_tokens"`);
-    await queryRunner.query(`DROP TABLE IF EXISTS "user_notification_preferences"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_user_device_tokens_user_active"`);
+    await queryRunner.query(
+      `DROP TABLE IF EXISTS "user_notification_preferences"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "IDX_user_device_tokens_user_active"`,
+    );
     await queryRunner.query(`DROP TABLE IF EXISTS "user_device_tokens"`);
-    await queryRunner.query(`DROP TYPE IF EXISTS "public"."user_device_tokens_platform_enum"`);
-    await queryRunner.query(`ALTER TABLE "users" DROP COLUMN IF EXISTS "telegram_linked_at"`);
-    await queryRunner.query(`ALTER TABLE "users" DROP COLUMN IF EXISTS "telegram_chat_id"`);
+    await queryRunner.query(
+      `DROP TYPE IF EXISTS "public"."user_device_tokens_platform_enum"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "users" DROP COLUMN IF EXISTS "telegram_linked_at"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "users" DROP COLUMN IF EXISTS "telegram_chat_id"`,
+    );
     // SKIPPED no enum status: Postgres não remove valor de enum com segurança; noop.
   }
 }

@@ -32,7 +32,12 @@ describe('DispatchNotificationUseCase', () => {
     await useCase.run({
       event: NotificationEvent.TEAM_INVITATION,
       to: 'a@b.com',
-      payload: { tenantName: 'Shop', role: 'BARBER', token: 't', expiresAt: 'x' },
+      payload: {
+        tenantName: 'Shop',
+        role: 'BARBER',
+        token: 't',
+        expiresAt: 'x',
+      },
     });
 
     expect(provider.dispatch).toHaveBeenCalledWith(
@@ -52,7 +57,9 @@ describe('DispatchNotificationUseCase', () => {
   });
 
   it('grava FAILED e NÃO relança quando provider falha (canal isolado)', async () => {
-    const provider = { dispatch: jest.fn().mockRejectedValue(new Error('boom')) };
+    const provider = {
+      dispatch: jest.fn().mockRejectedValue(new Error('boom')),
+    };
     const recordRepository = makeRepo();
     const useCase = new DispatchNotificationUseCase(
       new NotificationRouter(),
@@ -80,7 +87,9 @@ describe('DispatchNotificationUseCase', () => {
   });
 
   it('multi-canal: PUSH e TELEGRAM usam providers diferentes', async () => {
-    const push = { dispatch: jest.fn().mockResolvedValue({ providerMessageId: 'm1' }) };
+    const push = {
+      dispatch: jest.fn().mockResolvedValue({ providerMessageId: 'm1' }),
+    };
     const telegram = { dispatch: jest.fn().mockResolvedValue(undefined) };
     const recordRepository = makeRepo();
     const resolver = {
@@ -106,14 +115,24 @@ describe('DispatchNotificationUseCase', () => {
       recipientUserId: 'user-1',
       tenantId: 'tenant-1',
       idempotencyKey: 'booking:b1:BOOKING_CONFIRMED',
-      payload: { bookingId: 'b1', tenantName: 'Viking', startsAt: '2026-01-01' },
+      payload: {
+        bookingId: 'b1',
+        tenantName: 'Viking',
+        startsAt: '2026-01-01',
+      },
     });
 
     expect(push.dispatch).toHaveBeenCalledWith(
-      expect.objectContaining({ channel: NotificationChannel.PUSH, to: 'fcm-token' }),
+      expect.objectContaining({
+        channel: NotificationChannel.PUSH,
+        to: 'fcm-token',
+      }),
     );
     expect(telegram.dispatch).toHaveBeenCalledWith(
-      expect.objectContaining({ channel: NotificationChannel.TELEGRAM, to: '12345' }),
+      expect.objectContaining({
+        channel: NotificationChannel.TELEGRAM,
+        to: '12345',
+      }),
     );
   });
 

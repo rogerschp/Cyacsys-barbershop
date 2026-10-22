@@ -18,7 +18,9 @@ const forAll = (fn: Fn): Partial<Record<NotificationChannel, Fn>> => ({
   [NotificationChannel.WHATSAPP]: fn,
 });
 
-const TEMPLATES: Partial<Record<NotificationEvent, Partial<Record<NotificationChannel, Fn>>>> = {
+const TEMPLATES: Partial<
+  Record<NotificationEvent, Partial<Record<NotificationChannel, Fn>>>
+> = {
   [NotificationEvent.TEAM_INVITATION]: {
     [NotificationChannel.EMAIL]: teamInvitationTemplate,
   },
@@ -37,8 +39,7 @@ export class TemplateRenderer {
   }): NotificationTemplateContent {
     const byChannel = TEMPLATES[params.event];
     const template =
-      byChannel?.[params.channel] ??
-      byChannel?.[NotificationChannel.EMAIL];
+      byChannel?.[params.channel] ?? byChannel?.[NotificationChannel.EMAIL];
     if (!template) {
       throw new NotFoundException(
         `No notification template for ${params.event}/${params.channel}`,

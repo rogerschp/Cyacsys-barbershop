@@ -12,7 +12,9 @@ describe('TelegramNotificationProvider', () => {
     ({ get: jest.fn().mockReturnValue(token) }) as unknown as ConfigService;
 
   it('envia sendMessage com chat_id e texto do template', async () => {
-    mockedAxios.post.mockResolvedValue({ data: { result: { message_id: 42 } } });
+    mockedAxios.post.mockResolvedValue({
+      data: { result: { message_id: 42 } },
+    });
     const provider = new TelegramNotificationProvider(config('bot-token'));
     const result = await provider.dispatch({
       event: NotificationEvent.BOOKING_CONFIRMED,

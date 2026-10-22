@@ -18,10 +18,18 @@ export class UserNotificationPreferenceEntity {
   @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
 
-  @Column({ type: 'enum', enum: NotificationEvent, enumName: 'notification_records_event_enum' })
+  @Column({
+    type: 'enum',
+    enum: NotificationEvent,
+    enumName: 'notification_records_event_enum',
+  })
   event: NotificationEvent;
 
-  @Column({ type: 'enum', enum: NotificationChannel, enumName: 'notification_records_channel_enum' })
+  @Column({
+    type: 'enum',
+    enum: NotificationChannel,
+    enumName: 'notification_records_channel_enum',
+  })
   channel: NotificationChannel;
 
   @Column({ type: 'boolean', default: true })

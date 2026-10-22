@@ -17,7 +17,10 @@ import {
   INotificationRecordRepository,
   NOTIFICATION_RECORD_REPOSITORY,
 } from '../interfaces/notification-record-repository.interface';
-import { INVALID_FCM_TOKEN_CODES, PushDeliveryError } from '../providers/fcm-notification.provider';
+import {
+  INVALID_FCM_TOKEN_CODES,
+  PushDeliveryError,
+} from '../providers/fcm-notification.provider';
 import { NotificationRouter } from '../routing/notification.router';
 import { RecipientResolver } from '../routing/recipient.resolver';
 import { TemplateRenderer } from '../templates/template.renderer';

@@ -44,7 +44,10 @@ import { NotificationSettingsService } from './use-cases/notification-settings.s
     TemplateRenderer,
     RecipientResolver,
     NotificationRecordRepository,
-    { provide: NOTIFICATION_RECORD_REPOSITORY, useClass: NotificationRecordRepository },
+    {
+      provide: NOTIFICATION_RECORD_REPOSITORY,
+      useClass: NotificationRecordRepository,
+    },
     MockNotificationProvider,
     ResendNotificationProvider,
     AwsSesNotificationProvider,
@@ -68,7 +71,11 @@ import { NotificationSettingsService } from './use-cases/notification-settings.s
           'mock'
         ).toLowerCase();
         const email: INotificationProvider =
-          emailProvider === 'resend' ? resend : emailProvider === 'ses' || emailProvider === 'aws_ses' ? ses : mock;
+          emailProvider === 'resend'
+            ? resend
+            : emailProvider === 'ses' || emailProvider === 'aws_ses'
+              ? ses
+              : mock;
         return new Map([
           [NotificationChannel.EMAIL, email],
           [NotificationChannel.TELEGRAM, telegram],

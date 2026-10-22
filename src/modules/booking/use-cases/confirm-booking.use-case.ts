@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { NotificationEvent } from '../../notification/domain/notification-event.enum';
 import { DispatchNotificationUseCase } from '../../notification/use-cases/dispatch-notification.use-case';
 import { DateTime } from 'luxon';
@@ -81,9 +86,17 @@ export class ConfirmBookingUseCase {
             recipientUserId: updated.clientUserId,
             tenantId: updated.tenantId,
             idempotencyKey: `booking:${updated.id}:BOOKING_CONFIRMED`,
-            payload: { bookingId: updated.id, tenantId: updated.tenantId, tenantProfessionalId: updated.tenantProfessionalId, startsAt: updated.startsAt?.toISOString?.() ?? String(updated.startsAt) },
+            payload: {
+              bookingId: updated.id,
+              tenantId: updated.tenantId,
+              tenantProfessionalId: updated.tenantProfessionalId,
+              startsAt:
+                updated.startsAt?.toISOString?.() ?? String(updated.startsAt),
+            },
           });
-        } catch { /* notificação nunca derruba o booking */ }
+        } catch {
+          /* notificação nunca derruba o booking */
+        }
       }
       return updated;
     } catch (e: unknown) {

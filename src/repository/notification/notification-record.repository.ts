@@ -48,8 +48,14 @@ export class NotificationRecordRepository implements INotificationRecordReposito
   ): Promise<NotificationRecordEntity[]> {
     return this.repo.find({
       where: [
-        { status: NotificationRecordStatus.PENDING, nextRetryAt: LessThanOrEqual(now) },
-        { status: NotificationRecordStatus.FAILED, nextRetryAt: LessThanOrEqual(now) },
+        {
+          status: NotificationRecordStatus.PENDING,
+          nextRetryAt: LessThanOrEqual(now),
+        },
+        {
+          status: NotificationRecordStatus.FAILED,
+          nextRetryAt: LessThanOrEqual(now),
+        },
       ],
       order: { createdAt: 'ASC' },
       take: limit,
@@ -60,6 +66,8 @@ export class NotificationRecordRepository implements INotificationRecordReposito
     id: string,
     data: Partial<CreateNotificationRecordData>,
   ): Promise<void> {
-    await this.repo.update(id, { ...data } as Partial<NotificationRecordEntity>);
+    await this.repo.update(id, {
+      ...data,
+    } as Partial<NotificationRecordEntity>);
   }
 }

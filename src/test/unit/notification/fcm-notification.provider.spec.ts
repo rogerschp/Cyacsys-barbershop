@@ -30,7 +30,9 @@ describe('FcmNotificationProvider', () => {
 
   it('propaga code do FCM para desativação de token inválido', async () => {
     const send = jest.fn().mockRejectedValue(
-      Object.assign(new Error('gone'), { code: 'messaging/registration-token-not-registered' }),
+      Object.assign(new Error('gone'), {
+        code: 'messaging/registration-token-not-registered',
+      }),
     );
     (admin.messaging as jest.Mock).mockReturnValue({ send });
     const provider = new FcmNotificationProvider();
@@ -42,6 +44,8 @@ describe('FcmNotificationProvider', () => {
         template: { subject: 'a', body: 'b' },
         payload: {},
       }),
-    ).rejects.toMatchObject({ code: 'messaging/registration-token-not-registered' });
+    ).rejects.toMatchObject({
+      code: 'messaging/registration-token-not-registered',
+    });
   });
 });

@@ -14,7 +14,11 @@ export class NotificationLinkTokenEntity {
   @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
 
-  @Column({ type: 'enum', enum: NotificationChannel, enumName: 'notification_records_channel_enum' })
+  @Column({
+    type: 'enum',
+    enum: NotificationChannel,
+    enumName: 'notification_records_channel_enum',
+  })
   channel: NotificationChannel;
 
   @Column({ name: 'token_hash', type: 'varchar', length: 128, unique: true })

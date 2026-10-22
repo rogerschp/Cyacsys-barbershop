@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { NotificationEvent } from '../../notification/domain/notification-event.enum';
 import { DispatchNotificationUseCase } from '../../notification/use-cases/dispatch-notification.use-case';
 import { DateTime } from 'luxon';
@@ -99,9 +104,12 @@ export class ConfirmClientBookingUseCase {
           bookingId: booking.id,
           tenantId: booking.tenantId,
           tenantProfessionalId: booking.tenantProfessionalId,
-          startsAt: booking.startsAt?.toISOString?.() ?? String(booking.startsAt),
+          startsAt:
+            booking.startsAt?.toISOString?.() ?? String(booking.startsAt),
         },
       });
-    } catch { /* notificação nunca derruba o booking */ }
+    } catch {
+      /* notificação nunca derruba o booking */
+    }
   }
 }

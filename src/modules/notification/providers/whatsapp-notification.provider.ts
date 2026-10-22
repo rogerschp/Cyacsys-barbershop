@@ -71,9 +71,10 @@ export class WhatsappNotificationProvider implements INotificationProvider {
                   components: [
                     {
                       type: 'body',
-                      parameters: this.templateParams(prepared).map(
-                        (text) => ({ type: 'text', text }),
-                      ),
+                      parameters: this.templateParams(prepared).map((text) => ({
+                        type: 'text',
+                        text,
+                      })),
                     },
                   ],
                 }

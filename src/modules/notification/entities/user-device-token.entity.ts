@@ -20,7 +20,11 @@ export class UserDeviceTokenEntity {
   @Column({ type: 'varchar', length: 512, unique: true })
   token: string;
 
-  @Column({ type: 'enum', enum: DevicePlatform, enumName: 'user_device_tokens_platform_enum' })
+  @Column({
+    type: 'enum',
+    enum: DevicePlatform,
+    enumName: 'user_device_tokens_platform_enum',
+  })
   platform: DevicePlatform;
 
   @Column({ name: 'device_id', type: 'varchar', length: 128, nullable: true })

@@ -5,7 +5,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
 import { NotificationChannel } from '../domain/notification-channel.enum';
-import { RegisterDeviceTokenDto, UpdateNotificationPreferenceDto } from '../dto/notification.dto';
+import {
+  RegisterDeviceTokenDto,
+  UpdateNotificationPreferenceDto,
+} from '../dto/notification.dto';
 import { NotificationLinkTokenEntity } from '../entities/notification-link-token.entity';
 import { UserDeviceTokenEntity } from '../entities/user-device-token.entity';
 import { UserNotificationPreferenceEntity } from '../entities/user-notification-preference.entity';
@@ -99,7 +102,9 @@ export class NotificationSettingsService {
         usedAt: null,
       }),
     );
-    const username = this.config.get<string>('TELEGRAM_BOT_USERNAME')?.replace(/^@/, '');
+    const username = this.config
+      .get<string>('TELEGRAM_BOT_USERNAME')
+      ?.replace(/^@/, '');
     return {
       url: username ? `https://t.me/${username}?start=${raw}` : null,
       token: raw,
@@ -112,7 +117,9 @@ export class NotificationSettingsService {
 
   /** Webhook do Telegram: captura /start <token> e vincula chat_id. Sempre retorna ok. */
   async handleTelegramWebhook(update: unknown): Promise<{ ok: true }> {
-    const msg = (update as { message?: { chat?: { id?: number | string }; text?: string } })?.message;
+    const msg = (
+      update as { message?: { chat?: { id?: number | string }; text?: string } }
+    )?.message;
     const text = msg?.text?.trim() ?? '';
     const chatId = msg?.chat?.id;
     if (!chatId || !text.startsWith('/start')) return { ok: true };
@@ -121,7 +128,8 @@ export class NotificationSettingsService {
     const link = await this.linkRepo.findOne({
       where: { tokenHash: hash(raw), channel: NotificationChannel.TELEGRAM },
     });
-    if (!link || link.usedAt || link.expiresAt < new Date()) return { ok: true };
+    if (!link || link.usedAt || link.expiresAt < new Date())
+      return { ok: true };
     await this.userRepo.update(link.userId, {
       telegramChatId: String(chatId),
       telegramLinkedAt: new Date(),

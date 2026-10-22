@@ -22,7 +22,10 @@ export interface CreateNotificationRecordData {
 export interface INotificationRecordRepository {
   create(data: CreateNotificationRecordData): Promise<NotificationRecordEntity>;
   findByIdempotencyKey(key: string): Promise<NotificationRecordEntity | null>;
-  findDueForRetry(limit: number, now: Date): Promise<NotificationRecordEntity[]>;
+  findDueForRetry(
+    limit: number,
+    now: Date,
+  ): Promise<NotificationRecordEntity[]>;
   update(
     id: string,
     data: Partial<CreateNotificationRecordData>,

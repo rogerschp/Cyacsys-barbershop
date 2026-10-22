@@ -19,7 +19,9 @@ const FALLBACK_TIMEZONE = 'America/Sao_Paulo';
  */
 @Injectable()
 export class NotifyProfessionalNewBookingService {
-  private readonly logger = new Logger(NotifyProfessionalNewBookingService.name);
+  private readonly logger = new Logger(
+    NotifyProfessionalNewBookingService.name,
+  );
 
   constructor(
     @InjectRepository(TenantProfessionalEntity)
@@ -67,7 +69,9 @@ export class NotifyProfessionalNewBookingService {
       }
 
       const timezone = tenant?.timezone || FALLBACK_TIMEZONE;
-      const startsAt = DateTime.fromJSDate(new Date(booking.startsAt)).setZone(timezone);
+      const startsAt = DateTime.fromJSDate(new Date(booking.startsAt)).setZone(
+        timezone,
+      );
 
       const address = tenant?.address;
       const location = address

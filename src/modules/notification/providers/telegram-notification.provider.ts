@@ -36,13 +36,12 @@ export class TelegramNotificationProvider implements INotificationProvider {
       const messageId = data?.result?.message_id;
       return messageId ? { providerMessageId: String(messageId) } : {};
     } catch (error) {
-      const desc =
-        axios.isAxiosError(error)
-          ? (error.response?.data as { description?: string })?.description ??
-            error.message
-          : error instanceof Error
-            ? error.message
-            : 'Telegram error';
+      const desc = axios.isAxiosError(error)
+        ? ((error.response?.data as { description?: string })?.description ??
+          error.message)
+        : error instanceof Error
+          ? error.message
+          : 'Telegram error';
       this.logger.warn(`Telegram send failed: ${desc}`);
       throw new Error(`Telegram: ${desc}`);
     }
